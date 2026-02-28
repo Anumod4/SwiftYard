@@ -1,0 +1,14 @@
+meta {
+  name: Delete Webhook
+  type: http
+  seq: 4
+}
+
+delete {
+  url: "{{baseUrl}}/api/webhooks/{{webhookId}}"
+  auth: bearer
+}
+
+headers {
+  X-Facility-ID: {{facilityId}}
+}

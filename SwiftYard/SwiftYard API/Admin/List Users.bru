@@ -1,0 +1,14 @@
+meta {
+  name: List Users
+  type: http
+  seq: 1
+}
+
+get {
+  url: "{{baseUrl}}/api/admin/users"
+  auth: bearer
+}
+
+headers {
+  X-Facility-ID: {{facilityId}}
+}

@@ -1,0 +1,28 @@
+meta {
+  name: Create Carrier
+  type: http
+  seq: 2
+}
+
+post {
+  url: "{{baseUrl}}/api/carriers"
+  body: json
+  auth: bearer
+}
+
+body:json {
+  name: "ABC Transport"
+  contactEmail: "contact@abctransport.com"
+  contactPhone: "555-0100"
+}
+
+tests {
+  const json = res.getBody();
+  if (json.success && json.data) {
+    bru.setVar('carrierId', json.data.id);
+  }
+}
+
+headers {
+  X-Facility-ID: {{facilityId}}
+}

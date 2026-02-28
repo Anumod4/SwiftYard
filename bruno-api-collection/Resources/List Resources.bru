@@ -1,0 +1,14 @@
+meta {
+  name: List Resources
+  type: http
+  seq: 1
+}
+
+get {
+  url: "{{baseUrl}}/api/resources"
+  auth: bearer
+}
+
+headers {
+  X-Facility-ID: {{facilityId}}
+}

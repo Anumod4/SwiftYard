@@ -1,0 +1,7 @@
+{
+  "name": "SwiftYard & Turso - Carrier-Yard-Driver",
+  "description": "A premium, logistics yard management system featuring smart scheduling, real-time resource tracking, and gatehouse operations.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

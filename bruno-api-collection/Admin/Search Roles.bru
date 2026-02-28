@@ -1,0 +1,19 @@
+meta {
+  name: Search Roles
+  type: http
+  seq: 3
+}
+
+post {
+  url: "http://localhost:4000/api/admin/roles/search"
+  auth: bearer
+}
+
+body {
+  type: json
+  json: {}
+}
+
+headers {
+  X-Facility-ID: {{facilityId}}
+}

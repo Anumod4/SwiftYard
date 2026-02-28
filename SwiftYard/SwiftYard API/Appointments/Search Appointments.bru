@@ -1,0 +1,20 @@
+meta {
+  name: Search Appointments
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/appointments/search
+  body: json
+  auth: bearer
+}
+
+headers {
+  X-Facility-ID: {{facilityId}}
+}
+
+body:json {
+  type: json
+  json: {}
+}

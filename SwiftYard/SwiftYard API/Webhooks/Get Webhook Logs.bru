@@ -1,0 +1,14 @@
+meta {
+  name: Get Webhook Logs
+  type: http
+  seq: 3
+}
+
+get {
+  url: "{{baseUrl}}/api/webhooks/{{webhookId}}/logs"
+  auth: bearer
+}
+
+headers {
+  X-Facility-ID: {{facilityId}}
+}

@@ -1,0 +1,15 @@
+meta {
+  name: Delete Appointment
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{baseUrl}}/api/appointments/{{id}}
+  body: none
+  auth: bearer
+}
+
+headers {
+  X-Facility-ID: {{facilityId}}
+}

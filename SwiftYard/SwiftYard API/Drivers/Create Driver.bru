@@ -1,0 +1,29 @@
+meta {
+  name: Create Driver
+  type: http
+  seq: 2
+}
+
+post {
+  url: "{{baseUrl}}/api/drivers"
+  body: json
+  auth: bearer
+}
+
+body:json {
+  name: "John Smith"
+  licenseNumber: "DL123456"
+  phone: "555-0100"
+  carrierId: "CAR-001"
+}
+
+tests {
+  const json = res.getBody();
+  if (json.success && json.data) {
+    bru.setVar('driverId', json.data.id);
+  }
+}
+
+headers {
+  X-Facility-ID: {{facilityId}}
+}

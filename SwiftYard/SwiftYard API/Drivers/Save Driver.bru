@@ -1,0 +1,24 @@
+meta {
+  name: Save Driver
+  type: http
+  seq: 2
+}
+
+post {
+  url: "http://localhost:4000/api/drivers/save"
+  auth: bearer
+}
+
+body {
+  type: json
+  json: {
+    "name": "John Doe",
+    "licenseNumber": "DL-123456",
+    "phone": "+1234567890",
+    "carrierId": "CAR-123"
+  }
+}
+
+headers {
+  X-Facility-ID: {{facilityId}}
+}

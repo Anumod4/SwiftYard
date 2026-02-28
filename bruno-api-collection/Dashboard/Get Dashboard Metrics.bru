@@ -1,0 +1,14 @@
+meta {
+  name: Get Dashboard Metrics
+  type: http
+  seq: 1
+}
+
+get {
+  url: "{{baseUrl}}/api/dashboard/metrics"
+  auth: bearer
+}
+
+headers {
+  X-Facility-ID: {{facilityId}}
+}

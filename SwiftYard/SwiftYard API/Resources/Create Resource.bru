@@ -1,0 +1,29 @@
+meta {
+  name: Create Resource
+  type: http
+  seq: 2
+}
+
+post {
+  url: "{{baseUrl}}/api/resources"
+  body: json
+  auth: bearer
+}
+
+body:json {
+  name: "Dock 1"
+  type: "Dock"
+  status: "Available"
+  operationMode: "Load"
+}
+
+tests {
+  const json = res.getBody();
+  if (json.success && json.data) {
+    bru.setVar('resourceId', json.data.id);
+  }
+}
+
+headers {
+  X-Facility-ID: {{facilityId}}
+}

@@ -1,0 +1,368 @@
+
+import React, { useState, useEffect } from 'react';
+import { useData } from '../contexts/DataContext';
+import { Trailer, Appointment } from '../types';
+import { Truck, Clock, ArrowRight, Play, CheckCircle2, AlertTriangle, MapPin, StopCircle, Timer, Calendar, RefreshCw, CheckSquare, MousePointerClick } from 'lucide-react';
+
+export const PublicDriverBoard: React.FC = () => {
+    const {
+        trailers,
+        appointments,
+        docks,
+        yardSlots,
+        settings,
+        refreshData,
+        updateAppointment,
+        updateTrailer,
+        moveTrailerToYard,
+        addToast,
+        theme
+    } = useData();
+
+    const [currentTime, setCurrentTime] = useState(new Date());
+    const [isRefreshing, setIsRefreshing] = useState(false);
+
+    // Update clock
+    useEffect(() => {
+        const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+        return () => clearInterval(timer);
+    }, []);
+
+    // Filter on-site trailers - Exclude Cancelled
+    const onSiteTrailers = trailers.filter(t =>
+        t.status !== 'GatedOut' && t.status !== 'Unknown' && t.status !== 'Cancelled'
+    );
+
+    const handleRefresh = async () => {
+        setIsRefreshing(true);
+        await refreshData();
+        setIsRefreshing(false);
+    };
+
+    const handleManualConfirm = async (trailer: Trailer, appt?: Appointment) => {
+        // Logic mirrors DriverView.tsx actions
+        try {
+            // 1. Confirm Arrival at Dock
+            if (trailer.status === 'MovingToDock' || appt?.status === 'MovingToDock') {
+                if (appt) await updateAppointment(appt.id, { status: 'ReadyForCheckIn' });
+                await updateTrailer(trailer.id, { status: 'ReadyForCheckIn' });
+                addToast('Confirmed', `${trailer.number} marked as Arrived at Dock.`, 'success');
+            }
+            // 2. Confirm Arrival at Yard
+            else if (trailer.status === 'MovingToYard' && trailer.targetResourceId) {
+                moveTrailerToYard(trailer.id, trailer.targetResourceId, appt?.id);
+                await updateTrailer(trailer.id, { targetResourceId: null });
+                addToast('Confirmed', `${trailer.number} parked in Yard.`, 'success');
+            }
+            // 3. Confirm Departure from Dock
+            else if (trailer.status === 'ReadyForCheckOut' || appt?.status === 'ReadyForCheckOut') {
+                if (appt) await updateAppointment(appt.id, { status: 'Completed', assignedResourceId: null });
+                await updateTrailer(trailer.id, {
+                    status: 'CheckedOut',
+                    location: null,
+                    currentAppointmentId: null
+                });
+                addToast('Confirmed', `${trailer.number} cleared from Dock.`, 'success');
+            }
+        } catch (err: any) {
+            console.error(err);
+            addToast('Error', 'Failed to update status.', 'error');
+        }
+    };
+
+    const getTimerDisplay = (timestamp?: string, durationMinutes: number = 15) => {
+        // Check Master Toggle
+        if (settings.enableInstructionTimers === false) return null;
+
+        if (!timestamp) return null;
+        const start = new Date(timestamp).getTime();
+        const end = start + (durationMinutes * 60 * 1000);
+        const remainingMs = end - currentTime.getTime();
+        const isOverdue = remainingMs < 0;
+
+        // Countdown only shows if explicitly enabled (opt-in); overdue always shows
+        const showCountdown = settings.showCountdownTimer === true;
+        if (!showCountdown && !isOverdue) return null;
+
+        const totalSeconds = Math.abs(Math.floor(remainingMs / 1000));
+        const m = Math.floor(totalSeconds / 60);
+        const s = totalSeconds % 60;
+        const formatted = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+
+        return { formatted, isOverdue };
+    };
+
+    // Helper to determine display data
+    const getActionData = (trailer: Trailer) => {
+        // Attempt to link to appointment for richer context
+        const appt = appointments.find(a =>
+            (a.trailerNumber === trailer.number && a.status !== 'Completed' && a.status !== 'Cancelled') ||
+            (a.id === trailer.currentAppointmentId)
+        );
+
+        let statusLabel = 'WAITING';
+        let instruction = 'Wait for assignment';
+        let locationName = '-';
+        let color = 'bg-yellow-500'; // Default: Waiting
+        let icon = Clock;
+        let timerData = null;
+        let isHotlisted = false;
+        let canConfirm = false;
+        let confirmLabel = '';
+
+        // Resolve Location Name helper
+        const resolveResName = (id?: string) => {
+            if (!id) return null;
+            return [...docks, ...yardSlots].find(r => r.id === id)?.name || id;
+        };
+
+        // Calculate Current Location Name (if known)
+        if (trailer.location) {
+            locationName = resolveResName(trailer.location) || 'Yard';
+        } else if (trailer.status === 'GatedIn') {
+            locationName = 'Entry Gate';
+        }
+
+        // --- LOGIC MAPPING ---
+
+        switch (trailer.status) {
+            case 'Scheduled':
+                statusLabel = 'SCHEDULED';
+                instruction = 'Report to Guard Gate';
+                color = 'bg-purple-600';
+                icon = Calendar;
+                break;
+
+            case 'GatedIn':
+                statusLabel = 'GATED IN';
+                instruction = 'Waiting for dock or yard assignment';
+                color = 'bg-blue-500';
+                icon = CheckCircle2;
+                break;
+
+            case 'MovingToDock':
+                statusLabel = 'MOVE TO DOCK';
+                // Resolve destination dock: appointment's resource, trailer's target, or fallback
+                const targetDock = appt?.assignedResourceId
+                    ? resolveResName(appt.assignedResourceId)
+                    : trailer.targetResourceId
+                        ? resolveResName(trailer.targetResourceId)
+                        : null;
+                instruction = targetDock ? `Proceed to ${targetDock}` : 'Proceed to assigned dock';
+                // Show destination as location for MovingToDock
+                locationName = targetDock || locationName;
+                color = 'bg-emerald-500 animate-pulse';
+                icon = Play;
+                timerData = getTimerDisplay(trailer.instructionTimestamp || appt?.instructionTimestamp, settings.instructionDurations?.moveToDock || 15);
+                canConfirm = true;
+                confirmLabel = 'Confirm Dock Arrival';
+                break;
+
+            case 'ReadyForCheckIn':
+                statusLabel = 'ARRIVED';
+                instruction = 'Wait at Dock for Staff';
+                color = 'bg-blue-600';
+                icon = StopCircle;
+                locationName = appt?.assignedResourceId ? resolveResName(appt.assignedResourceId) || locationName : locationName;
+                break;
+
+            case 'CheckedIn':
+                statusLabel = 'PROCESSING';
+                instruction = 'Loading/Unloading in progress';
+                color = 'bg-indigo-500';
+                icon = Truck;
+                break;
+
+            case 'ReadyForCheckOut':
+                statusLabel = 'EXIT DOCK';
+                instruction = 'Leave dock immediately';
+                color = 'bg-red-600 animate-pulse';
+                icon = AlertTriangle;
+                timerData = getTimerDisplay(trailer.instructionTimestamp || appt?.instructionTimestamp, settings.instructionDurations?.checkOut || 15);
+                canConfirm = true;
+                confirmLabel = 'Confirm Dock Exit';
+                break;
+
+            case 'CheckedOut':
+                statusLabel = 'DEPARTING';
+                instruction = 'Proceed to Exit Gate';
+                color = 'bg-emerald-600';
+                icon = ArrowRight;
+                break;
+
+            case 'MovingToYard':
+                statusLabel = 'MOVE TO YARD';
+                const targetSlot = trailer.targetResourceId ? resolveResName(trailer.targetResourceId) : null;
+                instruction = targetSlot ? `Park in ${targetSlot}` : 'Proceed to yard slot';
+                // Show destination as location for MovingToYard
+                locationName = targetSlot || locationName;
+                color = 'bg-emerald-500';
+                icon = Play;
+                timerData = getTimerDisplay(trailer.instructionTimestamp, settings.instructionDurations?.moveToYard || 15);
+                canConfirm = true;
+                confirmLabel = 'Confirm Yard Arrival';
+                break;
+
+            case 'InYard':
+                statusLabel = 'PARKED';
+                instruction = 'Standby for assignment';
+                color = 'bg-slate-500';
+                icon = Clock;
+                break;
+
+            default:
+                break;
+        }
+
+        // Override if appointment has specific "Moving" status even if trailer doesn't (sync lag)
+        if (appt?.status === 'MovingToDock' && trailer.status !== 'MovingToDock') {
+            statusLabel = 'MOVE TO DOCK';
+            const targetDock = resolveResName(appt.assignedResourceId) || 'Assigned Dock';
+            instruction = `Proceed to ${targetDock}`;
+            color = 'bg-emerald-500 animate-pulse';
+            icon = Play;
+            timerData = getTimerDisplay(appt.instructionTimestamp, settings.instructionDurations?.moveToDock || 15);
+            canConfirm = true;
+            confirmLabel = 'Confirm Dock Arrival';
+        }
+
+        // Hotlist Logic: If timer is expired, flag for visual alerting
+        if (timerData && timerData.isOverdue) {
+            isHotlisted = true;
+        }
+
+        return { statusLabel, instruction, locationName, color, icon, timerData, isHotlisted, canConfirm, confirmLabel, appt };
+    };
+
+    const isDark = theme === 'dark';
+
+    return (
+        <div className={`h-full flex flex-col font-sans overflow-hidden ${isDark ? 'bg-[#0f172a] text-white' : 'bg-slate-100 text-slate-900'}`}>
+            {/* Header */}
+            <div className={`h-24 flex items-center justify-between px-8 shadow-2xl z-20 ${isDark ? 'bg-slate-900 border-b border-slate-800' : 'bg-white border-b border-slate-200'}`}>
+                <div className="flex items-center gap-6">
+                    <div className={`p-3 rounded-2xl ${isDark ? 'bg-blue-600 shadow-[0_0_20px_rgba(37,99,235,0.5)]' : 'bg-blue-500 shadow-lg'}`}>
+                        <Truck className="w-10 h-10 text-white" />
+                    </div>
+                    <div>
+                        <h1 className={`text-4xl font-black tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>Live trailer status</h1>
+                        <p className={`font-medium tracking-widest text-sm mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Driver instructions • {onSiteTrailers.length} vehicles on site</p>
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-6">
+                    <button
+                        onClick={handleRefresh}
+                        disabled={isRefreshing}
+                        className={`p-3 rounded-xl transition-all ${isDark ? 'bg-slate-800/50 hover:bg-slate-700 border border-slate-700 hover:border-slate-600' : 'bg-slate-200 hover:bg-slate-300 border border-slate-300'} ${isRefreshing ? 'opacity-50 cursor-not-allowed' : 'active:scale-95'}`}
+                        title="Refresh Data"
+                    >
+                        <RefreshCw className={`w-6 h-6 ${isDark ? 'text-slate-400' : 'text-slate-600'} ${isRefreshing ? 'animate-spin text-white' : ''}`} />
+                    </button>
+
+                    <div className="text-right">
+                        <div className={`text-5xl font-mono font-bold tracking-tighter ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>
+                            {currentTime.toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit' })}
+                        </div>
+                        <div className={`font-bold uppercase tracking-widest text-sm mt-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                            {currentTime.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Board Content */}
+            <div className={`flex-1 overflow-y-auto p-6 custom-scrollbar ${isDark ? 'bg-gradient-to-b from-[#0f172a] to-[#1e293b]' : 'bg-gradient-to-b from-slate-100 to-slate-200'}`}>
+                {onSiteTrailers.length === 0 ? (
+                    <div className={`h-full flex flex-col items-center justify-center ${isDark ? 'text-slate-600' : 'text-slate-400'}`}>
+                        <Truck className="w-32 h-32 opacity-20 mb-4" />
+                        <h2 className="text-3xl font-black uppercase tracking-widest opacity-50">No Active Vehicles</h2>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                        {onSiteTrailers.map(trailer => {
+                            const { statusLabel, instruction, locationName, color, icon: Icon, timerData, isHotlisted, canConfirm, confirmLabel, appt } = getActionData(trailer);
+
+                            // Display logic for timer overlay
+                            const showCountdown = settings.showCountdownTimer !== false;
+                            const shouldShowTimerOverlay = timerData && (showCountdown || timerData.isOverdue);
+
+                            return (
+                                <div
+                                    key={trailer.id}
+                                    className={`
+                                    rounded-xl overflow-hidden flex shadow-lg transition-all group relative border min-h-[140px]
+                                    ${isHotlisted
+                                            ? `${isDark ? 'bg-red-900/20 border-red-500' : 'bg-red-50 border-red-300'} animate-[pulse_3s_ease-in-out_infinite]`
+                                            : isDark ? 'bg-slate-800/50 border-slate-700 hover:bg-slate-800' : 'bg-white border-slate-200 hover:bg-slate-50'
+                                        }
+                                `}
+                                >
+                                    {/* Left: ID & Driver */}
+                                    <div className={`w-48 p-5 flex flex-col justify-center border-r relative overflow-hidden ${isHotlisted ? (isDark ? 'bg-red-900/30 border-red-500/50' : 'bg-red-100 border-red-200') : isDark ? 'bg-slate-900/80 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+                                        <div className={`absolute top-0 left-0 w-1 h-full ${isHotlisted ? 'bg-red-500' : 'bg-blue-500'}`}></div>
+                                        <div className={`text-sm font-bold uppercase tracking-wider mb-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Trailer</div>
+                                        <div className={`text-3xl font-black truncate ${isDark ? 'text-white' : 'text-slate-900'}`} title={trailer.number}>
+                                            {trailer.number}
+                                        </div>
+                                        <div className={`mt-2 text-xs font-medium truncate flex items-center gap-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                                            {trailer.owner}
+                                        </div>
+                                    </div>
+
+                                    {/* Center: Instruction */}
+                                    <div className="flex-1 p-5 flex flex-col justify-between">
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <div className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest ${color.replace('bg-', 'text-').replace('animate-pulse', '')} ${isDark ? 'bg-white/5 border border-white/10' : 'bg-slate-100 border border-slate-200'}`}>
+                                                    {statusLabel}
+                                                </div>
+                                                {isHotlisted && (
+                                                    <div className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest text-red-500 bg-red-500/20 border border-red-500/30 flex items-center gap-1 animate-pulse">
+                                                        <AlertTriangle className="w-3 h-3" /> DELAYED
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className={`text-2xl font-bold leading-none mb-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                                                {instruction}
+                                            </div>
+                                            <div className={`text-xs font-mono mt-2 flex items-center gap-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                                                <MapPin className="w-3 h-3" /> {(trailer.status === 'MovingToDock' || trailer.status === 'MovingToYard') ? 'Destination' : 'Current'}:{' '}
+                                                <span className={`font-bold ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>{locationName}</span>
+                                            </div>
+                                        </div>
+
+                                        {/* Manual Confirm Button — separate line below location */}
+                                        {canConfirm && (
+                                            <div className="mt-3">
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); handleManualConfirm(trailer, appt); }}
+                                                    className={`text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2 transition-colors shadow-lg ${isDark ? 'bg-white/10 hover:bg-white/20 border border-white/20 text-white' : 'bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700'}`}
+                                                >
+                                                    <MousePointerClick className="w-3 h-3" /> {confirmLabel}
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Right: Icon Indicator */}
+                                    <div className={`w-24 flex items-center justify-center relative ${isHotlisted ? 'bg-red-600' : color}`}>
+                                        <Icon className="w-10 h-10 text-white" />
+                                    </div>
+
+                                    {/* Timer Overlay */}
+                                    {shouldShowTimerOverlay && (
+                                        <div className={`absolute top-2 right-2 px-2 py-1 rounded-lg border flex items-center gap-1 font-mono font-bold text-sm shadow-lg ${timerData.isOverdue ? 'bg-red-500 text-white border-red-400 scale-110 origin-top-right transition-transform' : isDark ? 'bg-black/60 text-white border-white/20' : 'bg-slate-800 text-white border-slate-600'}`}>
+                                            <Timer className="w-3 h-3" />
+                                            {timerData.isOverdue ? '-' : ''}{timerData.formatted}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};

@@ -1,0 +1,14 @@
+meta {
+  name: List Trailers
+  type: http
+  seq: 1
+}
+
+get {
+  url: "{{baseUrl}}/api/trailers"
+  auth: bearer
+}
+
+headers {
+  X-Facility-ID: {{facilityId}}
+}

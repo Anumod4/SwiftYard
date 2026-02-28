@@ -1,0 +1,14 @@
+meta {
+  name: List Webhooks
+  type: http
+  seq: 1
+}
+
+get {
+  url: "{{baseUrl}}/api/webhooks"
+  auth: bearer
+}
+
+headers {
+  X-Facility-ID: {{facilityId}}
+}

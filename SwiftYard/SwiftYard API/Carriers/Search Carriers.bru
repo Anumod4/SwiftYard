@@ -1,0 +1,23 @@
+meta {
+  name: Search Carriers
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/carriers/search
+  body: json
+  auth: bearer
+}
+
+headers {
+  X-Facility-ID: {{facilityId}}
+}
+
+auth:bearer {
+  token: {{Token}}
+}
+
+body:json {
+  {}
+}

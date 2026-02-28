@@ -1,0 +1,14 @@
+meta {
+  name: Delete Trailer Type
+  type: http
+  seq: 4
+}
+
+delete {
+  url: "http://localhost:4000/api/trailer-types/{{id}}"
+  auth: bearer
+}
+
+headers {
+  X-Facility-ID: {{facilityId}}
+}

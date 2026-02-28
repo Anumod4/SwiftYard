@@ -1,0 +1,23 @@
+meta {
+  name: Save Carrier
+  type: http
+  seq: 2
+}
+
+post {
+  url: "http://localhost:4000/api/carriers/save"
+  auth: bearer
+}
+
+body {
+  type: json
+  json: {
+    "name": "Test Carrier",
+    "contactEmail": "test@carrier.com",
+    "contactPhone": "+1234567890"
+  }
+}
+
+headers {
+  X-Facility-ID: {{facilityId}}
+}

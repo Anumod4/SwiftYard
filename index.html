@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en" class="dark">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>SwiftYard</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+            tailwind.config = {
+                darkMode: "class",
+                theme: {
+                    extend: {
+                        colors: {
+                            border: "hsl(var(--border))",
+                            background: "hsl(var(--background))",
+                            foreground: "hsl(var(--foreground))",
+                        },
+                    },
+                },
+            };
+        </script>
+        <!-- Error Trap -->
+        <script>
+            window.addEventListener("error", function (e) {
+                if (document.body) {
+                    const err = document.createElement("div");
+                    err.style.position = "fixed";
+                    err.style.bottom = "0";
+                    err.style.left = "0";
+                    err.style.right = "0";
+                    err.style.background = "#ef4444";
+                    err.style.color = "white";
+                    err.style.padding = "12px";
+                    err.style.fontSize = "12px";
+                    err.style.zIndex = "9999";
+                    err.style.fontFamily = "monospace";
+                    err.style.width = "100%";
+                    err.textContent =
+                        "System Error: " + (e.message || e.reason);
+                    document.body.appendChild(err);
+                }
+            });
+        </script>
+        <!-- Google Identity Services & API Client -->
+        <script
+            src="https://accounts.google.com/gsi/client"
+            async
+            defer
+        ></script>
+        <script src="https://apis.google.com/js/api.js" async defer></script>
+        <style>
+            /* Custom scrollbar for WebKit */
+            ::-webkit-scrollbar {
+                width: 8px;
+                height: 8px;
+            }
+            ::-webkit-scrollbar-track {
+                background: transparent;
+            }
+            ::-webkit-scrollbar-thumb {
+                background: #333;
+                border-radius: 4px;
+            }
+            .dark ::-webkit-scrollbar-thumb {
+                background: #333;
+            }
+            :not(.dark) ::-webkit-scrollbar-thumb {
+                background: #ccc;
+            }
+            ::-webkit-scrollbar-thumb:hover {
+                background: #555;
+            }
+        </style>
+        <script type="importmap">
+            {
+                "imports": {
+                    "react": "https://esm.sh/react@18.3.1",
+                    "react/": "https://esm.sh/react@18.3.1/",
+                    "react-dom": "https://esm.sh/react-dom@18.3.1",
+                    "react-dom/": "https://esm.sh/react-dom@18.3.1/",
+                    "recharts": "https://esm.sh/recharts@2.12.7?external=react,react-dom",
+                    "lucide-react": "https://esm.sh/lucide-react@0.344.0?external=react,react-dom",
+                    "dexie": "https://esm.sh/dexie@3.2.4",
+                    "dexie-react-hooks": "https://esm.sh/dexie-react-hooks@1.1.7?external=react,dexie",
+                    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.1/package/xlsx.mjs",
+                    "@libsql/client": "https://esm.sh/@libsql/client@0.6.0/web"
+                }
+            }
+        </script>
+        <link rel="stylesheet" href="/index.css" />
+    </head>
+    <body
+        class="bg-slate-50 dark:bg-[#121212] text-slate-900 dark:text-white overflow-hidden antialiased selection:bg-[#0a84ff] selection:text-white transition-colors duration-300"
+    >
+        <div id="root"></div>
+        <script type="module" src="index.tsx"></script>
+    </body>
+</html>

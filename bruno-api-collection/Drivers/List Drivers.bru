@@ -1,0 +1,14 @@
+meta {
+  name: List Drivers
+  type: http
+  seq: 1
+}
+
+get {
+  url: "{{baseUrl}}/api/drivers"
+  auth: bearer
+}
+
+headers {
+  X-Facility-ID: {{facilityId}}
+}

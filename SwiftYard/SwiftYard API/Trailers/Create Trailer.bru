@@ -1,0 +1,29 @@
+meta {
+  name: Create Trailer
+  type: http
+  seq: 2
+}
+
+post {
+  url: "{{baseUrl}}/api/trailers"
+  body: json
+  auth: bearer
+}
+
+body:json {
+  number: "TRAILER-001"
+  type: "40 FT Container"
+  status: "InYard"
+  carrierId: "CAR-001"
+}
+
+tests {
+  const json = res.getBody();
+  if (json.success && json.data) {
+    bru.setVar('trailerId', json.data.id);
+  }
+}
+
+headers {
+  X-Facility-ID: {{facilityId}}
+}

@@ -1,0 +1,32 @@
+meta {
+  name: Create Appointment
+  type: http
+  seq: 2
+}
+
+post {
+  url: "{{baseUrl}}/api/appointments"
+  body: json
+  auth: bearer
+}
+
+body:json {
+  trailerNumber: "TRL-TEST-001"
+  trailerType: "40 FT Container"
+  driverName: "John Doe"
+  carrierId: "CAR-001"
+  startTime: "2026-02-23T14:00:00Z"
+  durationMinutes: 60
+  loadType: "Inbound"
+}
+
+tests {
+  const json = res.getBody();
+  if (json.success && json.data) {
+    bru.setVar('appointmentId', json.data.id);
+  }
+}
+
+headers {
+  X-Facility-ID: {{facilityId}}
+}
