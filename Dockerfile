@@ -13,6 +13,7 @@ RUN npm install
 COPY server/ ./server/
 COPY turso.ts ./
 COPY types.ts ./
+COPY tsconfig.json ./
 
 # Expose port (Cloud Run defaults to 8080)
 EXPOSE 8080
