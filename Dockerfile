@@ -9,9 +9,8 @@ COPY package*.json ./
 # Install dependencies including dev dependencies (needed for tsx)
 RUN npm install
 
-# Copy application source
-COPY server/ ./server/
-COPY turso.ts ./
+# Copy all application source files (excluding .dockerignore rules)
+COPY . .
 COPY types.ts ./
 COPY tsconfig.json ./
 
