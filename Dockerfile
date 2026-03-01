@@ -6,11 +6,15 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies including dev dependencies (needed for tsc)
+# Install ALL dependencies (including devDependencies needed for typescript compiler)
 RUN npm install
 
-# Copy all application source files
+# Copy all source files
 COPY . .
 
-# Start command using standard tsx. Use explicit binding on 0.0.0.0
-CMD ["npx", "tsx", "server/index.ts"]
+# Compile TypeScript to plain JavaScript using server-only tsconfig
+# This produces dist-server/server/index.js which runs instantly with node
+RUN npx tsc -p tsconfig.server.json
+
+# Start using the pre-compiled JavaScript - no tsx overhead, instant startup
+CMD ["node", "dist-server/server/index.js"]
