@@ -15,10 +15,8 @@ export const useSocket = (facilityId?: string, token?: string) => {
   const [lastEvent, setLastEvent] = useState<SocketEvent | null>(null);
 
   useEffect(() => {
-    if (!token) return;
-
     const socket = io(SOCKET_URL, {
-      auth: { token },
+      auth: token ? { token } : {},
       transports: ['websocket'],
     });
 
