@@ -19,8 +19,8 @@ export const Login: React.FC = () => {
     useEffect(() => {
         document.documentElement.classList.add('dark');
     }, []);
-    // SEQUENCE: CARRIER, YARD, DRIVER
-    const [loginMode, setLoginMode] = useState<'carrier' | 'staff' | 'driver'>('carrier');
+    // SEQUENCE: YARD, CARRIER, DRIVER
+    const [loginMode, setLoginMode] = useState<'carrier' | 'staff' | 'driver'>('staff');
 
     // Staff/Carrier State
     const [firstName, setFirstName] = useState('');
