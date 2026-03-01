@@ -25,6 +25,7 @@ const AppContent: React.FC = () => {
     isAdmin,
     loading: authLoading,
     signOut,
+    userProfile,
   } = useAuth();
   const {
     currentFacilityId,
@@ -47,8 +48,18 @@ const AppContent: React.FC = () => {
     if (authLoading) return;
 
     // Cases where we skip the facility-selection / initial-loading logic
-    if (currentDriver || isCarrier) {
+    if (currentDriver) {
       if (appState !== "app") setAppState("app");
+      return;
+    }
+
+    if (isCarrier) {
+      // Only allow carrier into the app if they have a carrierId assigned by an admin
+      if (userProfile?.carrierId) {
+        if (appState !== "app") setAppState("app");
+      } else {
+        if (!dataLoading) setAppState("no-access");
+      }
       return;
     }
 
