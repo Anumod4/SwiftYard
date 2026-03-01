@@ -6,20 +6,11 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies including dev dependencies (needed for tsx)
+# Install dependencies including dev dependencies (needed for tsc)
 RUN npm install
 
-# Copy all application source files (excluding .dockerignore rules)
+# Copy all application source files
 COPY . .
-COPY types.ts ./
-COPY tsconfig.json ./
 
-# Expose port (Cloud Run defaults to 8080)
-EXPOSE 8080
-
-# Environment variables
-ENV NODE_ENV=production
-ENV PORT=8080
-
-# Start command
-CMD ["npm", "run", "server"]
+# Start command using standard tsx. Use explicit binding on 0.0.0.0
+CMD ["npx", "tsx", "server/index.ts"]
