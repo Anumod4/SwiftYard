@@ -16,10 +16,14 @@ import {
 const decodeJwtPayload = (token: string): any => {
   try {
     const parts = token.split('.');
-    if (parts.length !== 3) return null;
+    if (parts.length !== 3) {
+      console.log("[decodeJwtPayload] Invalid token structure. Parts length:", parts.length);
+      return null;
+    }
     const payload = Buffer.from(parts[1], 'base64url').toString('utf8');
     return JSON.parse(payload);
-  } catch {
+  } catch (err: any) {
+    console.error("[decodeJwtPayload] Failed to decode JWT:", err.message);
     return null;
   }
 };
@@ -27,24 +31,27 @@ const decodeJwtPayload = (token: string): any => {
 // Resolve a Clerk token -> { clerkUserId, email, firstName, lastName }
 // Uses clerk.users.getUser() which only needs CLERK_SECRET_KEY (no JWKS needed).
 const resolveClerkUser = async (token: string): Promise<{ clerkUserId: string; email: string; firstName?: string; lastName?: string } | null> => {
+  console.log('[resolveClerkUser] Starting resolution...');
   const secretKey = process.env.CLERK_SECRET_KEY;
   if (!secretKey) {
-    console.error('[Clerk] CLERK_SECRET_KEY is not set');
+    console.error('[resolveClerkUser] CLERK_SECRET_KEY is not set in environment!');
     return null;
   }
 
   const payload = decodeJwtPayload(token);
-  if (!payload?.sub) {
-    console.error('[Clerk] Could not decode JWT payload or missing sub');
+  if (!payload || !payload.sub) {
+    console.error('[resolveClerkUser] Could not decode JWT payload or missing sub. Payload:', !!payload);
     return null;
   }
 
   const clerkUserId = payload.sub as string;
+  console.log(`[resolveClerkUser] Successfully decoded sub: ${clerkUserId}. Fetching from Clerk API...`);
 
   try {
     const clerk = createClerkClient({ secretKey });
     const clerkUser = await clerk.users.getUser(clerkUserId);
     const email = clerkUser.emailAddresses[0]?.emailAddress || '';
+    console.log(`[resolveClerkUser] Clerk API returned user: ${email} (${clerkUser.firstName} ${clerkUser.lastName})`);
     return {
       clerkUserId,
       email,
@@ -52,7 +59,7 @@ const resolveClerkUser = async (token: string): Promise<{ clerkUserId: string; e
       lastName: clerkUser.lastName || undefined,
     };
   } catch (err: any) {
-    console.error('[Clerk] Failed to fetch user from Clerk API:', err?.message || err);
+    console.error('[resolveClerkUser] Failed to fetch user from Clerk REST API:', err?.message || err);
     return null;
   }
 };
