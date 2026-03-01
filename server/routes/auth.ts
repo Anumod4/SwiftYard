@@ -323,7 +323,56 @@ router.post("/clerk-login", async (req, res) => {
     });
 
     if (!found) {
-      res.status(404).json({ success: false, error: { message: "User not found in local DB. Please sign up first." } });
+      // Auto-provision: user verified by Clerk but not in local DB yet.
+      // Create their profile now so they can log in. Admin can assign roles/facilities later.
+      if (!identifier) {
+        res.status(400).json({ success: false, error: { message: "Could not extract email from Clerk token" } });
+        return;
+      }
+
+      const uid = identifier.toLowerCase();
+      const hashedPassword = await bcrypt.hash(uid, 10);
+      const displayName = (jwtPayload.first_name || jwtPayload.given_name || identifier.split("@")[0]) as string;
+
+      const newProfile: any = {
+        uid,
+        email: identifier,
+        password: hashedPassword,
+        displayName,
+        role: "user",
+        assignedFacilities: [],
+        carrierId: null,
+        updatedAt: new Date().toISOString(),
+      };
+
+      await insert("users", newProfile);
+      console.log(`[Clerk Login] Auto-provisioned new user: ${identifier}`);
+
+      const customToken = generateToken({
+        uid: newProfile.uid,
+        email: newProfile.email,
+        displayName: newProfile.displayName,
+        role: "user",
+        assignedFacilities: [],
+        carrierId: null,
+        facilityId: facilityId,
+      });
+
+      res.json({
+        success: true,
+        data: {
+          token: customToken,
+          user: {
+            uid: newProfile.uid,
+            email: newProfile.email,
+            displayName: newProfile.displayName,
+            role: "user",
+            assignedFacilities: [],
+            carrierId: null,
+            facilityId: facilityId,
+          },
+        },
+      });
       return;
     }
 
