@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
+import { useClerk } from "@clerk/clerk-react";
 import { UserProfileData, Driver, Trailer, Carrier } from "../types";
 import { Loader2, AlertTriangle } from "lucide-react";
 import { api } from "../services/api";
@@ -72,6 +73,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [userProfile, setUserProfile] = useState<UserProfileData | null>(null);
+  const clerk = useClerk();
   const [currentDriver, setCurrentDriver] = useState<Driver | null>(null);
   const [currentCarrier, setCurrentCarrier] = useState<Carrier | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -299,6 +301,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const signOut = async () => {
+    try {
+      await clerk.signOut();
+    } catch (err) {
+      console.error("Clerk signout failed", err);
+    }
     api.auth.logout();
     localStorage.removeItem("swiftyard_driver");
     localStorage.removeItem("swiftyard_driver_trailer");
