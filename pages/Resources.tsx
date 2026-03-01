@@ -32,6 +32,11 @@ export const Resources: React.FC = () => {
   const [allowedCarrierIds, setAllowedCarrierIds] = useState<string[]>([]);
   const [unavailability, setUnavailability] = useState<UnavailabilityPeriod[]>([]);
 
+  // Filtering & Sorting State
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState<'name' | 'status' | 'capacity'>('name');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
 
@@ -173,14 +178,32 @@ export const Resources: React.FC = () => {
 
   const currentList = activeTab === 'Dock' ? docks : yardSlots;
 
+  const filteredResources = React.useMemo(() => {
+    return currentList
+      .filter(item => item.name.toLowerCase().includes(searchTerm.toLowerCase()))
+      .sort((a, b) => {
+        let modifier = sortOrder === 'asc' ? 1 : -1;
+        if (sortBy === 'name') {
+          return a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }) * modifier;
+        } else if (sortBy === 'status') {
+          return a.status.localeCompare(b.status) * modifier;
+        } else if (sortBy === 'capacity') {
+          const capA = a.capacity || 1;
+          const capB = b.capacity || 1;
+          return (capA - capB) * modifier;
+        }
+        return 0;
+      });
+  }, [currentList, searchTerm, sortBy, sortOrder]);
+
   const paginatedResources = React.useMemo(() => {
     const start = (currentPage - 1) * pageSize;
-    return currentList.slice(start, start + pageSize);
-  }, [currentList, currentPage, pageSize]);
+    return filteredResources.slice(start, start + pageSize);
+  }, [filteredResources, currentPage, pageSize]);
 
   React.useEffect(() => {
     setCurrentPage(1);
-  }, [activeTab]);
+  }, [activeTab, searchTerm, sortBy, sortOrder]);
 
   const bulkColumns: BulkColumn[] = [
     { key: 'name', label: 'Name / Number', type: 'text', required: true, placeholder: 'e.g. Row 05' },
@@ -257,6 +280,47 @@ export const Resources: React.FC = () => {
           <span className="font-black text-lg uppercase tracking-tight">{t('res.slots')}</span>
         </button>
       </div>
+
+      <GlassCard className="mb-6 p-4 !overflow-visible z-50">
+        <div className="flex flex-col md:flex-row gap-4 mb-2">
+          {/* General Search */}
+          <div className="relative flex-1">
+            <input
+              type="text"
+              placeholder="Search resources by name..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg pl-4 pr-10 py-2.5 text-sm text-slate-900 dark:text-white focus:border-blue-500 outline-none"
+            />
+            {searchTerm && (
+              <button onClick={() => setSearchTerm('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-white">
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-widest hidden md:inline-block">Sort by</span>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as any)}
+              className="bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:border-blue-500 outline-none cursor-pointer"
+            >
+              <option value="name">Name</option>
+              <option value="status">Status</option>
+              {activeTab === 'YardSlot' && <option value="capacity">Capacity</option>}
+            </select>
+
+            <button
+              onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+              className="p-2.5 bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg text-slate-600 dark:text-gray-300 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors"
+              title={`Sort ${sortOrder === 'asc' ? 'Descending' : 'Ascending'}`}
+            >
+              <ArrowRightFromLine className={`w-4 h-4 transition-transform ${sortOrder === 'desc' ? 'rotate-90' : '-rotate-90'}`} />
+            </button>
+          </div>
+        </div>
+      </GlassCard>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-10">
         {paginatedResources.map(item => (
@@ -384,9 +448,9 @@ export const Resources: React.FC = () => {
 
       <Pagination
         currentPage={currentPage}
-        totalPages={Math.ceil(currentList.length / pageSize)}
+        totalPages={Math.ceil(filteredResources.length / pageSize)}
         onPageChange={setCurrentPage}
-        totalRecords={currentList.length}
+        totalRecords={filteredResources.length}
         pageSize={pageSize}
       />
 

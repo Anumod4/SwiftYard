@@ -362,7 +362,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             </div>
             {/* Responsive Grid for Cards */}
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {docks.map(dock => (
+              {[...docks].sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' })).map(dock => (
                 <ResourceNode
                   key={dock.id}
                   resource={dock}
@@ -378,7 +378,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
           <section>
             <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">{t('dash.slots')}</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {yardSlots.map(slot => (
+              {[...yardSlots].sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' })).map(slot => (
                 <ResourceNode
                   key={slot.id}
                   resource={slot}

@@ -81,6 +81,9 @@ export const Schedule: React.FC = () => {
     const [carrierFilterIds, setCarrierFilterIds] = useState<string[]>([]);
     const [typeFilterNames, setTypeFilterNames] = useState<string[]>([]);
 
+    // Sorting State
+    const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>({ key: 'startTime', direction: 'asc' });
+
     // Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isAiModalOpen, setIsAiModalOpen] = useState(false);
@@ -164,6 +167,23 @@ export const Schedule: React.FC = () => {
         setTypeFilterNames(prev => prev.includes(name) ? prev.filter(t => t !== name) : [...prev, name]);
     };
 
+    const handleSort = (key: string) => {
+        let direction: 'asc' | 'desc' = 'asc';
+        if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+            direction = 'desc';
+        }
+        setSortConfig({ key, direction });
+    };
+
+    const getSortIcon = (key: string) => {
+        if (!sortConfig || sortConfig.key !== key) {
+            return <span className="opacity-0 group-hover:opacity-30 ml-1 text-[10px]">&uarr;&darr;</span>;
+        }
+        return sortConfig.direction === 'asc'
+            ? <span className="ml-1 text-blue-500 font-bold">&uarr;</span>
+            : <span className="ml-1 text-blue-500 font-bold">&darr;</span>;
+    };
+
     const filteredAppointments = appointments.filter(a => {
         // 1. General Search
         const matchText =
@@ -191,7 +211,30 @@ export const Schedule: React.FC = () => {
         }
 
         return true;
-    }).sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+    }).sort((a, b) => {
+        if (!sortConfig) return 0;
+        const { key, direction } = sortConfig;
+        const modifier = direction === 'asc' ? 1 : -1;
+
+        switch (key) {
+            case 'startTime':
+                return (new Date(a.startTime).getTime() - new Date(b.startTime).getTime()) * modifier;
+            case 'trailerNumber':
+                const numA = a.isBobtail ? 'Bobtail' : (a.trailerNumber || '');
+                const numB = b.isBobtail ? 'Bobtail' : (b.trailerNumber || '');
+                return numA.localeCompare(numB, undefined, { numeric: true }) * modifier;
+            case 'driverName':
+                return (a.driverName || '').localeCompare(b.driverName || '') * modifier;
+            case 'carrierId':
+                const carrierA = getCarrierName(a.carrierId);
+                const carrierB = getCarrierName(b.carrierId);
+                return carrierA.localeCompare(carrierB) * modifier;
+            case 'status':
+                return a.status.localeCompare(b.status) * modifier;
+            default:
+                return 0;
+        }
+    });
 
     const paginatedAppointments = useMemo(() => {
         const start = (currentPage - 1) * pageSize;
@@ -312,12 +355,24 @@ export const Schedule: React.FC = () => {
                     <table className="w-full text-left border-collapse">
                         <thead className="sticky top-0 bg-slate-50 dark:bg-[#1a1a1a] z-10 text-xs uppercase text-slate-500 dark:text-gray-500 font-bold tracking-wider">
                             <tr>
-                                <th className="p-5 border-b border-slate-200 dark:border-white/10">{t('common.time')}</th>
-                                <th className="p-5 border-b border-slate-200 dark:border-white/10">{t('common.trailer')}</th>
-                                <th className="p-5 border-b border-slate-200 dark:border-white/10">{t('common.driver')}</th>
-                                <th className="p-5 border-b border-slate-200 dark:border-white/10">{t('common.carrier')}</th>
-                                <th className="p-5 border-b border-slate-200 dark:border-white/10">{t('common.status')}</th>
-                                <th className="p-5 border-b border-slate-200 dark:border-white/10 text-right">{t('common.actions')}</th>
+                                <th onClick={() => handleSort('startTime')} className="p-5 border-b border-slate-200 dark:border-white/10 cursor-pointer group hover:bg-slate-100 dark:hover:bg-white/5 transition-colors">
+                                    {t('common.time')} {getSortIcon('startTime')}
+                                </th>
+                                <th onClick={() => handleSort('trailerNumber')} className="p-5 border-b border-slate-200 dark:border-white/10 cursor-pointer group hover:bg-slate-100 dark:hover:bg-white/5 transition-colors">
+                                    {t('common.trailer')} {getSortIcon('trailerNumber')}
+                                </th>
+                                <th onClick={() => handleSort('driverName')} className="p-5 border-b border-slate-200 dark:border-white/10 cursor-pointer group hover:bg-slate-100 dark:hover:bg-white/5 transition-colors">
+                                    {t('common.driver')} {getSortIcon('driverName')}
+                                </th>
+                                <th onClick={() => handleSort('carrierId')} className="p-5 border-b border-slate-200 dark:border-white/10 cursor-pointer group hover:bg-slate-100 dark:hover:bg-white/5 transition-colors">
+                                    {t('common.carrier')} {getSortIcon('carrierId')}
+                                </th>
+                                <th onClick={() => handleSort('status')} className="p-5 border-b border-slate-200 dark:border-white/10 cursor-pointer group hover:bg-slate-100 dark:hover:bg-white/5 transition-colors">
+                                    {t('common.status')} {getSortIcon('status')}
+                                </th>
+                                <th className="p-5 border-b border-slate-200 dark:border-white/10 text-right">
+                                    {t('common.actions')}
+                                </th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-200 dark:divide-white/5">
