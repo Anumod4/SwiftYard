@@ -123,7 +123,8 @@ router.post('/users/save', async (req: AuthenticatedRequest, res) => {
         return;
       }
 
-      let newUid = `USR-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
+      // Use the email (lowercase) as the UID to match the auth.ts signup behavior
+      let newUid = rest.email.toLowerCase();
 
       // 1. Create User in Clerk via Backend API
       try {
@@ -147,8 +148,8 @@ router.post('/users/save', async (req: AuthenticatedRequest, res) => {
             skipPasswordRequirement: true
           });
 
-          newUid = clerkUser.id;
-          console.log(`[Admin] Successfully created user in Clerk: ${newUid}`);
+          // DO NOT override newUid with clerkUser.id to maintain consistency with auth.ts
+          console.log(`[Admin] Successfully created user in Clerk. Clerk ID: ${clerkUser.id}, DB UID: ${newUid}`);
         } else {
           console.warn('[Admin] CLERK_SECRET_KEY missing, skipping Clerk provisioning.');
         }
