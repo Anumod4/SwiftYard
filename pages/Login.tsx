@@ -134,6 +134,11 @@ export const Login: React.FC = () => {
 
             // If Clerk throws "You're already signed in", gracefully snag the existing active session
             if (err.errors?.[0]?.code === 'session_exists') {
+                if (isSignUp) {
+                    setError("You are currently signed in as another user. Please log out first, or try again in an Incognito window.");
+                    return;
+                }
+
                 let token = await clerk.session?.getToken();
                 if (token) {
                     await clerkLogin(token, loginMode === 'carrier' ? 'carrier' : 'staff');
