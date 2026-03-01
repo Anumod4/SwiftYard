@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 
-const SOCKET_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:4000';
+const SOCKET_URL = import.meta.env.VITE_API_URL ||
+  (import.meta.env.DEV ? 'http://127.0.0.1:4000' : 'https://swiftyard.onrender.com');
 
 export interface SocketEvent {
   event: string;

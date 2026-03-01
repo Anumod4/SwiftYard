@@ -20,10 +20,11 @@ import {
 } from "../types";
 
 // API Configuration
-// Use relative URL in development (proxied through Vite) or configured URL
+// In development, use Vite proxy (/api). In production, use Render backend.
+const RENDER_URL = "https://swiftyard.onrender.com";
 const API_BASE_URL =
   import.meta.env.VITE_API_URL ||
-  (import.meta.env.DEV ? "/api" : "/api");
+  (import.meta.env.DEV ? "/api" : `${RENDER_URL}/api`);
 
 // Types
 export interface ApiResponse<T> {
