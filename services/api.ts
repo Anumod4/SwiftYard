@@ -132,15 +132,20 @@ async function request<T>(
   try {
     return await attemptFetch();
   } catch (error: any) {
-    // On network failure (e.g. Render cold start), wait 4s and retry once
     if (error instanceof TypeError && error.message.includes("fetch")) {
-      console.warn("[API] Network error, retrying in 4s...", endpoint);
-      await new Promise(r => setTimeout(r, 4000));
-      try {
-        return await attemptFetch();
-      } catch (retryError: any) {
-        console.error("API Retry Error:", retryError);
-        return { success: false, error: { message: retryError.message || "Network error" } };
+      console.warn("[API] Network error (Render cold start?), retrying until awake...", endpoint);
+      // Retry up to 15 times (approx 60 seconds) for Render free tier sleep
+      for (let i = 0; i < 15; i++) {
+        await new Promise(r => setTimeout(r, 4000));
+        try {
+          return await attemptFetch();
+        } catch (retryError: any) {
+          if (i === 14 || !(retryError instanceof TypeError && retryError.message.includes("fetch"))) {
+            console.error("API Retry Error:", retryError);
+            return { success: false, error: { message: retryError.message || "Network error" } };
+          }
+          // Continue looping if still "Failed to fetch"
+        }
       }
     }
     console.error("API Request Error:", error);
