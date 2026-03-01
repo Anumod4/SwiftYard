@@ -248,40 +248,34 @@ app.use((req, res) => {
   });
 });
 
-// Initialize and start server
-const startServer = async () => {
-  try {
-    console.log("Initializing database schema...");
-    await initializeSchema();
-    await runMigrations();
-    console.log("Database schema initialized successfully");
+// Cloud Run requires the server to start listening IMMEDIATELY on PORT.
+// The health check probe fires within seconds of container start.
+// We MUST bind to PORT first, then initialize the DB in the background.
+let dbReady = false;
 
-    // Let Cloud Run assign the port automatically via process.env.PORT
-    const bindPort = process.env.PORT ? parseInt(process.env.PORT, 10) : PORT;
+const bindPort = process.env.PORT ? parseInt(process.env.PORT, 10) : PORT;
 
-    // Bind to all IPv4 interfaces (0.0.0.0) so Cloud Run can route traffic to us
-    httpServer.listen(bindPort, "0.0.0.0", () => {
-      console.log(`
-╔═══════════════════════════════════════════════════════════╗
-║                                                           ║
-║   🚛 SwiftYard API Server                                 ║
-║                                                           ║
-║   Server running at: http://localhost:${PORT}               ║
-║   API Base URL: http://localhost:${PORT}/api                ║
-║   Health Check: http://localhost:${PORT}/health             ║
-║   Socket.IO: http://localhost:${PORT}                       ║
-║                                                           ║
-║   Press Ctrl+C to stop                                    ║
-║                                                           ║
-╚═══════════════════════════════════════════════════════════╝
-      `);
+// Step 1: Start listening immediately so Cloud Run health check passes
+httpServer.listen(bindPort, "0.0.0.0", () => {
+  console.log(`[Server] Listening on port ${bindPort} (0.0.0.0)`);
+  console.log(`[Server] Health check: http://0.0.0.0:${bindPort}/health`);
+
+  // Step 2: Initialize DB in the background after server is already listening
+  initializeSchema()
+    .then(() => runMigrations())
+    .then(() => {
+      dbReady = true;
+      console.log("[Server] Database ready.");
+    })
+    .catch((err) => {
+      console.error("[Server] Database init failed:", err);
+      // Don't crash — let the server keep running and log the error
     });
-  } catch (error) {
-    console.error("Failed to start server:", error);
-    process.exit(1);
-  }
-};
+});
 
-startServer();
+httpServer.on("error", (err) => {
+  console.error("[Server] Failed to bind:", err);
+  process.exit(1);
+});
 
 export default app;
