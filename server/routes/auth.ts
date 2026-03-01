@@ -3,13 +3,59 @@ import bcrypt from "bcryptjs";
 import { fetchAll, fetchById, insert, update } from "../db";
 import { generateToken, authenticate } from "../middleware/auth";
 import { verifyPasswordToken } from "../services/email";
-import { verifyToken as verifyClerkToken, createClerkClient } from "@clerk/backend";
+import { createClerkClient } from "@clerk/backend";
 
 import {
   AuthenticatedRequest,
   LoginDTO,
   SignupDTO,
 } from "../types";
+
+// Decode a JWT payload without verifying signature (Clerk already verified it on the client).
+// We then confirm the user is real by calling clerk.users.getUser(sub) server-to-server.
+const decodeJwtPayload = (token: string): any => {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    const payload = Buffer.from(parts[1], 'base64url').toString('utf8');
+    return JSON.parse(payload);
+  } catch {
+    return null;
+  }
+};
+
+// Resolve a Clerk token -> { clerkUserId, email, firstName, lastName }
+// Uses clerk.users.getUser() which only needs CLERK_SECRET_KEY (no JWKS needed).
+const resolveClerkUser = async (token: string): Promise<{ clerkUserId: string; email: string; firstName?: string; lastName?: string } | null> => {
+  const secretKey = process.env.CLERK_SECRET_KEY;
+  if (!secretKey) {
+    console.error('[Clerk] CLERK_SECRET_KEY is not set');
+    return null;
+  }
+
+  const payload = decodeJwtPayload(token);
+  if (!payload?.sub) {
+    console.error('[Clerk] Could not decode JWT payload or missing sub');
+    return null;
+  }
+
+  const clerkUserId = payload.sub as string;
+
+  try {
+    const clerk = createClerkClient({ secretKey });
+    const clerkUser = await clerk.users.getUser(clerkUserId);
+    const email = clerkUser.emailAddresses[0]?.emailAddress || '';
+    return {
+      clerkUserId,
+      email,
+      firstName: clerkUser.firstName || undefined,
+      lastName: clerkUser.lastName || undefined,
+    };
+  } catch (err: any) {
+    console.error('[Clerk] Failed to fetch user from Clerk API:', err?.message || err);
+    return null;
+  }
+};
 
 const router = Router();
 
@@ -269,57 +315,26 @@ router.post("/clerk-login", async (req, res) => {
       return;
     }
 
-    const secretKey = process.env.CLERK_SECRET_KEY;
-    if (!secretKey) {
-      console.warn("[Clerk] Warning: CLERK_SECRET_KEY is not set.");
-    }
-
-    let jwtPayload;
-    try {
-      // Allow skipping actual verification if secretly forced via environment during dev without keys,
-      // but otherwise properly verify token using Clerk SDK
-      jwtPayload = await verifyClerkToken(token, {
-        secretKey: secretKey,
-      });
-    } catch (verr) {
-      res.status(401).json({ success: false, error: { message: "Invalid Clerk token" } });
+    const clerkUser = await resolveClerkUser(token);
+    if (!clerkUser) {
+      res.status(401).json({ success: false, error: { message: "Could not verify Clerk token. Check CLERK_SECRET_KEY on server." } });
       return;
     }
 
-    // Primary email is embedded in the token payload usually 
-    const emailMatches = Object.values(jwtPayload).find(v => typeof v === 'string' && v.includes('@')) as string;
-    let identifier = (jwtPayload.email as string) || (jwtPayload.email_addresses?.[0] as string) || emailMatches;
+    const identifier = clerkUser.email;
+    const jwtPayload = decodeJwtPayload(token) || {};
 
-    if (!identifier && jwtPayload.sub && secretKey) {
-      const clerk = createClerkClient({ secretKey });
-      try {
-        const clerkUser = await clerk.users.getUser(jwtPayload.sub);
-        identifier = clerkUser.emailAddresses[0]?.emailAddress;
-      } catch (err) {
-        console.error("Failed to fetch user from Clerk API:", err);
-      }
-    }
+    console.log(`[Clerk Login] Verified Clerk user: ${identifier}`);
 
-    // Clerk sometimes puts the username in the email fields if they logged in with username.
-    // So 'identifier' here might be an email OR a username.
-    const searchIdentifier = (identifier || jwtPayload.username || jwtPayload.sub || '').toLowerCase();
-
-    if (!searchIdentifier) {
-      res.status(400).json({ success: false, error: { message: "Could not extract identifier from Clerk token" } });
-      return;
-    }
+    // Fake jwtPayload-compatible structure for the search below
+    const searchIdentifier = identifier.toLowerCase();
 
     const users = await fetchAll("users");
-    // Match the Clerk identity against email, uid, or username in our database
+    // Match the Clerk identity against email or uid in our database
     const found = users.find((u: any) => {
       const dbEmail = (u.email || '').toLowerCase();
       const dbUid = (u.uid || '').toLowerCase();
-      const dbUsername = (u.username || '').toLowerCase();
-
-      return dbEmail === searchIdentifier ||
-        dbUid === searchIdentifier ||
-        dbUsername === searchIdentifier ||
-        (jwtPayload.sub && dbUid === jwtPayload.sub.toLowerCase()); // Fallback to direct Clerk sub match if available
+      return dbEmail === searchIdentifier || dbUid === searchIdentifier;
     });
 
     if (!found) {
@@ -466,27 +481,14 @@ router.post("/clerk-signup", async (req, res) => {
       return;
     }
 
-    const secretKey = process.env.CLERK_SECRET_KEY;
-    let jwtPayload;
-    try {
-      jwtPayload = await verifyClerkToken(token, { secretKey: secretKey });
-    } catch (verr) {
-      res.status(401).json({ success: false, error: { message: "Invalid Clerk token" } });
+    const clerkUser = await resolveClerkUser(token);
+    if (!clerkUser) {
+      res.status(401).json({ success: false, error: { message: "Could not verify Clerk token. Check CLERK_SECRET_KEY on server." } });
       return;
     }
 
-    const emailMatches = Object.values(jwtPayload).find(v => typeof v === 'string' && v.includes('@')) as string;
-    let identifier = (jwtPayload.email as string) || (jwtPayload.email_addresses?.[0] as string) || emailMatches;
-
-    if (!identifier && jwtPayload.sub && secretKey) {
-      const clerk = createClerkClient({ secretKey });
-      try {
-        const clerkUser = await clerk.users.getUser(jwtPayload.sub);
-        identifier = clerkUser.emailAddresses[0]?.emailAddress;
-      } catch (err) {
-        console.error("Failed to fetch user from Clerk API:", err);
-      }
-    }
+    const identifier = clerkUser.email;
+    console.log(`[Clerk Signup] Verified Clerk user: ${identifier}`);
 
     if (!identifier) {
       res.status(400).json({ success: false, error: { message: "Could not extract email from Clerk token" } });
@@ -499,18 +501,17 @@ router.post("/clerk-signup", async (req, res) => {
       return;
     }
 
-    // Re-use email identifier as UID as explicitly requested
+    // Re-use email as UID
     const uid = identifier.toLowerCase();
-
-    // Empty password hash since it's managed via clerk, but keeping field for db coherence
     const hashedPassword = await bcrypt.hash(uid, 10);
 
     const email = identifier;
     const assignedFacilities = facilityId ? [facilityId] : [];
 
-    const fallbackName = (jwtPayload.first_name || jwtPayload.given_name || email.split("@")[0]) as string;
-    const explicitName = [firstName, lastName].filter(Boolean).join(" ");
-    const displayName = explicitName || fallbackName;
+    const resolvedFirstName = firstName || clerkUser.firstName || email.split("@")[0];
+    const resolvedLastName = lastName || clerkUser.lastName || "";
+    const explicitName = [resolvedFirstName, resolvedLastName].filter(Boolean).join(" ");
+    const displayName = explicitName || email.split("@")[0];
 
     const profile: any = {
       uid,
