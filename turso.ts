@@ -5,18 +5,17 @@ import { createClient } from "@libsql/client";
 // TURSO CONFIGURATION
 // ============================================================================
 
-const TURSO_DB_URL: string = "libsql://swiftyard-anumodk.aws-ap-northeast-1.turso.io";
-const TURSO_AUTH_TOKEN = "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3NzEwMjQzOTAsImlkIjoiN2NiNGI4YjYtNzI3Mi00NTQ3LTgyOWQtMTMzZTc5OTI3YjdiIiwicmlkIjoiNWY2YzE4YWQtOTk2ZS00MDI3LWE0ZDctM2E1OTc1YzU5ZjExIn0.1Aegycg6qgnyHwf90xLeeE3NvAkq3cVJWlTAOlm8rFmPzwhYnwhohuGkSl8z1Jp7Yk6zMS0ovWJ_nQhYmojMCQ";
+// Read from process.env but fallback to the hardcoded database initially provided
+let dbUrl = process.env.TURSO_DB_URL || "libsql://swiftyard-anumodk.aws-ap-northeast-1.turso.io";
+const dbToken = process.env.TURSO_AUTH_TOKEN || "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3NzEwMjQzOTAsImlkIjoiN2NiNGI4YjYtNzI3Mi00NTQ3LTgyOWQtMTMzZTc5OTI3YjdiIiwicmlkIjoiNWY2YzE4YWQtOTk2ZS00MDI3LWE0ZDctM2E1OTc1YzU5ZjExIn0.1Aegycg6qgnyHwf90xLeeE3NvAkq3cVJWlTAOlm8rFmPzwhYnwhohuGkSl8z1Jp7Yk6zMS0ovWJ_nQhYmojMCQ";
 
-// ============================================================================
-
-const clientUrl = TURSO_DB_URL.startsWith("libsql://") || TURSO_DB_URL.startsWith("https://")
-  ? TURSO_DB_URL
-  : "libsql://placeholder.turso.io";
+// Cloud Run can occasionally drop long-lived WebSocket (libsql://) connections on startup.
+// Standard HTTP (https://) is much more robust for serverless.
+dbUrl = dbUrl.replace("libsql://", "https://");
 
 export const turso = createClient({
-  url: clientUrl,
-  authToken: TURSO_AUTH_TOKEN,
+  url: dbUrl,
+  authToken: dbToken,
 });
 
 // --- HELPERS ---
