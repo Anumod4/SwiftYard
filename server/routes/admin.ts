@@ -133,9 +133,11 @@ router.post('/users/save', async (req: AuthenticatedRequest, res) => {
           const clerkClient = createClerkClient({ secretKey });
           console.log('[Admin] Calling Clerk createUser for:', rest.email);
 
-          // Generate a valid username (alphanumeric, min 4 chars)
-          const emailPrefix = rest.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
-          const username = emailPrefix.length >= 4 ? emailPrefix : `${emailPrefix}${Math.random().toString(36).substring(2, 7)}`;
+          // Generate an alphanumeric username based on firstname.lastname (min 4 chars)
+          const fName = (req.body.firstName || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+          const lName = (req.body.lastName || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+          let baseUsername = [fName, lName].filter(Boolean).join('.') || rest.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
+          const username = baseUsername.length >= 4 ? baseUsername : `${baseUsername}${Math.random().toString(36).substring(2, 7)}`;
 
           const clerkUser = await clerkClient.users.createUser({
             emailAddress: [rest.email],

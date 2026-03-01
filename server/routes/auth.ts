@@ -520,6 +520,10 @@ router.post("/clerk-signup", async (req, res) => {
     const explicitName = [resolvedFirstName, resolvedLastName].filter(Boolean).join(" ");
     const displayName = explicitName || email.split("@")[0];
 
+    const fName = (firstName || clerkUser.firstName || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const lName = (lastName || clerkUser.lastName || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    let baseUsername = [fName, lName].filter(Boolean).join('.') || email.split("@")[0].toLowerCase().replace(/[^a-z0-9]/g, '');
+
     const profile: any = {
       uid,
       email,
@@ -527,7 +531,7 @@ router.post("/clerk-signup", async (req, res) => {
       displayName,
       firstName: firstName || null,
       lastName: lastName || null,
-      username: username || email.split("@")[0],
+      username: username || baseUsername,
       role,
       assignedFacilities,
       carrierId: carrierId || null,
