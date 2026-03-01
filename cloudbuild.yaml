@@ -1,0 +1,36 @@
+steps:
+  # Step 1: Build the Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'Build'
+    args:
+      - 'build'
+      - '--no-cache'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/swiftyard-backend:$COMMIT_SHA'
+      - '.'
+
+  # Step 2: Push to Google Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'Push'
+    args:
+      - 'push'
+      - 'gcr.io/$PROJECT_ID/swiftyard-backend:$COMMIT_SHA'
+
+  # Step 3: Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+    id: 'Deploy'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'swiftyard-backend'
+      - '--image=gcr.io/$PROJECT_ID/swiftyard-backend:$COMMIT_SHA'
+      - '--region=us-central1'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+      - '--port=8080'
+      - '--timeout=300'
+      - '--memory=512Mi'
+
+images:
+  - 'gcr.io/$PROJECT_ID/swiftyard-backend:$COMMIT_SHA'
