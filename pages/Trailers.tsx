@@ -141,14 +141,24 @@ export const Trailers: React.FC = () => {
         setIsModalOpen(true);
     };
 
-    // Filter Drivers based on selected Carrier
+    // Filter Drivers: Only show "Away" drivers (not currently on site) based on Carrier
     const filteredDrivers = useMemo(() => {
-        if (!carrierId) return drivers;
+        // 1. Identify drivers currently on-site (linked to trailers with active status)
+        const onSiteDriverIds = new Set(
+            trailers
+                .filter(t => ['GatedIn', 'MovingToDock', 'ReadyForCheckIn', 'CheckedIn', 'ReadyForCheckOut', 'CheckedOut', 'MovingToYard', 'InYard'].includes(t.status) && t.currentDriverId)
+                .map(t => t.currentDriverId)
+        );
+
+        const awayDrivers = drivers.filter(d => !onSiteDriverIds.has(d.id));
+
+        if (!carrierId) return awayDrivers;
+
         // Case-insensitive comparison since carrierId now stores carrier name
-        return drivers.filter(d =>
+        return awayDrivers.filter(d =>
             d.carrierId && d.carrierId.toLowerCase() === carrierId.toLowerCase()
         );
-    }, [drivers, carrierId]);
+    }, [drivers, trailers, carrierId]);
 
     // Handle Driver Selection (Auto-populates Carrier)
     const handleDriverChange = (newDriverId: string) => {
@@ -582,13 +592,33 @@ export const Trailers: React.FC = () => {
                                             <td className="p-4 text-right pr-6">
                                                 <div className="flex justify-end gap-2 items-center">
                                                     {canEditTrailers ? (
-                                                        <button
-                                                            onClick={() => handleOpenModal(trailer)}
-                                                            className="p-2 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 rounded-lg text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white transition-colors"
-                                                            title="Edit Trailer"
-                                                        >
-                                                            <Edit2 className="w-4 h-4" />
-                                                        </button>
+                                                        <>
+                                                            <button
+                                                                onClick={() => handleOpenModal(trailer)}
+                                                                className="p-2 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 rounded-lg text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white transition-colors"
+                                                                title="Edit Trailer"
+                                                            >
+                                                                <Edit2 className="w-4 h-4" />
+                                                            </button>
+                                                            {trailer.status === 'Scheduled' && (
+                                                                <button
+                                                                    onClick={async () => {
+                                                                        if (window.confirm(`Are you sure you want to cancel trailer ${trailer.number}?`)) {
+                                                                            try {
+                                                                                await updateTrailer(trailer.id, { status: 'Cancelled' });
+                                                                                addToast('Success', `Trailer ${trailer.number} cancelled.`, 'success');
+                                                                            } catch (e: any) {
+                                                                                addToast('Error', e.message, 'error');
+                                                                            }
+                                                                        }
+                                                                    }}
+                                                                    className="p-2 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 rounded-lg text-red-600 dark:text-red-400 transition-colors"
+                                                                    title="Cancel Trailer"
+                                                                >
+                                                                    <X className="w-4 h-4" />
+                                                                </button>
+                                                            )}
+                                                        </>
                                                     ) : (
                                                         <button
                                                             onClick={() => handleOpenModal(trailer)}
