@@ -256,9 +256,9 @@ const startServer = async () => {
     await runMigrations();
     console.log("Database schema initialized successfully");
 
-    // Bind to all available interfaces (IPv4/IPv6). This helps the Bruno client
-    // reach the API when localhost resolves to IPv6 ::1.
-    httpServer.listen(PORT, "::", () => {
+    // Bind to all available interfaces (IPv4) for Docker / Cloud Run compatibility
+    // 0.0.0.0 is the standard for Cloud Run to correctly route external traffic to your container
+    httpServer.listen(PORT, "0.0.0.0", () => {
       console.log(`
 ╔═══════════════════════════════════════════════════════════╗
 ║                                                           ║
