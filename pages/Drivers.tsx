@@ -20,6 +20,22 @@ export const Drivers: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
+  // Sorting
+  const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
+
+  const handleSort = (key: string) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const getSortIcon = (key: string) => {
+    if (!sortConfig || sortConfig.key !== key) return null;
+    return <span className="ml-1 font-bold text-blue-500 dark:text-blue-400">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>;
+  };
+
   // Form
   const [name, setName] = useState('');
   const [license, setLicense] = useState('');
@@ -117,14 +133,42 @@ export const Drivers: React.FC = () => {
   };
 
   const filteredDrivers = useMemo(() => {
-    if (!debouncedSearchTerm.trim()) return drivers;
-    const s = debouncedSearchTerm.toLowerCase();
-    return drivers.filter(d =>
-      d.name.toLowerCase().includes(s) ||
-      d.licenseNumber.toLowerCase().includes(s) ||
-      d.carrierId?.toLowerCase().includes(s)
-    );
-  }, [drivers, debouncedSearchTerm]);
+    let result = drivers;
+
+    if (debouncedSearchTerm.trim()) {
+      const s = debouncedSearchTerm.toLowerCase();
+      result = result.filter(d =>
+        d.name.toLowerCase().includes(s) ||
+        d.licenseNumber.toLowerCase().includes(s) ||
+        d.carrierId?.toLowerCase().includes(s)
+      );
+    }
+
+    if (sortConfig) {
+      result = [...result].sort((a, b) => {
+        let valA: any = a[sortConfig.key as keyof Driver] || '';
+        let valB: any = b[sortConfig.key as keyof Driver] || '';
+
+        // Special handling for computed fields
+        if (sortConfig.key === 'carrier') {
+          valA = getCarrierDisplayName(a.carrierId).toLowerCase();
+          valB = getCarrierDisplayName(b.carrierId).toLowerCase();
+        } else if (sortConfig.key === 'status') {
+          valA = getDriverStatus(a.id) ? 'On Site' : 'Away';
+          valB = getDriverStatus(b.id) ? 'On Site' : 'Away';
+        } else if (typeof valA === 'string') {
+          valA = valA.toLowerCase();
+          valB = (typeof valB === 'string' ? valB : String(valB)).toLowerCase();
+        }
+
+        if (valA < valB) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (valA > valB) return sortConfig.direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    return result;
+  }, [drivers, debouncedSearchTerm, sortConfig]);
 
   const paginatedDrivers = useMemo(() => {
     const start = (currentPage - 1) * pageSize;
@@ -185,20 +229,91 @@ export const Drivers: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {paginatedDrivers.map(driver => (
-          <DriverCard
-            key={driver.id}
-            driver={driver}
-            canEdit={canEditDrivers}
-            isOnSite={getDriverStatus(driver.id)}
-            carrierName={getCarrierDisplayName(driver.carrierId)}
-            onEdit={handleOpenModal}
-            onDelete={handleDeleteClick}
-            t={t}
-          />
-        ))}
-      </div>
+      <GlassCard className="flex-1 overflow-hidden flex flex-col p-0 mb-6">
+        <div className="flex-1 overflow-y-auto custom-scrollbar">
+          {filteredDrivers.length === 0 ? (
+            <div className="h-64 flex flex-col items-center justify-center text-slate-400 dark:text-gray-500">
+              <User className="w-16 h-16 mb-4 opacity-20" />
+              <p className="text-lg font-medium">{t('drv.empty') || 'No drivers found.'}</p>
+            </div>
+          ) : (
+            <table className="w-full text-left border-collapse min-w-[800px]">
+              <thead className="sticky top-0 bg-slate-50 dark:bg-[#1a1a1a] z-10 text-xs uppercase text-slate-500 dark:text-gray-500 font-bold tracking-wider">
+                <tr>
+                  <th onClick={() => handleSort('name')} className="p-5 border-b border-slate-200 dark:border-white/10 cursor-pointer group hover:bg-slate-100 dark:hover:bg-white/5 transition-colors">
+                    {t('drv.fullName')} {getSortIcon('name')}
+                  </th>
+                  <th onClick={() => handleSort('licenseNumber')} className="p-5 border-b border-slate-200 dark:border-white/10 cursor-pointer group hover:bg-slate-100 dark:hover:bg-white/5 transition-colors">
+                    {t('drv.license')} {getSortIcon('licenseNumber')}
+                  </th>
+                  <th onClick={() => handleSort('phone')} className="p-5 border-b border-slate-200 dark:border-white/10 cursor-pointer group hover:bg-slate-100 dark:hover:bg-white/5 transition-colors">
+                    {t('common.phone')} {getSortIcon('phone')}
+                  </th>
+                  <th onClick={() => handleSort('carrier')} className="p-5 border-b border-slate-200 dark:border-white/10 cursor-pointer group hover:bg-slate-100 dark:hover:bg-white/5 transition-colors">
+                    {t('common.carrier')} {getSortIcon('carrier')}
+                  </th>
+                  <th onClick={() => handleSort('status')} className="p-5 border-b border-slate-200 dark:border-white/10 cursor-pointer group hover:bg-slate-100 dark:hover:bg-white/5 transition-colors">
+                    Status {getSortIcon('status')}
+                  </th>
+                  <th className="p-5 border-b border-slate-200 dark:border-white/10 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200 dark:divide-white/5">
+                {paginatedDrivers.map(driver => {
+                  const isOnSite = getDriverStatus(driver.id);
+                  const carrierName = getCarrierDisplayName(driver.carrierId);
+
+                  return (
+                    <tr key={driver.id} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors group">
+                      <td className="p-5">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-8 h-8 rounded-full flex flex-shrink-0 items-center justify-center relative ${isOnSite ? 'bg-emerald-50! dark:bg-emerald-500/10' : 'bg-slate-100 dark:bg-white/5'}`}>
+                            <User className={`w-4 h-4 ${isOnSite ? 'text-emerald-500' : 'text-slate-400'}`} />
+                          </div>
+                          <span className="font-bold text-slate-900 dark:text-white truncate max-w-[150px]" title={driver.name}>
+                            {driver.name}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="p-5 font-mono font-medium text-slate-600 dark:text-gray-300">
+                        {driver.licenseNumber}
+                      </td>
+                      <td className="p-5 font-medium text-slate-600 dark:text-gray-300 flex items-center gap-2">
+                        <Phone className="w-3.5 h-3.5 text-slate-400" />
+                        {driver.phone}
+                      </td>
+                      <td className="p-5">
+                        <span className="text-sm font-medium text-blue-600 dark:text-blue-400 truncate max-w-[150px] inline-block" title={carrierName}>
+                          {carrierName !== '-' ? carrierName : <span className="text-slate-400 italic">None</span>}
+                        </span>
+                      </td>
+                      <td className="p-5">
+                        {isOnSite ? (
+                          <span className="inline-flex px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-500 bg-emerald-500/10 border border-emerald-500/20">{t('drv.statusOn') || 'On Site'}</span>
+                        ) : (
+                          <span className="inline-flex px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-gray-500 bg-slate-100 dark:bg-gray-500/10 border border-slate-200 dark:border-white/5">{t('drv.statusAway') || 'Away'}</span>
+                        )}
+                      </td>
+                      <td className="p-5 text-right">
+                        <div className="flex justify-end gap-2">
+                          {canEditDrivers ? (
+                            <>
+                              <button onClick={() => handleOpenModal(driver)} className="p-2 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 rounded-lg text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white transition-colors" title="Edit"><Edit2 className="w-4 h-4" /></button>
+                              <button onClick={() => handleDeleteClick(driver.id)} className="p-2 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 text-red-600 dark:text-red-400 rounded-lg transition-colors" title="Delete"><Trash2 className="w-4 h-4" /></button>
+                            </>
+                          ) : (
+                            <span className="text-xs text-slate-400 italic">No access</span>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </GlassCard>
 
       <Pagination
         currentPage={currentPage}
@@ -274,54 +389,4 @@ export const Drivers: React.FC = () => {
   );
 };
 
-const DriverCard = React.memo<{
-  driver: Driver;
-  canEdit: boolean;
-  isOnSite: boolean;
-  carrierName: string;
-  onEdit: (d: Driver) => void;
-  onDelete: (id: string) => void;
-  t: any;
-}>(({ driver, canEdit, isOnSite, carrierName, onEdit, onDelete, t }) => (
-  <GlassCard className={`p-6 flex flex-col items-center text-center group relative h-full ${isOnSite ? 'border-emerald-500/30' : ''}`}>
-    {canEdit && (
-      <div className="absolute top-4 right-4 flex gap-2 z-10 transition-opacity opacity-0 group-hover:opacity-100">
-        <button onClick={() => onEdit(driver)} className="p-2 bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 rounded-xl text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white transition-all"><Edit2 className="w-4 h-4" /></button>
-        <button onClick={() => onDelete(driver.id)} className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-500 rounded-xl transition-all"><Trash2 className="w-4 h-4" /></button>
-      </div>
-    )}
 
-    <div className="w-20 h-20 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center mb-4 relative shadow-inner">
-      <User className="w-10 h-10 text-slate-400 dark:text-gray-400" />
-      <div className={`absolute bottom-0 right-0 w-6 h-6 rounded-full flex items-center justify-center border-4 border-white dark:border-[#1e1e1e] shadow-lg ${isOnSite ? 'bg-emerald-500' : 'bg-slate-400 dark:bg-gray-500'}`}>
-        {isOnSite ? <CheckCircle2 className="w-3 h-3 text-white" /> : <XCircle className="w-3 h-3 text-white" />}
-      </div>
-    </div>
-
-    <h3 className="text-xl font-black text-slate-900 dark:text-white mb-1 truncate w-full px-2" title={driver.name}>{driver.name}</h3>
-    <div className="mb-6">
-      {isOnSite ? (
-        <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-500 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">{t('drv.statusOn')}</span>
-      ) : (
-        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-gray-500 bg-slate-100 dark:bg-gray-500/10 px-3 py-1 rounded-full border border-slate-200 dark:border-white/5">{t('drv.statusAway')}</span>
-      )}
-    </div>
-
-    <div className="w-full space-y-2.5 mt-auto">
-      <div className="flex justify-between items-center text-sm bg-slate-50 dark:bg-black/20 p-2.5 rounded-xl border border-slate-100 dark:border-white/5">
-        <span className="text-slate-400 font-bold uppercase text-[10px] tracking-wider">{t('drv.license')}</span>
-        <span className="font-mono font-bold text-slate-900 dark:text-white">{driver.licenseNumber}</span>
-      </div>
-      <div className="flex justify-between items-center text-sm bg-slate-50 dark:bg-black/20 p-2.5 rounded-xl border border-slate-100 dark:border-white/5">
-        <span className="text-slate-400 font-bold uppercase text-[10px] tracking-wider">{t('common.phone')}</span>
-        <span className="text-slate-900 dark:text-white font-bold">{driver.phone}</span>
-      </div>
-      {carrierName && carrierName !== '-' && (
-        <div className="flex justify-between items-center text-sm bg-blue-50/50 dark:bg-blue-500/5 p-2.5 rounded-xl border border-blue-100 dark:border-blue-500/10">
-          <span className="text-blue-400 font-bold uppercase text-[10px] tracking-wider">{t('common.carrier')}</span>
-          <span className="text-blue-600 dark:text-blue-400 font-black truncate max-w-[120px]" title={carrierName}>{carrierName}</span>
-        </div>
-      )}
-    </div>
-  </GlassCard>
-));
