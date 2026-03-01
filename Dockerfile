@@ -13,8 +13,11 @@ RUN npm install
 COPY . .
 
 # Compile TypeScript to plain JavaScript using server-only tsconfig
-# This produces dist-server/server/index.js which runs instantly with node
 RUN npx tsc -p tsconfig.server.json
 
-# Start using the pre-compiled JavaScript - no tsx overhead, instant startup
+# CRITICAL: package.json has "type": "module" for Vite/React, but tsc compiled
+# the server to CommonJS. We must tell Node.js to run dist-server as CommonJS.
+RUN echo '{"type":"commonjs"}' > dist-server/package.json
+
+# Start using the pre-compiled JavaScript - instant startup, no tsx overhead
 CMD ["node", "dist-server/server/index.js"]
