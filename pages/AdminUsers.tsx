@@ -13,11 +13,11 @@ export const AdminUsers: React.FC = () => {
     const [editingUser, setEditingUser] = useState<UserProfileData | null>(null);
 
     const [email, setEmail] = useState('');
-    const [displayName, setDisplayName] = useState('');
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
     const [role, setRole] = useState<string>('user');
     const [carrierId, setCarrierId] = useState<string>('');
     const [selectedFacilities, setSelectedFacilities] = useState<string[]>([]);
-    const [password, setPassword] = useState<string>('');
 
     const [currentPage, setCurrentPage] = useState(1);
     const pageSize = 10;
@@ -33,19 +33,20 @@ export const AdminUsers: React.FC = () => {
         if (user) {
             setEditingUser(user);
             setEmail(user.email || '');
-            setDisplayName(user.displayName || '');
+            const parts = (user.displayName || '').split(' ');
+            setFirstName(parts[0] || '');
+            setLastName(parts.length > 1 ? parts.slice(1).join(' ') : '');
             setRole(user.role || 'user');
             setCarrierId(user.carrierId || '');
             setSelectedFacilities(Array.isArray(user.assignedFacilities) ? [...user.assignedFacilities] : []);
-            setPassword('');
         } else {
             setEditingUser(null);
             setEmail('');
-            setDisplayName('');
+            setFirstName('');
+            setLastName('');
             setRole('user');
             setCarrierId('');
             setSelectedFacilities([]);
-            setPassword('');
         }
         setIsModalOpen(true);
     };
@@ -95,7 +96,9 @@ export const AdminUsers: React.FC = () => {
 
         const payload: any = {
             email,
-            displayName,
+            firstName,
+            lastName,
+            displayName: `${firstName} ${lastName}`.trim(),
             role,
             carrierId: isCarrier ? carrierId : null,
             assignedFacilities: selectedFacilities
@@ -110,22 +113,15 @@ export const AdminUsers: React.FC = () => {
             }
         }
 
-        // If creating a new user, require a password and attach it to payload
-        if (!editingUser) {
-            if (!password) {
-                addToast('Error', 'Password is required', 'error');
-                return;
-            }
-            payload.password = password;
-        }
+        // No password required here, Clerk handles it
 
         try {
             if (editingUser) {
                 await updateUser(editingUser.uid, payload);
-                addToast('User Updated', `${displayName} updated.`, 'success');
+                addToast('User Updated', `${payload.displayName} updated.`, 'success');
             } else {
                 await addUser(payload);
-                addToast('User Created', `${displayName} created.`, 'success');
+                addToast('User Created', `${payload.displayName} created. They must use 'Forgot Password' to set their access.`, 'success');
             }
             setIsModalOpen(false);
         } catch (err: any) {
@@ -222,17 +218,20 @@ export const AdminUsers: React.FC = () => {
                     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
                         <div className="bg-white dark:bg-[#1e1e1e] w-full max-w-lg rounded-2xl p-6 shadow-2xl border border-white/10">
                             <h2 className="text-xl font-bold mb-6 text-slate-900 dark:text-white">{editingUser ? 'Edit User' : 'New User'}</h2>
+
+                            {!editingUser && (
+                                <div className="bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 p-3 rounded-lg text-xs font-medium mb-4 flex gap-2">
+                                    <AlertCircle className="w-4 h-4 shrink-0" />
+                                    <span>User will be provisioned without a password. They must use the "Forgot Password" link on the login page to set their access.</span>
+                                </div>
+                            )}
+
                             <form onSubmit={handleSave} className="space-y-4">
                                 <div className="grid grid-cols-2 gap-4">
-                                    <div><label className="block text-xs font-bold text-slate-500 mb-1">Display Name</label><input required value={displayName} onChange={e => setDisplayName(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-2.5 outline-none text-slate-900 dark:text-white" /></div>
-                                    <div><label className="block text-xs font-bold text-slate-500 mb-1">Email</label><input required type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-2.5 outline-none text-slate-900 dark:text-white" /></div>
+                                    <div><label className="block text-xs font-bold text-slate-500 mb-1">First Name</label><input required value={firstName} onChange={e => setFirstName(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-2.5 outline-none text-slate-900 dark:text-white" /></div>
+                                    <div><label className="block text-xs font-bold text-slate-500 mb-1">Last Name</label><input required value={lastName} onChange={e => setLastName(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-2.5 outline-none text-slate-900 dark:text-white" /></div>
                                 </div>
-                                {!editingUser && (
-                                    <div>
-                                        <label className="block text-xs font-bold text-slate-500 mb-1">Password</label>
-                                        <input type="password" required value={password} onChange={e => setPassword(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-2.5 outline-none text-slate-900 dark:text-white" placeholder="Password" />
-                                    </div>
-                                )}
+                                <div><label className="block text-xs font-bold text-slate-500 mb-1">Email</label><input required type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-2.5 outline-none text-slate-900 dark:text-white" disabled={!!editingUser} /></div>
                                 <div>
                                     <label className="block text-xs font-bold text-slate-500 mb-1">Role</label>
                                     <select value={role} onChange={e => setRole(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-2.5 outline-none text-slate-900 dark:text-white">

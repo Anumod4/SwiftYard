@@ -13,7 +13,7 @@ export const Login: React.FC = () => {
     const clerk = useClerk();
     const { isLoaded: isSignInLoaded, signIn, setActive: setSignInActive } = useSignIn();
     const { isLoaded: isSignUpLoaded, signUp, setActive: setSignUpActive } = useSignUp();
-    const { facilities, allCarriers } = useData();
+    const { facilities, allCarriers, addToast } = useData();
 
     // Force dark theme on login page - always
     useEffect(() => {
@@ -37,6 +37,11 @@ export const Login: React.FC = () => {
     const [mfaCode, setMfaCode] = useState('');
     const [verifyingEmail, setVerifyingEmail] = useState(false);
     const [emailCode, setEmailCode] = useState('');
+
+    // Forgot Password State
+    const [isResettingPassword, setIsResettingPassword] = useState(false);
+    const [resetCode, setResetCode] = useState('');
+    const [newPassword, setNewPassword] = useState('');
 
     // Driver State
     const [trailerInput, setTrailerInput] = useState('');
@@ -148,6 +153,58 @@ export const Login: React.FC = () => {
 
             const msg = err.errors?.[0]?.longMessage || err.message || 'Authentication failed.';
             setError(msg);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleForgotPassword = async () => {
+        if (!email) {
+            setError("Please enter your email above to reset your password.");
+            return;
+        }
+        setError('');
+        setLoading(true);
+        try {
+            await signIn?.create({
+                strategy: 'reset_password_email_code',
+                identifier: email,
+            });
+            setIsResettingPassword(true);
+            addToast("Success", "Password reset code sent to your email", "success");
+        } catch (err: any) {
+            setError(err.errors?.[0]?.longMessage || err.message || 'Failed to send reset code.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleResetPassword = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!isSignInLoaded) return;
+        setError('');
+        setLoading(true);
+
+        try {
+            const result = await signIn.attemptFirstFactor({
+                strategy: 'reset_password_email_code',
+                code: resetCode,
+                password: newPassword,
+            });
+
+            if (result.status === 'complete') {
+                await setSignInActive({ session: result.createdSessionId });
+                const token = await getToken();
+                if (token) {
+                    await clerkLogin(token, loginMode === 'carrier' ? 'carrier' : 'staff');
+                } else {
+                    setError("Failed to get Clerk token after password reset.");
+                }
+            } else {
+                setError("Password reset requires further action.");
+            }
+        } catch (err: any) {
+            setError(err.errors?.[0]?.longMessage || err.message || 'Password reset failed.');
         } finally {
             setLoading(false);
         }
@@ -307,6 +364,35 @@ export const Login: React.FC = () => {
                                     </button>
                                 ))}
                             </div>
+                        ) : isResettingPassword ? (
+                            <form onSubmit={handleResetPassword} className="flex-1 flex flex-col h-full">
+                                <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                                    <div className="text-center mb-6">
+                                        <div className="w-16 h-16 bg-[#0a84ff]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <Lock className="w-8 h-8 text-[#0a84ff]" />
+                                        </div>
+                                        <h3 className="text-xl font-bold text-slate-900 dark:text-white">Reset Password</h3>
+                                        <p className="text-sm text-slate-500 dark:text-gray-400 mt-2">Enter the code sent to {email} and your new password.</p>
+                                    </div>
+                                    <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Reset Code</label>
+                                    <div className="relative mb-4"><KeyRound className="absolute left-4 top-3.5 w-5 h-5 text-slate-400" /><input type="text" required value={resetCode} onChange={e => setResetCode(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-12 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#0a84ff]" placeholder="123456" /></div>
+
+                                    <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">New Password</label>
+                                    <div className="relative"><Lock className="absolute left-4 top-3.5 w-5 h-5 text-slate-400" /><input type={showPassword ? 'text' : 'password'} required value={newPassword} onChange={e => setNewPassword(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-12 pr-12 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#0a84ff]" placeholder="••••••••" /><button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">{showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}</button></div>
+                                </div>
+                                <div className="mt-auto pt-6">
+                                    <button type="submit" disabled={loading} className="w-full bg-[#0a84ff] hover:bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                                        {loading ? 'Resetting...' : <><ArrowRight className="w-5 h-5" /> Set Password</>}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => { setIsResettingPassword(false); setError(''); }}
+                                        className="w-full mt-3 text-sm text-slate-500 hover:text-[#0a84ff] font-medium"
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            </form>
                         ) : verifyingMfa ? (
                             <form onSubmit={handleVerifyMfa} className="flex-1 flex flex-col h-full">
                                 <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
@@ -400,9 +486,15 @@ export const Login: React.FC = () => {
                                                     />
                                                 </div>
                                             </div>
-                                            <div><label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Password</label><div className="relative"><Lock className="absolute left-4 top-3.5 w-5 h-5 text-slate-400" /><input type={showPassword ? 'text' : 'password'} required value={password} onChange={e => setPassword(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-12 pr-12 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#0a84ff]" placeholder="••••••••" /><button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">{showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}</button></div></div>
-
-
+                                            <div>
+                                                <div className="flex justify-between items-center mb-2">
+                                                    <label className="block text-xs font-bold uppercase tracking-widest text-slate-500">Password</label>
+                                                    {!isSignUp && (
+                                                        <button type="button" onClick={handleForgotPassword} disabled={loading} className="text-xs text-[#0a84ff] hover:text-blue-600 font-medium transition-colors focus:outline-none disabled:opacity-50">Forgot Password?</button>
+                                                    )}
+                                                </div>
+                                                <div className="relative"><Lock className="absolute left-4 top-3.5 w-5 h-5 text-slate-400" /><input type={showPassword ? 'text' : 'password'} required value={password} onChange={e => setPassword(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-12 pr-12 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#0a84ff]" placeholder="••••••••" /><button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">{showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}</button></div>
+                                            </div>
                                             {isSignUp && loginMode === 'carrier' && (
                                                 <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 text-center mb-4">
                                                     <p className="text-xs font-medium text-amber-600 dark:text-amber-400">

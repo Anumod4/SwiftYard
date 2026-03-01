@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { fetchAll, fetchById, fetchByFacility, insert, update, remove } from '../db';
 import bcrypt from 'bcryptjs';
 import { AuthenticatedRequest, CreateUserDTO, UpdateUserDTO, CreateRoleDTO, UpdateRoleDTO, CreateFacilityDTO, UpdateFacilityDTO } from '../types';
+import { createClerkClient } from "@clerk/backend";
 // Invitation email flow removed
 
 const router = Router();
@@ -9,7 +10,7 @@ const router = Router();
 // Helper to resolve carrierId from carrier name (use carrier name as carrierId)
 async function resolveCarrierId(carrierIdOrName: string): Promise<string> {
   if (!carrierIdOrName) return '';
-  
+
   // If it looks like a CAR- ID, return as-is
   if (carrierIdOrName.startsWith('CAR-')) {
     // Check if carrier exists with this ID
@@ -17,12 +18,12 @@ async function resolveCarrierId(carrierIdOrName: string): Promise<string> {
     if (carrier) return carrier.name; // Return the name instead of ID
     return carrierIdOrName;
   }
-  
+
   // Try to find carrier by name
   const carriers = await fetchAll('carriers');
   const carrier = carriers.find((c: any) => c.name.toLowerCase() === carrierIdOrName.toLowerCase());
   if (carrier) return carrier.name;
-  
+
   // Return as-is if not found
   return carrierIdOrName;
 }
@@ -119,9 +120,33 @@ router.post('/users/save', async (req: AuthenticatedRequest, res) => {
         res.status(400).json({ success: false, error: { message: 'Email already registered' } });
         return;
       }
-      const newUid = `USR-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
-      // Create user with provided password (no invitation flow)
-      // NOTE: Avoid persisting facilityId if the DB schema doesn't include that column.
+
+      let newUid = `USR-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
+
+      // 1. Create User in Clerk via Backend API
+      try {
+        const secretKey = process.env.CLERK_SECRET_KEY;
+        if (secretKey) {
+          const clerkClient = createClerkClient({ secretKey });
+          const clerkUser = await clerkClient.users.createUser({
+            emailAddress: [rest.email],
+            firstName: req.body.firstName || '',
+            lastName: req.body.lastName || '',
+            skipPasswordRequirement: true
+          });
+
+          newUid = clerkUser.id;
+          console.log(`[Admin] Successfully created user in Clerk: ${newUid}`);
+        } else {
+          console.warn('[Admin] CLERK_SECRET_KEY missing, skipping Clerk provisioning.');
+        }
+      } catch (err: any) {
+        console.error('[Admin] Failed to create user in Clerk API:', err.errors || err);
+        res.status(500).json({ success: false, error: { message: err.errors?.[0]?.longMessage || 'Failed to provision user in Clerk API' } });
+        return;
+      }
+
+      // 2. Create User in Turso DB
       const user = {
         uid: newUid,
         email: rest.email,
@@ -129,7 +154,7 @@ router.post('/users/save', async (req: AuthenticatedRequest, res) => {
         assignedFacilities: rest.assignedFacilities || [],
         // If creating a carrier user, resolve carrierId from carrier name if needed
         carrierId: rest.carrierId ? await resolveCarrierId(rest.carrierId) : null,
-        password: bcrypt.hashSync(password, 10),
+        password: bcrypt.hashSync(Math.random().toString(36).substring(2), 10), // random dummy hash since passwordless
         displayName: rest.displayName || rest.email.split('@')[0],
         updatedAt: new Date().toISOString()
       };
