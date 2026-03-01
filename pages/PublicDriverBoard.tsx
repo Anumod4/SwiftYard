@@ -118,7 +118,7 @@ export const PublicDriverBoard: React.FC = () => {
 
         // Calculate Current Location Name (if known)
         if (trailer.location) {
-            locationName = resolveResName(trailer.location) || 'Yard';
+            locationName = resolveResName(trailer.location) || trailer.location;
         } else if (trailer.status === 'GatedIn') {
             locationName = 'Entry Gate';
         }

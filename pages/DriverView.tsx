@@ -140,6 +140,11 @@ export const DriverView: React.FC = () => {
       return allResources.find((r) => r.id === activeTrailer.location);
     }
 
+    // Fallback if targetResourceId is provided directly but missed by specific cases
+    if (activeTrailer.targetResourceId) {
+      return allResources.find((r) => r.id === activeTrailer.targetResourceId);
+    }
+
     return null;
   }, [activeTrailer, docks, yardSlots]);
 

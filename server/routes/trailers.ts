@@ -125,7 +125,11 @@ router.post("/save", async (req: AuthenticatedRequest, res) => {
             }
           }
         }
-        await update("trailers", id, { ...rest, history });
+        if (rest.targetResourceId !== undefined) {
+          existing.targetResourceId = rest.targetResourceId;
+        }
+
+        await update("trailers", id, { ...rest, targetResourceId: existing.targetResourceId, history });
         const updated = await fetchById("trailers", id);
 
         await syncDriverStatus(existing.currentDriverId);
@@ -519,6 +523,7 @@ router.post("/driver/move-to-yard", async (req, res) => {
     await update("trailers", trailerId, {
       status: "InYard",
       location: slotId,
+      targetResourceId: null,
       history,
     });
 
@@ -596,6 +601,7 @@ router.post("/:id/move-to-yard", async (req: AuthenticatedRequest, res) => {
     await update("trailers", req.params.id, {
       status: "InYard",
       location: slotId,
+      targetResourceId: null,
       history,
     });
 
