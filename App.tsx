@@ -123,19 +123,19 @@ const AppContent: React.FC = () => {
   if (appState === "no-access")
     return (
       <div className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-50 dark:bg-[#121212] p-8 text-center">
-        <div className="bg-red-500/10 p-6 rounded-3xl border border-red-500/20 max-w-md w-full">
-          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+        <div className="bg-amber-500/10 p-6 rounded-3xl border border-amber-500/20 max-w-md w-full">
+          <AlertCircle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
-            Access Denied
+            Pending Assignment
           </h1>
           <p className="text-slate-500 dark:text-gray-400 mb-6">
-            Your account is not assigned to any facility.
+            Please reach out to an admin for facility/carrier assignment and try logging in later.
           </p>
           <button
             onClick={() => signOut()}
-            className="px-6 py-2 bg-red-600 text-white rounded-xl font-bold flex items-center gap-2 mx-auto"
+            className="px-6 py-2 bg-[#0a84ff] hover:bg-blue-600 text-white rounded-xl font-bold flex items-center justify-center mx-auto transition-colors"
           >
-            <LogOut className="w-4 h-4" /> Sign Out
+            Accept
           </button>
         </div>
       </div>

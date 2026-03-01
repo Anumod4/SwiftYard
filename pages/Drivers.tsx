@@ -77,13 +77,12 @@ export const Drivers: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm("Are you sure you want to delete this driver? This action cannot be undone.")) {
-      try {
-        await deleteDriver(id);
-        addToast('Deleted', 'Driver removed from registry.', 'info');
-      } catch (err: any) {
-        addToast('Error', err.message, 'error');
-      }
+    if (!window.confirm("Are you sure you want to delete this driver?")) return;
+    try {
+      await deleteDriver(id);
+      addToast("Driver deleted successfully", "success");
+    } catch (err: any) {
+      addToast(err.message || "Failed to delete driver", "error");
     }
   };
 

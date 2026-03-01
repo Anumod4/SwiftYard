@@ -62,13 +62,12 @@ export const Carriers: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm("Are you sure you want to delete this carrier? This action cannot be undone.")) {
-      try {
-        await deleteCarrier(id);
-        addToast('Deleted', 'Carrier removed.', 'info');
-      } catch (err: any) {
-        addToast('Error', err.message, 'error');
-      }
+    if (!window.confirm("Are you sure you want to delete this carrier?")) return;
+    try {
+      await deleteCarrier(id);
+      addToast("Carrier deleted successfully", "success");
+    } catch (err: any) {
+      addToast(err.message || "Failed to delete carrier", "error");
     }
   };
 

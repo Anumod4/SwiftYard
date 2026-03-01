@@ -171,7 +171,7 @@ export const AdminUsers: React.FC = () => {
                     <GlassCard key={user.uid} className="p-6 relative group">
                         <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button onClick={() => handleOpenModal(user)} className="p-2 bg-slate-100 dark:bg-white/10 hover:bg-blue-500 hover:text-white rounded-lg transition-colors"><Edit2 className="w-4 h-4" /></button>
-                            <button onClick={() => deleteUser(user.uid)} className="p-2 bg-slate-100 dark:bg-white/10 hover:bg-red-500 hover:text-white rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
+                            <button onClick={() => { if (window.confirm('Are you sure you want to delete this user?')) deleteUser(user.uid); }} className="p-2 bg-slate-100 dark:bg-white/10 hover:bg-red-500 hover:text-white rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
                         </div>
                         <div className="flex items-center gap-4 mb-4">
                             <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg ${user.role === 'admin' ? 'bg-purple-500' : user.role === 'carrier' ? 'bg-amber-500' : 'bg-blue-500'}`}>{(user.displayName || 'U').charAt(0).toUpperCase()}</div>

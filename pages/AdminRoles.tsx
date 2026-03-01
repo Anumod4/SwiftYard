@@ -102,6 +102,7 @@ export const AdminRoles: React.FC = () => {
                     return;
                 }
                 await addRole(payload);
+                addToast('Role Added', `${name} created successfully.`, 'success');
             }
             setIsModalOpen(false);
         } catch (err: any) {
@@ -110,9 +111,12 @@ export const AdminRoles: React.FC = () => {
     };
 
     const handleDelete = async (roleId: string) => {
-        if (confirm("Are you sure? Users assigned to this role may lose access.")) {
+        if (!window.confirm("Are you sure you want to delete this role?")) return;
+        try {
             await deleteRole(roleId);
             addToast('Role Deleted', 'Role removed.', 'info');
+        } catch (err: any) {
+            addToast('Error', err.message || 'Failed to delete', 'error');
         }
     };
 

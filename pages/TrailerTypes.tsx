@@ -67,13 +67,12 @@ export const TrailerTypes: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm("Are you sure you want to delete this trailer type? This action cannot be undone.")) {
-      try {
-        await deleteTrailerType(id);
-        addToast('Deleted', 'Trailer type removed.', 'info');
-      } catch (err: any) {
-        addToast('Error', err.message, 'error');
-      }
+    if (!window.confirm("Are you sure you want to delete this trailer type?")) return;
+    try {
+      await deleteTrailerType(id);
+      addToast("Trailer type deleted successfully", "success");
+    } catch (err: any) {
+      addToast(err.message || "Failed to delete trailer type", "error");
     }
   };
 

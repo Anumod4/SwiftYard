@@ -72,7 +72,7 @@ export const AdminFacilities: React.FC = () => {
           <GlassCard key={fac.id} className="p-6 group relative">
             <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
               <button onClick={() => handleOpenModal(fac)} className="p-2 bg-slate-100 dark:bg-white/10 hover:bg-blue-500 hover:text-white rounded-lg transition-colors"><Edit2 className="w-4 h-4" /></button>
-              <button onClick={() => deleteFacility(fac.id)} className="p-2 bg-slate-100 dark:bg-white/10 hover:bg-red-500 hover:text-white rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
+              <button onClick={() => { if (window.confirm('Are you sure you want to delete this facility?')) deleteFacility(fac.id); }} className="p-2 bg-slate-100 dark:bg-white/10 hover:bg-red-500 hover:text-white rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
             </div>
 
             <div className="flex items-center gap-4 mb-4">

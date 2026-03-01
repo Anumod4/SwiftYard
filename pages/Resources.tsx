@@ -145,13 +145,12 @@ export const Resources: React.FC = () => {
       return;
     }
 
-    if (window.confirm("Are you sure you want to delete this resource? This action cannot be undone.")) {
-      try {
-        await deleteResource(item.id);
-        addToast('Deleted', `${item.name} removed successfully.`, 'info');
-      } catch (err: any) {
-        addToast('Error', err.message, 'error');
-      }
+    if (!window.confirm("Are you sure you want to delete this resource?")) return;
+    try {
+      await deleteResource(item.id);
+      addToast("Resource deleted successfully", "success");
+    } catch (error: any) {
+      addToast(error.message || "Failed to delete resource", "error");
     }
   };
 
