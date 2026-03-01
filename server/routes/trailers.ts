@@ -15,6 +15,25 @@ import {
 import { emitEvent, EVENTS } from "../services/socket";
 import { triggerWebhooks } from "../services/webhooks";
 
+const syncDriverStatus = async (driverId?: string) => {
+  if (!driverId) return;
+  try {
+    const allTrailers = await fetchAll("trailers");
+    const onSiteStatuses = ['GatedIn', 'MovingToDock', 'ReadyForCheckIn', 'CheckedIn', 'ReadyForCheckOut', 'CheckedOut', 'MovingToYard', 'InYard'];
+    const isCurrentlyOnSite = allTrailers.some((t: any) =>
+      t.currentDriverId === driverId && onSiteStatuses.includes(t.status)
+    );
+    const correctStatus = isCurrentlyOnSite ? 'On Site' : 'Away';
+
+    const driver = await fetchById("drivers", driverId);
+    if (driver && driver.status !== correctStatus) {
+      await update("drivers", driverId, { status: correctStatus });
+    }
+  } catch (error) {
+    console.error("Error syncing driver status:", error);
+  }
+};
+
 const router = Router();
 
 // Get all trailers (filtered by facility context)
@@ -108,6 +127,12 @@ router.post("/save", async (req: AuthenticatedRequest, res) => {
         }
         await update("trailers", id, { ...rest, history });
         const updated = await fetchById("trailers", id);
+
+        await syncDriverStatus(existing.currentDriverId);
+        if (rest.currentDriverId && rest.currentDriverId !== existing.currentDriverId) {
+          await syncDriverStatus(rest.currentDriverId);
+        }
+
         emitEvent(EVENTS.TRAILER_UPDATED, updated, updated?.facilityId);
         triggerWebhooks("trailer.updated", updated, updated?.facilityId);
         res.json({ success: true, data: updated });
@@ -129,6 +154,9 @@ router.post("/save", async (req: AuthenticatedRequest, res) => {
         };
         await insert("trailers", trailer);
         const created = await fetchById("trailers", id);
+
+        await syncDriverStatus(rest.currentDriverId);
+
         emitEvent(EVENTS.TRAILER_CREATED, created, created.facilityId);
         triggerWebhooks("trailer.created", created, created.facilityId);
         res.status(201).json({ success: true, data: created });
@@ -173,6 +201,12 @@ router.post("/save", async (req: AuthenticatedRequest, res) => {
         }
         await update("trailers", existingByNumber.id, { ...rest, history });
         const updated = await fetchById("trailers", existingByNumber.id);
+
+        await syncDriverStatus(existingByNumber.currentDriverId);
+        if (rest.currentDriverId && rest.currentDriverId !== existingByNumber.currentDriverId) {
+          await syncDriverStatus(rest.currentDriverId);
+        }
+
         emitEvent(EVENTS.TRAILER_UPDATED, updated, updated?.facilityId);
         triggerWebhooks("trailer.updated", updated, updated?.facilityId);
         res.json({ success: true, data: updated });
@@ -195,6 +229,9 @@ router.post("/save", async (req: AuthenticatedRequest, res) => {
         console.log("[Trailers] Save - Creating new trailer:", trailer);
         await insert("trailers", trailer);
         const created = await fetchById("trailers", newId);
+
+        await syncDriverStatus(rest.currentDriverId);
+
         emitEvent(EVENTS.TRAILER_CREATED, created, created.facilityId);
         triggerWebhooks("trailer.created", created, created.facilityId);
         res.status(201).json({ success: true, data: created });
@@ -317,6 +354,8 @@ router.post("/:id/gateout", async (req: AuthenticatedRequest, res) => {
 
     const updated = await fetchById("trailers", req.params.id);
 
+    await syncDriverStatus(trailer.currentDriverId);
+
     emitEvent(EVENTS.TRAILER_GATE_OUT, updated, updated?.facilityId);
     triggerWebhooks("trailer.gateOut", updated, updated?.facilityId);
 
@@ -435,6 +474,9 @@ router.post("/driver/update-status", async (req, res) => {
     }
 
     const updated = await fetchById("trailers", trailerId);
+
+    await syncDriverStatus(trailer.currentDriverId);
+
     emitEvent(EVENTS.TRAILER_UPDATED, updated, updated?.facilityId);
     triggerWebhooks("trailer.updated", updated, updated?.facilityId);
 
@@ -510,6 +552,9 @@ router.post("/driver/move-to-yard", async (req, res) => {
     }
 
     const updated = await fetchById("trailers", trailerId);
+
+    await syncDriverStatus(trailer.currentDriverId);
+
     emitEvent(EVENTS.TRAILER_MOVED_TO_YARD, updated, updated?.facilityId);
     triggerWebhooks("trailer.movedToYard", updated, updated?.facilityId);
 
@@ -586,6 +631,8 @@ router.post("/:id/move-to-yard", async (req: AuthenticatedRequest, res) => {
 
     const updated = await fetchById("trailers", req.params.id);
 
+    await syncDriverStatus(trailer.currentDriverId);
+
     emitEvent(EVENTS.TRAILER_MOVED_TO_YARD, updated, updated?.facilityId);
     triggerWebhooks("trailer.movedToYard", updated, updated?.facilityId);
 
@@ -609,6 +656,9 @@ router.delete("/:id", async (req: AuthenticatedRequest, res) => {
     }
 
     await remove("trailers", req.params.id);
+
+    await syncDriverStatus(existing.currentDriverId);
+
     res.json({ success: true, message: "Trailer deleted" });
   } catch (error: any) {
     console.error("Delete trailer error:", error);

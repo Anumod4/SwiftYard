@@ -1,6 +1,6 @@
 import React from 'react';
 import { GlassCard } from '../../components/ui/GlassCard';
-import { Lock, MapPin, Truck, Calendar, Clock, User, ArrowRight, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Lock, MapPin, Truck, Calendar, Clock, User, ArrowRight, CheckCircle2, AlertCircle, Activity } from 'lucide-react';
 import { Facility, TrailerTypeDefinition, Driver } from '../../types';
 
 interface CarrierBookingProps {
