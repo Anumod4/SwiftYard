@@ -1,23 +1,24 @@
 FROM node:20-alpine
 
+# Install build tools for native modules
+RUN apk add --no-cache python3 make g++
+
 # Set working directory
 WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
 
-# Install ALL dependencies (including devDependencies needed for typescript compiler)
+# Install ALL dependencies (including devDependencies for tsx/typescript)
 RUN npm install
 
 # Copy all source files
 COPY . .
 
-# Compile TypeScript to plain JavaScript using server-only tsconfig
-RUN npx tsc -p tsconfig.server.json
+# Set environment
+ENV NODE_ENV=production
 
-# CRITICAL: package.json has "type": "module" for Vite/React, but tsc compiled
-# the server to CommonJS. We must tell Node.js to run dist-server as CommonJS.
-RUN echo '{"type":"commonjs"}' > dist-server/package.json
-
-# Start using the pre-compiled JavaScript - instant startup, no tsx overhead
-CMD ["node", "dist-server/server/index.js"]
+# Cloud Run sets PORT=8080 automatically.
+# Use tsx to run TypeScript directly - no compilation step needed.
+# tsx handles the TypeScript-to-JS transpilation at runtime.
+CMD ["./node_modules/.bin/tsx", "server/index.ts"]
