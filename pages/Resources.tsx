@@ -7,6 +7,7 @@ import { Plus, Edit2, Trash2, Warehouse, Container, Clock, AlertTriangle, X, Ref
 import { ModalPortal } from '../components/ui/ModalPortal';
 import { Pagination } from '../components/ui/Pagination';
 import { BulkCreatorModal, BulkColumn } from '../components/BulkCreatorModal';
+import { DeleteConfirmationModal } from '../components/ui/DeleteConfirmationModal';
 import { VIEW_IDS } from '../constants';
 
 export const Resources: React.FC = () => {
@@ -14,6 +15,9 @@ export const Resources: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'Dock' | 'YardSlot'>('Dock');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isManageMode, setIsManageMode] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isClearModalOpen, setIsClearModalOpen] = useState(false);
+  const [resourceToProcess, setResourceToProcess] = useState<string | null>(null);
   const [editingResource, setEditingResource] = useState<Resource | null>(null);
 
   // Bulk Create State
@@ -124,11 +128,17 @@ export const Resources: React.FC = () => {
     );
   };
 
-  const handleForceClear = (e: React.MouseEvent, id: string) => {
+  const handleForceClearClick = (e: React.MouseEvent, id: string) => {
     e.preventDefault();
     e.stopPropagation();
-    if (window.confirm("CRITICAL ACTION: This will force the resource status back to 'Available'. Proceed?")) {
-      forceClearResource(id);
+    setResourceToProcess(id);
+    setIsClearModalOpen(true);
+  };
+
+  const handleConfirmClear = () => {
+    if (resourceToProcess) {
+      forceClearResource(resourceToProcess);
+      setResourceToProcess(null);
     }
   };
 
@@ -136,7 +146,7 @@ export const Resources: React.FC = () => {
     setIsManageMode(!isManageMode);
   };
 
-  const handleDelete = async (e: React.MouseEvent, item: Resource) => {
+  const handleDeleteClick = (e: React.MouseEvent, item: Resource) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -145,12 +155,19 @@ export const Resources: React.FC = () => {
       return;
     }
 
-    if (!window.confirm("Are you sure you want to delete this resource?")) return;
-    try {
-      await deleteResource(item.id);
-      addToast("Resource deleted successfully", "success");
-    } catch (error: any) {
-      addToast(error.message || "Failed to delete resource", "error");
+    setResourceToProcess(item.id);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (resourceToProcess) {
+      try {
+        await deleteResource(resourceToProcess);
+        addToast("Resource deleted successfully", "success");
+      } catch (error: any) {
+        addToast(error.message || "Failed to delete resource", "error");
+      }
+      setResourceToProcess(null);
     }
   };
 
@@ -249,7 +266,7 @@ export const Resources: React.FC = () => {
                 {item.status === 'Occupied' ? (
                   <button
                     type="button"
-                    onClick={(e) => handleForceClear(e, item.id)}
+                    onClick={(e) => handleForceClearClick(e, item.id)}
                     className="w-14 h-14 rounded-full bg-orange-500 text-white flex flex-col items-center justify-center shadow-2xl border-4 border-white dark:border-[#121212] hover:scale-110 active:scale-95 transition-all text-[8px] font-black uppercase"
                   >
                     <RefreshCcw className="w-6 h-6 mb-0.5" />
@@ -258,7 +275,7 @@ export const Resources: React.FC = () => {
                 ) : (
                   <button
                     type="button"
-                    onClick={(e) => handleDelete(e, item)}
+                    onClick={(e) => handleDeleteClick(e, item)}
                     className="w-14 h-14 rounded-full bg-red-600 text-white flex flex-col items-center justify-center shadow-2xl border-4 border-white dark:border-[#121212] hover:scale-110 active:scale-95 transition-all"
                   >
                     <Trash2 className="w-7 h-7" />
@@ -531,6 +548,22 @@ export const Resources: React.FC = () => {
         subtitle="Add multiple resources at once."
         columns={bulkColumns}
         onSubmit={handleBulkSave}
+      />
+
+      <DeleteConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title={`Delete ${activeTab}`}
+        message={`Are you sure you want to delete this ${activeTab.toLowerCase()}? This will permanently remove it from the yard map.`}
+      />
+
+      <DeleteConfirmationModal
+        isOpen={isClearModalOpen}
+        onClose={() => setIsClearModalOpen(false)}
+        onConfirm={handleConfirmClear}
+        title="Force Clear Resource"
+        message="CRITICAL ACTION: This will force the resource status back to 'Available', potentially disconnecting it from an active appointment. Proceed?"
       />
     </div>
   );

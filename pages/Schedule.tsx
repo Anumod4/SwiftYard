@@ -7,6 +7,7 @@ import { DatePicker } from '../components/ui/DatePicker';
 import { Pagination } from '../components/ui/Pagination';
 import { Search, Plus, Clock, Edit2, Ban, Truck, User, Calendar, FileText, CheckCircle2, AlertTriangle, ArrowRight, ChevronDown, X, Check, Eye, Sparkles } from 'lucide-react';
 import { AIScheduleModal } from '../components/AIScheduleModal';
+import { DeleteConfirmationModal } from '../components/ui/DeleteConfirmationModal';
 import { Appointment } from '../types';
 import { VIEW_IDS } from '../constants';
 
@@ -84,6 +85,9 @@ export const Schedule: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isAiModalOpen, setIsAiModalOpen] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
+    const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+    const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+    const [appointmentToProcess, setAppointmentToProcess] = useState<string | null>(null);
 
     const [currentPage, setCurrentPage] = useState(1);
     const pageSize = 10;
@@ -91,21 +95,24 @@ export const Schedule: React.FC = () => {
     const canEditSchedule = canEdit(VIEW_IDS.SCHEDULE);
 
     // Actions
-    const handleCancel = async (e: React.MouseEvent, id: string) => {
+    const handleCancelClick = (e: React.MouseEvent, id: string) => {
         e.preventDefault();
         e.stopPropagation();
+        setAppointmentToProcess(id);
+        setIsCancelModalOpen(true);
+    };
 
-        setTimeout(async () => {
-            if (window.confirm("Are you sure you want to cancel this appointment? This will release the dock and update the trailer status.")) {
-                try {
-                    await cancelAppointment(id);
-                    addToast('Success', 'Appointment cancelled successfully.', 'success');
-                } catch (err: any) {
-                    console.error(err);
-                    addToast('Cancellation Failed', err.message || 'Unknown error occurred.', 'error');
-                }
+    const handleConfirmCancel = async () => {
+        if (appointmentToProcess) {
+            try {
+                await cancelAppointment(appointmentToProcess);
+                addToast('Success', 'Appointment cancelled successfully.', 'success');
+            } catch (err: any) {
+                console.error(err);
+                addToast('Cancellation Failed', err.message || 'Unknown error occurred.', 'error');
             }
-        }, 50);
+            setAppointmentToProcess(null);
+        }
     };
 
     const handleEdit = (e: React.MouseEvent, id: string) => {
@@ -125,10 +132,16 @@ export const Schedule: React.FC = () => {
         addToast('Approved', 'Appointment approved and scheduled.', 'success');
     };
 
-    const handleReject = async (id: string) => {
-        if (confirm('Reject this appointment request?')) {
-            await updateAppointment(id, { status: 'Rejected' });
+    const handleRejectClick = (id: string) => {
+        setAppointmentToProcess(id);
+        setIsRejectModalOpen(true);
+    };
+
+    const handleConfirmReject = async () => {
+        if (appointmentToProcess) {
+            await updateAppointment(appointmentToProcess, { status: 'Rejected' });
             addToast('Rejected', 'Appointment request rejected.', 'info');
+            setAppointmentToProcess(null);
         }
     };
 
@@ -383,7 +396,7 @@ export const Schedule: React.FC = () => {
                                                                 <Check className="w-3 h-3" /> Approve
                                                             </button>
                                                             <button
-                                                                onClick={() => handleReject(appt.id)}
+                                                                onClick={() => handleRejectClick(appt.id)}
                                                                 className="px-3 py-1.5 bg-white dark:bg-white/5 border border-red-200 dark:border-red-900/30 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 text-xs font-bold rounded-lg transition-colors flex items-center gap-1"
                                                             >
                                                                 <X className="w-3 h-3" /> Reject
@@ -395,7 +408,7 @@ export const Schedule: React.FC = () => {
                                                     {canCancel && (
                                                         <button
                                                             type="button"
-                                                            onClick={(e) => handleCancel(e, appt.id)}
+                                                            onClick={(e) => handleCancelClick(e, appt.id)}
                                                             className="p-2 bg-orange-50 dark:bg-orange-500/10 hover:bg-orange-100 dark:hover:bg-orange-500/20 rounded-lg text-orange-600 dark:text-orange-500 transition-colors"
                                                             title="Cancel Appointment"
                                                         >
@@ -441,6 +454,22 @@ export const Schedule: React.FC = () => {
             <AIScheduleModal
                 isOpen={isAiModalOpen}
                 onClose={() => setIsAiModalOpen(false)}
+            />
+
+            <DeleteConfirmationModal
+                isOpen={isCancelModalOpen}
+                onClose={() => setIsCancelModalOpen(false)}
+                onConfirm={handleConfirmCancel}
+                title="Cancel Appointment"
+                message="Are you sure you want to cancel this appointment? This will release the dock and update the trailer's scheduling priority."
+            />
+
+            <DeleteConfirmationModal
+                isOpen={isRejectModalOpen}
+                onClose={() => setIsRejectModalOpen(false)}
+                onConfirm={handleConfirmReject}
+                title="Reject Request"
+                message="Are you sure you want to reject this appointment request? This will notify the requester that their slot is no longer reserved."
             />
         </div>
     );

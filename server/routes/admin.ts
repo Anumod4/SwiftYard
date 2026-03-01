@@ -115,8 +115,10 @@ router.post('/users/save', async (req: AuthenticatedRequest, res) => {
         }
       });
     } else {
+      console.log('[Admin] Creating new user. Body:', JSON.stringify(req.body, null, 2));
       const users = await fetchAll('users');
       if (users.some((u: any) => u.email === rest.email)) {
+        console.warn('[Admin] Email already registered:', rest.email);
         res.status(400).json({ success: false, error: { message: 'Email already registered' } });
         return;
       }
@@ -126,10 +128,18 @@ router.post('/users/save', async (req: AuthenticatedRequest, res) => {
       // 1. Create User in Clerk via Backend API
       try {
         const secretKey = process.env.CLERK_SECRET_KEY;
+        console.log('[Admin] CLERK_SECRET_KEY present:', !!secretKey);
         if (secretKey) {
           const clerkClient = createClerkClient({ secretKey });
+          console.log('[Admin] Calling Clerk createUser for:', rest.email);
+
+          // Generate a valid username (alphanumeric, min 4 chars)
+          const emailPrefix = rest.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
+          const username = emailPrefix.length >= 4 ? emailPrefix : `${emailPrefix}${Math.random().toString(36).substring(2, 7)}`;
+
           const clerkUser = await clerkClient.users.createUser({
             emailAddress: [rest.email],
+            username: username,
             firstName: req.body.firstName || '',
             lastName: req.body.lastName || '',
             skipPasswordRequirement: true
@@ -141,12 +151,13 @@ router.post('/users/save', async (req: AuthenticatedRequest, res) => {
           console.warn('[Admin] CLERK_SECRET_KEY missing, skipping Clerk provisioning.');
         }
       } catch (err: any) {
-        console.error('[Admin] Failed to create user in Clerk API:', err.errors || err);
-        res.status(500).json({ success: false, error: { message: err.errors?.[0]?.longMessage || 'Failed to provision user in Clerk API' } });
+        console.error('[Admin] Failed to create user in Clerk API. Full error:', JSON.stringify(err, null, 2));
+        res.status(500).json({ success: false, error: { message: err.errors?.[0]?.longMessage || err.message || 'Failed to provision user in Clerk API' } });
         return;
       }
 
       // 2. Create User in Turso DB
+      console.log('[Admin] Proceeding to Turso DB insertion with uid:', newUid);
       const user = {
         uid: newUid,
         email: rest.email,
@@ -158,10 +169,11 @@ router.post('/users/save', async (req: AuthenticatedRequest, res) => {
         displayName: rest.displayName || rest.email.split('@')[0],
         updatedAt: new Date().toISOString()
       };
-      console.log('[Admin] Creating new user payload:', user);
-      console.log('[Admin] Creating new user', user);
+
+      console.log('[Admin] Preparing to insert user into Turso:', JSON.stringify(user, null, 2));
       await insert('users', user);
-      console.log('[Admin] User inserted into DB with uid:', newUid);
+      console.log('[Admin] Successfully inserted user into Turso DB.');
+
       const created = await fetchById('users', newUid, 'uid');
       console.log('[Admin] Created user fetched uid:', created?.uid);
       res.status(201).json({

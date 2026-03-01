@@ -8,11 +8,14 @@ import { Plus, Edit2, Trash2, User, CheckCircle2, XCircle, Briefcase, ListPlus, 
 import { ModalPortal } from '../components/ui/ModalPortal';
 import { Pagination } from '../components/ui/Pagination';
 import { BulkCreatorModal, BulkColumn } from '../components/BulkCreatorModal';
+import { DeleteConfirmationModal } from '../components/ui/DeleteConfirmationModal';
 import { VIEW_IDS } from '../constants';
 
 export const Drivers: React.FC = () => {
   const { drivers, addDriver, updateDriver, deleteDriver, trailers, carriers, t, addToast, canEdit } = useData();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [driverToDelete, setDriverToDelete] = useState<string | null>(null);
   const [editingDriver, setEditingDriver] = useState<Driver | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
@@ -76,13 +79,20 @@ export const Drivers: React.FC = () => {
     setIsModalOpen(false);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this driver?")) return;
-    try {
-      await deleteDriver(id);
-      addToast("Driver deleted successfully", "success");
-    } catch (err: any) {
-      addToast(err.message || "Failed to delete driver", "error");
+  const handleDeleteClick = (id: string) => {
+    setDriverToDelete(id);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (driverToDelete) {
+      try {
+        await deleteDriver(driverToDelete);
+        addToast("Driver deleted successfully", "success");
+      } catch (err: any) {
+        addToast(err.message || "Failed to delete driver", "error");
+      }
+      setDriverToDelete(null);
     }
   };
 
@@ -184,7 +194,7 @@ export const Drivers: React.FC = () => {
             isOnSite={getDriverStatus(driver.id)}
             carrierName={getCarrierDisplayName(driver.carrierId)}
             onEdit={handleOpenModal}
-            onDelete={handleDelete}
+            onDelete={handleDeleteClick}
             t={t}
           />
         ))}
@@ -251,6 +261,14 @@ export const Drivers: React.FC = () => {
         subtitle="Register multiple drivers at once."
         columns={bulkColumns}
         onSubmit={handleBulkSave}
+      />
+
+      <DeleteConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Driver"
+        message="Are you sure you want to delete this driver? Their historical records will be preserved, but they will no longer be available for new assignments."
       />
     </div>
   );

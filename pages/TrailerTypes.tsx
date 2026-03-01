@@ -7,11 +7,14 @@ import { TrailerTypeDefinition } from '../types';
 import { ModalPortal } from '../components/ui/ModalPortal';
 import { Pagination } from '../components/ui/Pagination';
 import { BulkCreatorModal, BulkColumn } from '../components/BulkCreatorModal';
+import { DeleteConfirmationModal } from '../components/ui/DeleteConfirmationModal';
 import { VIEW_IDS } from '../constants';
 
 export const TrailerTypes: React.FC = () => {
   const { trailerTypes, addTrailerType, updateTrailerType, deleteTrailerType, t, addToast, canEdit } = useData();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [typeToDelete, setTypeToDelete] = useState<string | null>(null);
   const [editingType, setEditingType] = useState<TrailerTypeDefinition | null>(null);
 
   const [typeName, setTypeName] = useState('');
@@ -66,14 +69,25 @@ export const TrailerTypes: React.FC = () => {
     setIsModalOpen(false);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this trailer type?")) return;
-    try {
-      await deleteTrailerType(id);
-      addToast("Trailer type deleted successfully", "success");
-    } catch (err: any) {
-      addToast(err.message || "Failed to delete trailer type", "error");
+  const handleDeleteClick = (id: string) => {
+    setTypeToDelete(id);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (typeToDelete) {
+      try {
+        await deleteTrailerType(typeToDelete);
+        addToast("Trailer type deleted successfully", "success");
+      } catch (err: any) {
+        addToast(err.message || "Failed to delete trailer type", "error");
+      }
+      setTypeToDelete(null);
     }
+  };
+
+  const handleDelete = async (id: string) => {
+    // Replaced by DeleteConfirmationModal
   };
 
   const handleBulkSave = async (data: any[]) => {
@@ -130,7 +144,7 @@ export const TrailerTypes: React.FC = () => {
             {canEditTypes && (
               <div className="absolute top-4 right-4 flex gap-2 z-10">
                 <button onClick={() => handleOpenModal(type)} className="p-1.5 bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 rounded-lg text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white transition-colors"><Edit2 className="w-3.5 h-3.5" /></button>
-                <button onClick={() => handleDelete(type.id)} className="p-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-500 rounded-lg transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
+                <button onClick={() => handleDeleteClick(type.id)} className="p-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-500 rounded-lg transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
               </div>
             )}
 
@@ -225,6 +239,14 @@ export const TrailerTypes: React.FC = () => {
         subtitle="Add multiple equipment definitions."
         columns={bulkColumns}
         onSubmit={handleBulkSave}
+      />
+
+      <DeleteConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Trailer Type"
+        message="Are you sure you want to delete this trailer type? This will affect all existing and future appointment scheduling for this equipment category."
       />
     </div>
   );

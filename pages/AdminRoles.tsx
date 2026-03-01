@@ -7,10 +7,13 @@ import { ALL_PERMISSIONS } from '../constants';
 import { Plus, Edit2, Trash2, Shield, Lock, Check, Eye } from 'lucide-react';
 import { ModalPortal } from '../components/ui/ModalPortal';
 import { Pagination } from '../components/ui/Pagination';
+import { DeleteConfirmationModal } from '../components/ui/DeleteConfirmationModal';
 
 export const AdminRoles: React.FC = () => {
     const { roles, addRole, updateRole, deleteRole, addToast } = useData();
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [roleToDelete, setRoleToDelete] = useState<string | null>(null);
     const [editingRole, setEditingRole] = useState<RoleDefinition | null>(null);
 
     const [id, setId] = useState('');
@@ -110,13 +113,20 @@ export const AdminRoles: React.FC = () => {
         }
     };
 
-    const handleDelete = async (roleId: string) => {
-        if (!window.confirm("Are you sure you want to delete this role?")) return;
-        try {
-            await deleteRole(roleId);
-            addToast('Role Deleted', 'Role removed.', 'info');
-        } catch (err: any) {
-            addToast('Error', err.message || 'Failed to delete', 'error');
+    const handleDeleteClick = (roleId: string) => {
+        setRoleToDelete(roleId);
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (roleToDelete) {
+            try {
+                await deleteRole(roleToDelete);
+                addToast('Role Deleted', 'Role removed.', 'info');
+            } catch (err: any) {
+                addToast('Error', err.message || 'Failed to delete', 'error');
+            }
+            setRoleToDelete(null);
         }
     };
 
@@ -142,7 +152,7 @@ export const AdminRoles: React.FC = () => {
                         <div className="absolute top-4 right-4 flex gap-2">
                             <button onClick={() => handleOpenModal(role)} className="p-2 bg-slate-100 dark:bg-white/10 hover:bg-blue-500 hover:text-white rounded-lg transition-colors"><Edit2 className="w-4 h-4" /></button>
                             {!role.isSystem && (
-                                <button onClick={() => handleDelete(role.id)} className="p-2 bg-slate-100 dark:bg-white/10 hover:bg-red-500 hover:text-white rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
+                                <button onClick={() => handleDeleteClick(role.id)} className="p-2 bg-slate-100 dark:bg-white/10 hover:bg-red-500 hover:text-white rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
                             )}
                         </div>
 
@@ -269,6 +279,14 @@ export const AdminRoles: React.FC = () => {
                     </div>
                 </ModalPortal>
             )}
+
+            <DeleteConfirmationModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                onConfirm={handleConfirmDelete}
+                title="Delete Role"
+                message="Are you sure you want to delete this role? This will stop all users assigned to this role from accessing the permitted features."
+            />
         </div>
     );
 };

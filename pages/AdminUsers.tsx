@@ -1,15 +1,17 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { useData } from '../contexts/DataContext';
 import { GlassCard } from '../components/ui/GlassCard';
 import { UserProfileData } from '../types';
-import { Plus, Edit2, Trash2, User, Building, Shield, Check, X, Briefcase, AlertCircle, Warehouse } from 'lucide-react';
+import { Plus, Edit2, Trash2, Shield, Warehouse, Check, Briefcase, AlertCircle, Search } from 'lucide-react';
 import { ModalPortal } from '../components/ui/ModalPortal';
 import { Pagination } from '../components/ui/Pagination';
+import { DeleteConfirmationModal } from '../components/ui/DeleteConfirmationModal';
 
 export const AdminUsers: React.FC = () => {
     const { allUsers = [], facilities = [], roles = [], allCarriers = [], updateUser, deleteUser, addUser, addToast, performHousekeeping } = useData();
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [userToDelete, setUserToDelete] = useState<string | null>(null);
     const [editingUser, setEditingUser] = useState<UserProfileData | null>(null);
 
     const [email, setEmail] = useState('');
@@ -73,7 +75,7 @@ export const AdminUsers: React.FC = () => {
                 } catch { }
                 if (!selectedFacilities.includes(facId)) {
                     setSelectedFacilities(prev => [...prev, facId]);
-                    addToast('Facility Assigned', `User linked to ${facilities.find(f => f.id === facId)?.name || 'Carrier Facility'}`, 'info');
+                    addToast('Facility Assigned', `User linked to ${facilities.find(f => f.id === facId)?.name || 'Carrier Facility'} `, 'info');
                 }
             }
         }
@@ -98,7 +100,7 @@ export const AdminUsers: React.FC = () => {
             email,
             firstName,
             lastName,
-            displayName: `${firstName} ${lastName}`.trim(),
+            displayName: `${firstName} ${lastName} `.trim(),
             role,
             carrierId: isCarrier ? carrierId : null,
             assignedFacilities: selectedFacilities
@@ -121,7 +123,7 @@ export const AdminUsers: React.FC = () => {
                 addToast('User Updated', `${payload.displayName} updated.`, 'success');
             } else {
                 await addUser(payload);
-                addToast('User Created', `${payload.displayName} created. They must use 'Forgot Password' to set their access.`, 'success');
+                addToast('User Created', `${payload.displayName} created.They must use 'Forgot Password' to set their access.`, 'success');
             }
             setIsModalOpen(false);
         } catch (err: any) {
@@ -146,10 +148,25 @@ export const AdminUsers: React.FC = () => {
     };
 
     // Logic to determine if a role is for a carrier
-    const isCarrierRole = (roleId: string) => {
+    const isCarrierRole = (roleId: string | undefined): boolean => {
+        if (!roleId) return false;
+        if (roleId === 'carrier') return true;
         const ro = roles.find(r => r.id === roleId);
         if (ro) return ro.name.toLowerCase().includes('carrier') || ro.id.toLowerCase().includes('carrier');
         return roleId.toLowerCase().includes('carrier');
+    };
+
+    const handleDeleteClick = (uid: string) => {
+        setUserToDelete(uid);
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleConfirmDelete = () => {
+        if (userToDelete) {
+            deleteUser(userToDelete);
+            setUserToDelete(null);
+            setIsDeleteModalOpen(false); // Close modal after deletion
+        }
     };
 
     return (
@@ -167,10 +184,10 @@ export const AdminUsers: React.FC = () => {
                     <GlassCard key={user.uid} className="p-6 relative group">
                         <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button onClick={() => handleOpenModal(user)} className="p-2 bg-slate-100 dark:bg-white/10 hover:bg-blue-500 hover:text-white rounded-lg transition-colors"><Edit2 className="w-4 h-4" /></button>
-                            <button onClick={() => { if (window.confirm('Are you sure you want to delete this user?')) deleteUser(user.uid); }} className="p-2 bg-slate-100 dark:bg-white/10 hover:bg-red-500 hover:text-white rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
+                            <button onClick={() => handleDeleteClick(user.uid)} className="p-2 bg-slate-100 dark:bg-white/10 hover:bg-red-500 hover:text-white rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
                         </div>
                         <div className="flex items-center gap-4 mb-4">
-                            <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg ${user.role === 'admin' ? 'bg-purple-500' : user.role === 'carrier' ? 'bg-amber-500' : 'bg-blue-500'}`}>{(user.displayName || 'U').charAt(0).toUpperCase()}</div>
+                            <div className={`w - 12 h - 12 rounded - full flex items - center justify - center text - white font - bold text - lg ${user.role === 'admin' ? 'bg-purple-500' : user.role === 'carrier' ? 'bg-amber-500' : 'bg-blue-500'} `}>{(user.displayName || 'U').charAt(0).toUpperCase()}</div>
                             <div>
                                 <h3 className="font-bold text-slate-900 dark:text-white">{user.displayName}</h3>
                                 <p className="text-xs text-slate-500">{user.email}</p>
@@ -186,7 +203,7 @@ export const AdminUsers: React.FC = () => {
                                     )}
                                     Type
                                 </span>
-                                <span className={`font-black uppercase text-[10px] px-2 py-0.5 rounded ${isCarrierRole(user.role) || user.carrierId ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'}`}>
+                                <span className={`font - black uppercase text - [10px] px - 2 py - 0.5 rounded ${isCarrierRole(user.role) || user.carrierId ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'} `}>
                                     {isCarrierRole(user.role) || user.carrierId ? 'Carrier User' : 'Yard User'}
                                 </span>
                             </div>
@@ -278,6 +295,14 @@ export const AdminUsers: React.FC = () => {
                     </div>
                 </ModalPortal>
             )}
+
+            <DeleteConfirmationModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                onConfirm={handleConfirmDelete}
+                title="Delete User"
+                message="Are you sure you want to delete this user? This action cannot be undone and will permanently remove their access to the system."
+            />
         </div>
     );
 };

@@ -8,11 +8,14 @@ import { Plus, Edit2, Trash2, Briefcase, Mail, Phone, ListPlus, Search } from 'l
 import { ModalPortal } from '../components/ui/ModalPortal';
 import { Pagination } from '../components/ui/Pagination';
 import { BulkCreatorModal, BulkColumn } from '../components/BulkCreatorModal';
+import { DeleteConfirmationModal } from '../components/ui/DeleteConfirmationModal';
 import { VIEW_IDS } from '../constants';
 
 export const Carriers: React.FC = () => {
   const { carriers, addCarrier, updateCarrier, deleteCarrier, t, addToast, canEdit } = useData();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [carrierToDelete, setCarrierToDelete] = useState<string | null>(null);
   const [editingCarrier, setEditingCarrier] = useState<Carrier | null>(null);
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -61,13 +64,20 @@ export const Carriers: React.FC = () => {
     setIsModalOpen(false);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this carrier?")) return;
-    try {
-      await deleteCarrier(id);
-      addToast("Carrier deleted successfully", "success");
-    } catch (err: any) {
-      addToast(err.message || "Failed to delete carrier", "error");
+  const handleDeleteClick = (id: string) => {
+    setCarrierToDelete(id);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (carrierToDelete) {
+      try {
+        await deleteCarrier(carrierToDelete);
+        addToast("Carrier deleted successfully", "success");
+      } catch (err: any) {
+        addToast(err.message || "Failed to delete carrier", "error");
+      }
+      setCarrierToDelete(null);
     }
   };
 
@@ -152,7 +162,7 @@ export const Carriers: React.FC = () => {
             carrier={carrier}
             canEdit={canEditCarriers}
             onEdit={handleOpenModal}
-            onDelete={handleDelete}
+            onDelete={handleDeleteClick}
             t={t}
           />
         ))}
@@ -202,6 +212,14 @@ export const Carriers: React.FC = () => {
         subtitle="Add multiple transport partners."
         columns={bulkColumns}
         onSubmit={handleBulkSave}
+      />
+
+      <DeleteConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Carrier"
+        message="Are you sure you want to delete this carrier? This will remove all their associated system records and active transport assignments."
       />
     </div>
   );

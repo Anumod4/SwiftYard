@@ -6,6 +6,7 @@ import { Settings as SettingsIcon, Moon, Database, Trash2, AlertTriangle, Downlo
 import { Shift, WhatsAppRecipient } from '../types';
 import { Pagination } from '../components/ui/Pagination';
 import { DatePicker } from '../components/ui/DatePicker';
+import { DeleteConfirmationModal } from '../components/ui/DeleteConfirmationModal';
 
 // Inner component to handle input state locally and save on blur
 const ShiftCard: React.FC<{
@@ -82,6 +83,12 @@ export const Settings: React.FC = () => {
     const { settings, updateSettings, resetData, resetEfficiencyStats, exportDatabase, importDatabase, t, addToast, yardSlots } = useData();
     const [fileInputKey, setFileInputKey] = useState(0);
     const [activeDay, setActiveDay] = useState('Monday');
+
+    // Modal states
+    const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+    const [isEffResetModalOpen, setIsEffResetModalOpen] = useState(false);
+    const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+    const [pendingImportFile, setPendingImportFile] = useState<File | null>(null);
 
     // Local state for settings inputs to prevent API call on every keystroke
     const [localYardName, setLocalYardName] = useState(settings.yardName || 'SwiftYard');
@@ -283,29 +290,39 @@ export const Settings: React.FC = () => {
     }, [recipients, waCurrentPage, waPageSize]);
 
     const handleReset = () => {
-        if (window.confirm("Are you sure you want to delete ALL data? This includes all appointments, drivers, and resource configurations. This action cannot be undone.")) {
-            resetData();
-        }
+        setIsResetModalOpen(true);
+    };
+
+    const handleConfirmReset = () => {
+        resetData();
     };
 
     const handleResetEfficiency = async () => {
-        if (window.confirm("Are you sure you want to reset Operational Efficiency metrics to 0? This effectively hides all historical data from calculation.")) {
-            await resetEfficiencyStats();
-            addToast('Metrics Reset', 'Operational Efficiency numbers reset to 0.', 'info');
-        }
+        setIsEffResetModalOpen(true);
+    };
+
+    const handleConfirmEffReset = async () => {
+        await resetEfficiencyStats();
+        addToast('Metrics Reset', 'Operational Efficiency numbers reset to 0.', 'info');
     };
 
     const handleFileImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
+        const file = e.currentTarget.files?.[0];
         if (file) {
-            if (window.confirm("Importing a backup will OVERWRITE all current data. This action cannot be undone. Do you want to proceed?")) {
-                try {
-                    await importDatabase(file);
-                    addToast('Import Successful', 'Data restored from Excel.', 'success');
-                } catch (e: any) {
-                    addToast('Import Failed', e.message || 'Unknown error', 'error');
-                }
+            setPendingImportFile(file);
+            setIsImportModalOpen(true);
+        }
+    };
+
+    const handleConfirmImport = async () => {
+        if (pendingImportFile) {
+            try {
+                await importDatabase(pendingImportFile);
+                addToast('Import Successful', 'Data restored from Excel.', 'success');
+            } catch (e: any) {
+                addToast('Import Failed', e.message || 'Unknown error', 'error');
             }
+            setPendingImportFile(null);
             setFileInputKey(prev => prev + 1);
         }
     };
@@ -841,6 +858,33 @@ export const Settings: React.FC = () => {
                 </div>
             </div>
 
+            <DeleteConfirmationModal
+                isOpen={isResetModalOpen}
+                onClose={() => setIsResetModalOpen(false)}
+                onConfirm={handleConfirmReset}
+                title="WIPE ALL DATA"
+                message="Are you sure you want to delete ALL data? This includes all appointments, drivers, and resource configurations. This action cannot be undone and will reset the system to its initial state."
+            />
+
+            <DeleteConfirmationModal
+                isOpen={isEffResetModalOpen}
+                onClose={() => setIsEffResetModalOpen(false)}
+                onConfirm={handleConfirmEffReset}
+                title="Reset Metrics"
+                message="Are you sure you want to reset Operational Efficiency metrics to 0? This effectively hides all historical data from calculation. Current active appointments will remain unaffected."
+            />
+
+            <DeleteConfirmationModal
+                isOpen={isImportModalOpen}
+                onClose={() => {
+                    setIsImportModalOpen(false);
+                    setPendingImportFile(null);
+                    setFileInputKey(prev => prev + 1);
+                }}
+                onConfirm={handleConfirmImport}
+                title="Confirm Data Import"
+                message="Importing a backup will OVERWRITE all current data in the system. This action cannot be undone. Do you want to proceed with the selected file?"
+            />
             {/* Facility Working Hours */}
             <section className="mb-10">
                 <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center">

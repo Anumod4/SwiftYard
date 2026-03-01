@@ -891,19 +891,33 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
   ) => {
     setActionLoading(true);
     setActionLoadingMessage('Creating user...');
-    const response = await api.admin.createUser(user as any);
-    if (response.success) await fetchData();
-    setActionLoading(false);
-    setActionLoadingMessage('');
+    try {
+      const response = await api.admin.createUser(user as any);
+      if (response.success) {
+        await fetchData();
+      } else {
+        throw new Error(response.error?.message || 'Failed to create user');
+      }
+    } finally {
+      setActionLoading(false);
+      setActionLoadingMessage('');
+    }
   };
 
   const updateUser = async (uid: string, updates: Partial<UserProfileData>) => {
     setActionLoading(true);
     setActionLoadingMessage('Updating user...');
-    const response = await api.admin.updateUser(uid, updates);
-    if (response.success) await fetchData();
-    setActionLoading(false);
-    setActionLoadingMessage('');
+    try {
+      const response = await api.admin.updateUser(uid, updates);
+      if (response.success) {
+        await fetchData();
+      } else {
+        throw new Error(response.error?.message || 'Failed to update user');
+      }
+    } finally {
+      setActionLoading(false);
+      setActionLoadingMessage('');
+    }
   };
 
   const deleteUser = async (uid: string) => {
