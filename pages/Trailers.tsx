@@ -143,14 +143,7 @@ export const Trailers: React.FC = () => {
 
     // Filter Drivers: Only show "Away" drivers (not currently on site) based on Carrier
     const filteredDrivers = useMemo(() => {
-        // 1. Identify drivers currently on-site (linked to trailers with active status)
-        const onSiteDriverIds = new Set(
-            trailers
-                .filter(t => ['GatedIn', 'MovingToDock', 'ReadyForCheckIn', 'CheckedIn', 'ReadyForCheckOut', 'CheckedOut', 'MovingToYard', 'InYard'].includes(t.status) && t.currentDriverId)
-                .map(t => t.currentDriverId)
-        );
-
-        const awayDrivers = drivers.filter(d => !onSiteDriverIds.has(d.id));
+        const awayDrivers = drivers.filter(d => d.status === 'Away');
 
         if (!carrierId) return awayDrivers;
 
@@ -158,7 +151,7 @@ export const Trailers: React.FC = () => {
         return awayDrivers.filter(d =>
             d.carrierId && d.carrierId.toLowerCase() === carrierId.toLowerCase()
         );
-    }, [drivers, trailers, carrierId]);
+    }, [drivers, carrierId]);
 
     // Handle Driver Selection (Auto-populates Carrier)
     const handleDriverChange = (newDriverId: string) => {

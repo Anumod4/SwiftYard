@@ -70,6 +70,7 @@ export interface Driver {
   licenseNumber: string;
   phone: string;
   carrierId?: string;
+  status: 'Away' | 'On Site';
 }
 
 export interface TrailerHistory {

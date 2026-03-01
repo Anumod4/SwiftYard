@@ -125,12 +125,6 @@ export const Drivers: React.FC = () => {
     addToast('Bulk Create', `Created ${data.length} drivers.`, 'success');
   };
 
-  const getDriverStatus = (driverId: string) => {
-    return trailers.some(t =>
-      t.currentDriverId === driverId &&
-      ['GatedIn', 'InYard', 'CheckedIn', 'CheckedOut'].includes(t.status)
-    );
-  };
 
   const filteredDrivers = useMemo(() => {
     let result = drivers;
@@ -154,8 +148,8 @@ export const Drivers: React.FC = () => {
           valA = getCarrierDisplayName(a.carrierId).toLowerCase();
           valB = getCarrierDisplayName(b.carrierId).toLowerCase();
         } else if (sortConfig.key === 'status') {
-          valA = getDriverStatus(a.id) ? 'On Site' : 'Away';
-          valB = getDriverStatus(b.id) ? 'On Site' : 'Away';
+          valA = a.status;
+          valB = b.status;
         } else if (typeof valA === 'string') {
           valA = valA.toLowerCase();
           valB = (typeof valB === 'string' ? valB : String(valB)).toLowerCase();
@@ -260,7 +254,7 @@ export const Drivers: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-slate-200 dark:divide-white/5">
                 {paginatedDrivers.map(driver => {
-                  const isOnSite = getDriverStatus(driver.id);
+                  const isOnSite = driver.status === 'On Site';
                   const carrierName = getCarrierDisplayName(driver.carrierId);
 
                   return (
