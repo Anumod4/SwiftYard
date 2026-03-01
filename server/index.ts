@@ -256,9 +256,11 @@ const startServer = async () => {
     await runMigrations();
     console.log("Database schema initialized successfully");
 
-    // Bind to all available interfaces (IPv4) for Docker / Cloud Run compatibility
-    // 0.0.0.0 is the standard for Cloud Run to correctly route external traffic to your container
-    httpServer.listen(PORT, "0.0.0.0", () => {
+    // Let Cloud Run assign the port automatically via process.env.PORT
+    const bindPort = process.env.PORT ? parseInt(process.env.PORT, 10) : PORT;
+
+    // Bind to all IPv4 interfaces (0.0.0.0) so Cloud Run can route traffic to us
+    httpServer.listen(bindPort, "0.0.0.0", () => {
       console.log(`
 ╔═══════════════════════════════════════════════════════════╗
 ║                                                           ║
