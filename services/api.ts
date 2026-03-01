@@ -109,7 +109,7 @@ async function request<T>(
     token ? "present" : "missing",
   );
 
-  try {
+  const attemptFetch = async () => {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       ...options,
       headers,
@@ -118,27 +118,33 @@ async function request<T>(
     const text = await response.text();
 
     if (!text) {
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-      return { success: true };
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return { success: true } as ApiResponse<T>;
     }
 
     const data = JSON.parse(text);
-
     if (!response.ok) {
       throw new Error(data.error?.message || `HTTP ${response.status}`);
     }
+    return data as ApiResponse<T>;
+  };
 
-    return data;
+  try {
+    return await attemptFetch();
   } catch (error: any) {
+    // On network failure (e.g. Render cold start), wait 4s and retry once
+    if (error instanceof TypeError && error.message.includes("fetch")) {
+      console.warn("[API] Network error, retrying in 4s...", endpoint);
+      await new Promise(r => setTimeout(r, 4000));
+      try {
+        return await attemptFetch();
+      } catch (retryError: any) {
+        console.error("API Retry Error:", retryError);
+        return { success: false, error: { message: retryError.message || "Network error" } };
+      }
+    }
     console.error("API Request Error:", error);
-    return {
-      success: false,
-      error: {
-        message: error.message || "Network error",
-      },
-    };
+    return { success: false, error: { message: error.message || "Network error" } };
   }
 }
 
