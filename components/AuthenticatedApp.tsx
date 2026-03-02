@@ -144,95 +144,93 @@ const YardStaffApp = () => {
             <div className="flex h-screen w-full overflow-hidden bg-slate-50 dark:bg-[#121212] text-slate-900 dark:text-white">
                 <Sidebar currentView={currentView} setCurrentView={setCurrentView} />
                 <main className="flex-1 ml-20 lg:ml-64 h-full bg-gradient-to-br from-slate-50 to-slate-200 dark:from-[#121212] dark:to-[#0f172a] relative flex flex-col">
-                    {currentView !== "driver-board" && (
-                        <div className="w-full flex justify-between items-center px-8 pt-6 pb-2 z-40 shrink-0 pointer-events-none print:hidden">
-                            <div
-                                className="relative pointer-events-auto"
-                                ref={facilityMenuRef}
+                    <div className="w-full flex justify-between items-center px-8 pt-6 pb-2 z-40 shrink-0 pointer-events-none print:hidden">
+                        <div
+                            className="relative pointer-events-auto"
+                            ref={facilityMenuRef}
+                        >
+                            <button
+                                onClick={() => setIsFacilityMenuOpen(!isFacilityMenuOpen)}
+                                className="flex items-center gap-4 bg-white/60 dark:bg-black/40 backdrop-blur-md px-5 py-2.5 rounded-2xl border border-white/20 shadow-sm transition-all group"
                             >
-                                <button
-                                    onClick={() => setIsFacilityMenuOpen(!isFacilityMenuOpen)}
-                                    className="flex items-center gap-4 bg-white/60 dark:bg-black/40 backdrop-blur-md px-5 py-2.5 rounded-2xl border border-white/20 shadow-sm transition-all group"
+                                <div
+                                    className={`p-2 rounded-xl transition-colors ${currentFacilityDisplay.type === "admin" ? "bg-purple-500/20 text-purple-600" : "bg-blue-500/20 text-blue-600"}`}
                                 >
-                                    <div
-                                        className={`p-2 rounded-xl transition-colors ${currentFacilityDisplay.type === "admin" ? "bg-purple-500/20 text-purple-600" : "bg-blue-500/20 text-blue-600"}`}
-                                    >
-                                        {currentFacilityDisplay.type === "admin" ? (
-                                            <Shield className="w-5 h-5" />
-                                        ) : (
-                                            <Building className="w-5 h-5" />
+                                    {currentFacilityDisplay.type === "admin" ? (
+                                        <Shield className="w-5 h-5" />
+                                    ) : (
+                                        <Building className="w-5 h-5" />
+                                    )}
+                                </div>
+                                <div className="text-left">
+                                    <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest leading-none mb-1">
+                                        {currentFacilityDisplay.type === "admin"
+                                            ? "System Context"
+                                            : "Facility"}
+                                    </p>
+                                    <div className="flex items-center gap-2">
+                                        <h2 className="text-base font-bold text-slate-900 dark:text-white leading-none">
+                                            {currentFacilityDisplay.name}
+                                        </h2>
+                                        <ChevronDown className="w-4 h-4 text-slate-400" />
+                                    </div>
+                                </div>
+                            </button>
+                            {isFacilityMenuOpen && (
+                                <div className="absolute top-full left-0 mt-2 w-72 bg-white dark:bg-[#1e1e1e] border border-slate-200 rounded-2xl shadow-2xl overflow-hidden z-[100]">
+                                    <div className="p-2 max-h-[300px] overflow-y-auto space-y-1">
+                                        {isAdmin && (
+                                            <button
+                                                onClick={() => handleFacilitySwitch(null)}
+                                                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl ${!currentFacilityId ? "bg-purple-500/10 text-purple-700" : "text-slate-600 dark:text-gray-300"}`}
+                                            >
+                                                <div
+                                                    className={`w-8 h-8 rounded-lg flex items-center justify-center ${!currentFacilityId ? "bg-purple-500 text-white" : "bg-slate-200"}`}
+                                                >
+                                                    <Shield className="w-4 h-4" />
+                                                </div>
+                                                <div className="text-left flex-1">
+                                                    <p className="text-sm font-bold">Admin Console</p>
+                                                </div>
+                                            </button>
                                         )}
-                                    </div>
-                                    <div className="text-left">
-                                        <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest leading-none mb-1">
-                                            {currentFacilityDisplay.type === "admin"
-                                                ? "System Context"
-                                                : "Facility"}
-                                        </p>
-                                        <div className="flex items-center gap-2">
-                                            <h2 className="text-base font-bold text-slate-900 dark:text-white leading-none">
-                                                {currentFacilityDisplay.name}
-                                            </h2>
-                                            <ChevronDown className="w-4 h-4 text-slate-400" />
-                                        </div>
-                                    </div>
-                                </button>
-                                {isFacilityMenuOpen && (
-                                    <div className="absolute top-full left-0 mt-2 w-72 bg-white dark:bg-[#1e1e1e] border border-slate-200 rounded-2xl shadow-2xl overflow-hidden z-[100]">
-                                        <div className="p-2 max-h-[300px] overflow-y-auto space-y-1">
-                                            {isAdmin && (
-                                                <button
-                                                    onClick={() => handleFacilitySwitch(null)}
-                                                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl ${!currentFacilityId ? "bg-purple-500/10 text-purple-700" : "text-slate-600 dark:text-gray-300"}`}
+                                        {allowedFacilities.map((f) => (
+                                            <button
+                                                key={f.id}
+                                                onClick={() => handleFacilitySwitch(f.id)}
+                                                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl ${currentFacilityId === f.id ? "bg-blue-500/10 text-blue-700" : "text-slate-600 dark:text-gray-300"}`}
+                                            >
+                                                <div
+                                                    className={`w-8 h-8 rounded-lg flex items-center justify-center ${currentFacilityId === f.id ? "bg-blue-500 text-white" : "bg-slate-200"}`}
                                                 >
-                                                    <div
-                                                        className={`w-8 h-8 rounded-lg flex items-center justify-center ${!currentFacilityId ? "bg-purple-500 text-white" : "bg-slate-200"}`}
-                                                    >
-                                                        <Shield className="w-4 h-4" />
-                                                    </div>
-                                                    <div className="text-left flex-1">
-                                                        <p className="text-sm font-bold">Admin Console</p>
-                                                    </div>
-                                                </button>
-                                            )}
-                                            {allowedFacilities.map((f) => (
-                                                <button
-                                                    key={f.id}
-                                                    onClick={() => handleFacilitySwitch(f.id)}
-                                                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl ${currentFacilityId === f.id ? "bg-blue-500/10 text-blue-700" : "text-slate-600 dark:text-gray-300"}`}
-                                                >
-                                                    <div
-                                                        className={`w-8 h-8 rounded-lg flex items-center justify-center ${currentFacilityId === f.id ? "bg-blue-500 text-white" : "bg-slate-200"}`}
-                                                    >
-                                                        <Building className="w-4 h-4" />
-                                                    </div>
-                                                    <div className="text-left flex-1">
-                                                        <p className="text-sm font-bold truncate">
-                                                            {f.name}
-                                                        </p>
-                                                    </div>
-                                                </button>
-                                            ))}
-                                        </div>
+                                                    <Building className="w-4 h-4" />
+                                                </div>
+                                                <div className="text-left flex-1">
+                                                    <p className="text-sm font-bold truncate">
+                                                        {f.name}
+                                                    </p>
+                                                </div>
+                                            </button>
+                                        ))}
                                     </div>
-                                )}
-                            </div>
-                            <div className="pointer-events-auto flex items-center gap-3">
-                                <button
-                                    onClick={handleRefresh}
-                                    disabled={isRefreshing}
-                                    className="p-2.5 rounded-full bg-white dark:bg-white/10 shadow-sm border border-slate-200 transition-all"
-                                >
-                                    <RefreshCw
-                                        className={`w-5 h-5 ${isRefreshing ? "animate-spin" : ""}`}
-                                    />
-                                </button>
-                                <UserProfile />
-                            </div>
+                                </div>
+                            )}
                         </div>
-                    )}
+                        <div className="pointer-events-auto flex items-center gap-3">
+                            <button
+                                onClick={handleRefresh}
+                                disabled={isRefreshing}
+                                className="p-2.5 rounded-full bg-white dark:bg-white/10 shadow-sm border border-slate-200 transition-all"
+                            >
+                                <RefreshCw
+                                    className={`w-5 h-5 ${isRefreshing ? "animate-spin" : ""}`}
+                                />
+                            </button>
+                            <UserProfile />
+                        </div>
+                    </div>
                     <div
-                        className={`relative z-10 flex-1 overflow-y-auto ${currentView === "driver-board" ? "bg-[#0f172a]" : ""}`}
+                        className="relative z-10 flex-1 overflow-y-auto"
                     >
                         <Suspense fallback={
                             <div className="h-full w-full flex flex-col items-center justify-center p-12">

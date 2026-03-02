@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useData } from '../contexts/DataContext';
 import { Trailer, Appointment } from '../types';
-import { Truck, Clock, ArrowRight, Play, CheckCircle2, AlertTriangle, MapPin, StopCircle, Timer, Calendar, RefreshCw, CheckSquare, MousePointerClick } from 'lucide-react';
+import { Truck, Clock, ArrowRight, Play, CheckCircle2, AlertTriangle, MapPin, StopCircle, Timer, Calendar, RefreshCw, CheckSquare, MousePointerClick, MonitorPlay } from 'lucide-react';
 
 export const PublicDriverBoard: React.FC = () => {
     const {
@@ -237,42 +237,27 @@ export const PublicDriverBoard: React.FC = () => {
     const isDark = theme === 'dark';
 
     return (
-        <div className={`h-full flex flex-col font-sans overflow-hidden ${isDark ? 'bg-[#0f172a] text-white' : 'bg-slate-100 text-slate-900'}`}>
-            {/* Header */}
-            <div className={`h-24 flex items-center justify-between px-8 shadow-2xl z-20 ${isDark ? 'bg-slate-900 border-b border-slate-800' : 'bg-white border-b border-slate-200'}`}>
-                <div className="flex items-center gap-6">
-                    <div className={`p-3 rounded-2xl ${isDark ? 'bg-blue-600 shadow-[0_0_20px_rgba(37,99,235,0.5)]' : 'bg-blue-500 shadow-lg'}`}>
-                        <Truck className="w-10 h-10 text-white" />
-                    </div>
-                    <div>
-                        <h1 className={`text-4xl font-black tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>Live trailer status</h1>
-                        <p className={`font-medium tracking-widest text-sm mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Driver instructions • {onSiteTrailers.length} vehicles on site</p>
-                    </div>
+        <div className="h-full flex flex-col p-4 md:p-8 animate-in fade-in duration-500 overflow-hidden">
+            <div className="mb-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+                <div>
+                    <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2 flex items-center">
+                        <MonitorPlay className="w-8 h-8 mr-3 text-blue-500" />
+                        Live Board
+                    </h1>
+                    <p className="text-slate-500 dark:text-gray-400">Driver instructions • {onSiteTrailers.length} vehicles on site</p>
                 </div>
 
-                <div className="flex items-center gap-6">
-                    <button
-                        onClick={handleRefresh}
-                        disabled={isRefreshing}
-                        className={`p-3 rounded-xl transition-all ${isDark ? 'bg-slate-800/50 hover:bg-slate-700 border border-slate-700 hover:border-slate-600' : 'bg-slate-200 hover:bg-slate-300 border border-slate-300'} ${isRefreshing ? 'opacity-50 cursor-not-allowed' : 'active:scale-95'}`}
-                        title="Refresh Data"
-                    >
-                        <RefreshCw className={`w-6 h-6 ${isDark ? 'text-slate-400' : 'text-slate-600'} ${isRefreshing ? 'animate-spin text-white' : ''}`} />
-                    </button>
-
+                <div className="flex gap-4 text-xs font-bold text-slate-500 dark:text-gray-400">
                     <div className="text-right">
-                        <div className={`text-5xl font-mono font-bold tracking-tighter ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>
+                        <div className="text-2xl font-mono font-bold tracking-tighter text-emerald-600 dark:text-emerald-400">
                             {currentTime.toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit' })}
-                        </div>
-                        <div className={`font-bold uppercase tracking-widest text-sm mt-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-                            {currentTime.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
                         </div>
                     </div>
                 </div>
             </div>
 
             {/* Board Content */}
-            <div className={`flex-1 overflow-y-auto p-6 custom-scrollbar ${isDark ? 'bg-gradient-to-b from-[#0f172a] to-[#1e293b]' : 'bg-gradient-to-b from-slate-100 to-slate-200'}`}>
+            <div className="flex-1 overflow-y-auto custom-scrollbar">
                 {onSiteTrailers.length === 0 ? (
                     <div className={`h-full flex flex-col items-center justify-center ${isDark ? 'text-slate-600' : 'text-slate-400'}`}>
                         <Truck className="w-32 h-32 opacity-20 mb-4" />
