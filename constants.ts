@@ -26,25 +26,27 @@ export const MOCK_APPOINTMENTS: Appointment[] = [];
 
 // Shared ID constants for Permission Management
 export const VIEW_IDS = {
-    DASHBOARD: 'dashboard',
-    DRIVER_BOARD: 'driver-board',
-    CALENDAR: 'calendar',
-    SCHEDULE: 'schedule',
-    GUARD_GATE: 'guard-gate',
-    GATEHOUSE: 'gatehouse',
-    TRAILERS: 'trailers',
-    RESOURCES: 'resources',
-    CARRIERS: 'carriers',
-    TRAILER_TYPES: 'trailer-types',
-    DRIVERS: 'drivers',
-    GATE_OUT: 'gateout',
-    SETTINGS: 'settings',
-    HELP: 'help',
-    // Carrier Portal Specific Permissions
-    CARRIER_DASHBOARD: 'carrier-dashboard',
-    CARRIER_BOOKING: 'carrier-booking',
-    CARRIER_APPOINTMENTS: 'carrier-appointments',
-    CARRIER_FACILITIES: 'carrier-facilities'
+  DASHBOARD: 'dashboard',
+  DRIVER_BOARD: 'driver-board',
+  CALENDAR: 'calendar',
+  SCHEDULE: 'schedule',
+  GUARD_GATE: 'guard-gate',
+  GATEHOUSE: 'gatehouse',
+  TRAILERS: 'trailers',
+  RESOURCES: 'resources',
+  CARRIERS: 'carriers',
+  TRAILER_TYPES: 'trailer-types',
+  DRIVERS: 'drivers',
+  GATE_OUT: 'gateout',
+  SETTINGS: 'settings',
+  HELP: 'help',
+  BILLING: 'billing',
+  VISIBILITY: 'visibility',
+  // Carrier Portal Specific Permissions
+  CARRIER_DASHBOARD: 'carrier-dashboard',
+  CARRIER_BOOKING: 'carrier-booking',
+  CARRIER_APPOINTMENTS: 'carrier-appointments',
+  CARRIER_FACILITIES: 'carrier-facilities'
 };
 
 export const NAV_ITEMS = [
@@ -54,9 +56,11 @@ export const NAV_ITEMS = [
   { id: VIEW_IDS.SCHEDULE, label: 'Appointments', icon: 'CalendarClock' },
   { id: VIEW_IDS.GUARD_GATE, label: 'Guard Gate', icon: 'Barrier' },
   { id: VIEW_IDS.GATEHOUSE, label: 'Check-in/Out', icon: 'ShieldCheck' },
+  { id: VIEW_IDS.VISIBILITY, label: 'Yard Visibility', icon: 'Warehouse' },
   { id: VIEW_IDS.TRAILERS, label: 'Trailers', icon: 'Container' },
-  { id: VIEW_IDS.RESOURCES, label: 'Resources', icon: 'Warehouse' },
+  { id: VIEW_IDS.RESOURCES, label: 'Resources', icon: 'Box' },
   { id: VIEW_IDS.CARRIERS, label: 'Carriers', icon: 'Briefcase' },
+  { id: VIEW_IDS.BILLING, label: 'Billing & Ledgers', icon: 'FileText' },
   { id: VIEW_IDS.TRAILER_TYPES, label: 'Trailer Types', icon: 'Truck' },
   { id: VIEW_IDS.DRIVERS, label: 'Drivers', icon: 'Users' },
   { id: VIEW_IDS.SETTINGS, label: 'Settings', icon: 'Settings' },
@@ -64,10 +68,10 @@ export const NAV_ITEMS = [
 ];
 
 export const CARRIER_NAV_ITEMS = [
-    { id: VIEW_IDS.CARRIER_DASHBOARD, label: 'Carrier: Dashboard', icon: 'LayoutDashboard' },
-    { id: VIEW_IDS.CARRIER_BOOKING, label: 'Carrier: Booking', icon: 'CalendarPlus' },
-    { id: VIEW_IDS.CARRIER_APPOINTMENTS, label: 'Carrier: Appointments', icon: 'Calendar' },
-    { id: VIEW_IDS.CARRIER_FACILITIES, label: 'Carrier: Facilities', icon: 'Building2' },
+  { id: VIEW_IDS.CARRIER_DASHBOARD, label: 'Carrier: Dashboard', icon: 'LayoutDashboard' },
+  { id: VIEW_IDS.CARRIER_BOOKING, label: 'Carrier: Booking', icon: 'CalendarPlus' },
+  { id: VIEW_IDS.CARRIER_APPOINTMENTS, label: 'Carrier: Appointments', icon: 'Calendar' },
+  { id: VIEW_IDS.CARRIER_FACILITIES, label: 'Carrier: Facilities', icon: 'Building2' },
 ];
 
 export const ALL_PERMISSIONS = [...NAV_ITEMS, ...CARRIER_NAV_ITEMS];
@@ -88,7 +92,9 @@ export const TRANSLATIONS = {
     'nav.drivers': 'Drivers',
     'nav.settings': 'Settings',
     'nav.help': 'Help & Docs',
-    
+    'nav.billing': 'Billing & Ledgers',
+    'nav.visibility': 'Yard Visibility',
+
     'dash.title': 'SwiftYard Dashboard',
     'dash.subtitle': 'Real-time yard overview and resource tracking.',
     'dash.live': 'Live System',
@@ -127,14 +133,14 @@ export const TRANSLATIONS = {
     'common.actions': 'Actions',
     'common.id': 'ID',
     'common.duration': 'Duration',
-    
+
     'schedule.title': 'Appointment Management',
     'schedule.subtitle': 'Appointments log and current status.',
     'schedule.new': 'New Appointment',
     'schedule.searchPlaceholder': 'Search by Driver, Trailer, or ID...',
     'schedule.emptyTitle': 'No appointments found',
     'schedule.emptyDesc': 'Adjust filters or create a new appointment.',
-    
+
     'gate.title': 'Dock Door Check-In/Out',
     'gate.subtitle': 'Process arrivals and assign docks.',
     'gate.searchPlaceholder': 'Search scheduled arrivals...',
@@ -309,7 +315,7 @@ export const TRANSLATIONS = {
     'dash.alert': 'चेतावनी',
     'dash.alertMsg': 'संसाधन अनुपलब्ध',
     'dash.congestion': 'भीड़भाड़ निगरानी',
-    
+
     'nav.dashboard': 'कमांड सेंटर',
     'nav.driver-board': 'लाइव बोर्ड',
     'nav.guard-gate': 'गार्ड गेट',

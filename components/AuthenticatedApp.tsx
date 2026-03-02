@@ -27,9 +27,11 @@ const Trailers = lazy(() => import("../pages/Trailers").then(m => ({ default: m.
 const Carriers = lazy(() => import("../pages/Carriers").then(m => ({ default: m.Carriers })));
 const GuardGate = lazy(() => import("../pages/GuardGate").then(m => ({ default: m.GuardGate })));
 const AdminUsers = lazy(() => import("../pages/AdminUsers").then(m => ({ default: m.AdminUsers })));
-const AdminRoles = lazy(() => import("../pages/AdminRoles").then(m => ({ default: m.AdminRoles })));
-const AdminFacilities = lazy(() => import("../pages/AdminFacilities").then(m => ({ default: m.AdminFacilities })));
-const HelpDocs = lazy(() => import("../pages/HelpDocs").then(m => ({ default: m.HelpDocs })));
+const AdminRoles = lazy(() => import('../pages/AdminRoles').then(module => ({ default: module.AdminRoles })));
+const AdminFacilities = lazy(() => import('../pages/AdminFacilities').then(module => ({ default: module.AdminFacilities })));
+const HelpDocs = lazy(() => import('../pages/HelpDocs').then(module => ({ default: module.HelpDocs })));
+const Billing = lazy(() => import('../pages/Billing').then(module => ({ default: module.Billing })));
+const YardVisibility = lazy(() => import('../pages/YardVisibility').then(module => ({ default: module.YardVisibility })));
 
 // High-level role-based apps
 const DriverView = lazy(() => import("../pages/DriverView").then(m => ({ default: m.DriverView })));
@@ -122,6 +124,10 @@ const YardStaffApp = () => {
                 return <Settings />;
             case "help":
                 return <HelpDocs />;
+            case "billing":
+                return <Billing />;
+            case "yard-visibility":
+                return <YardVisibility />;
             default:
                 return isAdmin && !currentFacilityId ? (
                     <AdminUsers />

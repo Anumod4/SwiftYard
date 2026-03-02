@@ -7,6 +7,7 @@ import { Shift, WhatsAppRecipient } from '../types';
 import { Pagination } from '../components/ui/Pagination';
 import { DatePicker } from '../components/ui/DatePicker';
 import { DeleteConfirmationModal } from '../components/ui/DeleteConfirmationModal';
+import { DollarSign } from 'lucide-react';
 
 // Inner component to handle input state locally and save on blur
 const ShiftCard: React.FC<{
@@ -141,6 +142,12 @@ export const Settings: React.FC = () => {
     const [localGateInFlow, setLocalGateInFlow] = useState<string>(settings.gateInFlow || 'YardDefault');
     const [localDefaultYardSlotId, setLocalDefaultYardSlotId] = useState(settings.defaultYardSlotId || '');
 
+    // Billing & Rates state
+    const [localFreeYardHours, setLocalFreeYardHours] = useState(String(settings.defaultBillingRules?.freeYardHours || 48));
+    const [localFreeDockHours, setLocalFreeDockHours] = useState(String(settings.defaultBillingRules?.freeDockHours || 2));
+    const [localYardRatePerDay, setLocalYardRatePerDay] = useState(String(settings.defaultBillingRules?.yardRatePerDay || 50));
+    const [localDockRatePerHour, setLocalDockRatePerHour] = useState(String(settings.defaultBillingRules?.dockRatePerHour || 100));
+
     // Instruction Timers state
     const [localTimersEnabled, setLocalTimersEnabled] = useState(settings.enableInstructionTimers !== false);
     const [localShowCountdown, setLocalShowCountdown] = useState(settings.showCountdownTimer !== false);
@@ -169,6 +176,10 @@ export const Settings: React.FC = () => {
         setLocalAiScheduleEnabled(settings.enableAiSchedule !== false);
         setLocalMetricStart(settings.metricsRange?.start || '');
         setLocalMetricEnd(settings.metricsRange?.end || '');
+        setLocalFreeYardHours(String(settings.defaultBillingRules?.freeYardHours || 48));
+        setLocalFreeDockHours(String(settings.defaultBillingRules?.freeDockHours || 2));
+        setLocalYardRatePerDay(String(settings.defaultBillingRules?.yardRatePerDay || 50));
+        setLocalDockRatePerHour(String(settings.defaultBillingRules?.dockRatePerHour || 100));
     }, [settings]);
 
     // Gate In Workflow handlers
@@ -181,6 +192,17 @@ export const Settings: React.FC = () => {
         if (localDefaultYardSlotId !== settings.defaultYardSlotId) {
             updateSettings({ ...settings, defaultYardSlotId: localDefaultYardSlotId });
         }
+    };
+
+    // Billing Handlers
+    const handleBillingBlur = () => {
+        const rules = {
+            freeYardHours: Number(localFreeYardHours) || 0,
+            freeDockHours: Number(localFreeDockHours) || 0,
+            yardRatePerDay: Number(localYardRatePerDay) || 0,
+            dockRatePerHour: Number(localDockRatePerHour) || 0
+        };
+        updateSettings({ ...settings, defaultBillingRules: rules });
     };
 
     // Instruction Timers handlers
@@ -635,6 +657,74 @@ export const Settings: React.FC = () => {
 
                 {/* Right Column */}
                 <div className="space-y-6">
+                    {/* Billing & Rates Configuration */}
+                    <section>
+                        <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center">
+                            <DollarSign className="w-5 h-5 mr-2 text-green-500" /> Default Billing & Rates
+                        </h2>
+                        <GlassCard className="p-6 space-y-6">
+                            <p className="text-xs text-slate-500 dark:text-gray-400">
+                                These global rules dictate the free time allowed for trailers in the yard and at the dock before Demurrage and Detention penalties are applied. Individual carriers can override these settings.
+                            </p>
+                            <div className="grid grid-cols-2 gap-6">
+                                <div>
+                                    <label className="block text-xs font-bold uppercase text-slate-500 dark:text-gray-400 mb-2">Free Yard Time (Hours)</label>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        value={localFreeYardHours}
+                                        onChange={e => setLocalFreeYardHours(e.target.value)}
+                                        onBlur={handleBillingBlur}
+                                        className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-3 text-slate-900 dark:text-white focus:border-green-500 outline-none transition-all"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold uppercase text-slate-500 dark:text-gray-400 mb-2">Yard Rate (Per Day)</label>
+                                    <div className="relative">
+                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <span className="text-slate-500 sm:text-sm">$</span>
+                                        </div>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            value={localYardRatePerDay}
+                                            onChange={e => setLocalYardRatePerDay(e.target.value)}
+                                            onBlur={handleBillingBlur}
+                                            className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg pl-7 p-3 text-slate-900 dark:text-white focus:border-green-500 outline-none transition-all"
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold uppercase text-slate-500 dark:text-gray-400 mb-2">Free Dock Time (Hours)</label>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        value={localFreeDockHours}
+                                        onChange={e => setLocalFreeDockHours(e.target.value)}
+                                        onBlur={handleBillingBlur}
+                                        className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-3 text-slate-900 dark:text-white focus:border-green-500 outline-none transition-all"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold uppercase text-slate-500 dark:text-gray-400 mb-2">Dock Rate (Per Hour)</label>
+                                    <div className="relative">
+                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <span className="text-slate-500 sm:text-sm">$</span>
+                                        </div>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            value={localDockRatePerHour}
+                                            onChange={e => setLocalDockRatePerHour(e.target.value)}
+                                            onBlur={handleBillingBlur}
+                                            className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg pl-7 p-3 text-slate-900 dark:text-white focus:border-green-500 outline-none transition-all"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </GlassCard>
+                    </section>
+
                     {/* Storage */}
                     <section>
                         <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center">
@@ -964,6 +1054,6 @@ export const Settings: React.FC = () => {
                     </div>
                 </GlassCard>
             </section>
-        </div>
+        </div >
     );
 };

@@ -110,6 +110,12 @@ export interface Carrier {
   name: string;
   contactEmail?: string;
   contactPhone?: string;
+  billingOverrides?: {
+    freeYardHours?: number;
+    freeDockHours?: number;
+    yardRatePerDay?: number;
+    dockRatePerHour?: number;
+  };
 }
 
 export interface Appointment {
@@ -201,6 +207,12 @@ export interface AppSettings {
   };
   adminWhatsappRecipients?: WhatsAppRecipient[];
   adminWhatsappNumbers?: string[];
+  defaultBillingRules?: {
+    freeYardHours: number;
+    freeDockHours: number;
+    yardRatePerDay: number;
+    dockRatePerHour: number;
+  };
 }
 
 export interface ToastMessage {

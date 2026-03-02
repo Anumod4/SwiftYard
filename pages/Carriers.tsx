@@ -26,6 +26,12 @@ export const Carriers: React.FC = () => {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
 
+  // Billing Overrides
+  const [freeYardHours, setFreeYardHours] = useState('');
+  const [freeDockHours, setFreeDockHours] = useState('');
+  const [yardRatePerDay, setYardRatePerDay] = useState('');
+  const [dockRatePerHour, setDockRatePerHour] = useState('');
+
   const [isBulkOpen, setIsBulkOpen] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -39,21 +45,38 @@ export const Carriers: React.FC = () => {
       setName(c.name);
       setEmail(c.contactEmail || '');
       setPhone(c.contactPhone || '');
+      setFreeYardHours(c.billingOverrides?.freeYardHours?.toString() || '');
+      setFreeDockHours(c.billingOverrides?.freeDockHours?.toString() || '');
+      setYardRatePerDay(c.billingOverrides?.yardRatePerDay?.toString() || '');
+      setDockRatePerHour(c.billingOverrides?.dockRatePerHour?.toString() || '');
     } else {
       setEditingCarrier(null);
       setName('');
       setEmail('');
       setPhone('');
+      setFreeYardHours('');
+      setFreeDockHours('');
+      setYardRatePerDay('');
+      setDockRatePerHour('');
     }
     setIsModalOpen(true);
   };
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    const payload = {
+
+    // Parse billing overrides
+    const overrides: Carrier['billingOverrides'] = {};
+    if (freeYardHours !== '') overrides.freeYardHours = Number(freeYardHours);
+    if (freeDockHours !== '') overrides.freeDockHours = Number(freeDockHours);
+    if (yardRatePerDay !== '') overrides.yardRatePerDay = Number(yardRatePerDay);
+    if (dockRatePerHour !== '') overrides.dockRatePerHour = Number(dockRatePerHour);
+
+    const payload: Partial<Carrier> = {
       name,
       contactEmail: email || undefined,
-      contactPhone: phone || undefined
+      contactPhone: phone || undefined,
+      billingOverrides: Object.keys(overrides).length > 0 ? overrides : undefined
     };
 
     if (editingCarrier) {
@@ -195,7 +218,29 @@ export const Carriers: React.FC = () => {
                   <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-3 text-slate-900 dark:text-white focus:border-blue-500 focus:outline-none" />
                 </div>
 
-                <div className="flex justify-end gap-3 pt-4">
+                <div className="pt-4 border-t border-slate-200 dark:border-white/10">
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4">Custom Billing Rules (Optional)</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] font-black uppercase text-slate-400 mb-1">Free Yard Hrs</label>
+                      <input type="number" min="0" placeholder="System Default" value={freeYardHours} onChange={e => setFreeYardHours(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-2 text-sm text-slate-900 dark:text-white focus:border-blue-500 outline-none" />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-black uppercase text-slate-400 mb-1">Yard Rate/Day ($)</label>
+                      <input type="number" min="0" placeholder="System Default" value={yardRatePerDay} onChange={e => setYardRatePerDay(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-2 text-sm text-slate-900 dark:text-white focus:border-blue-500 outline-none" />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-black uppercase text-slate-400 mb-1">Free Dock Hrs</label>
+                      <input type="number" min="0" placeholder="System Default" value={freeDockHours} onChange={e => setFreeDockHours(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-2 text-sm text-slate-900 dark:text-white focus:border-blue-500 outline-none" />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-black uppercase text-slate-400 mb-1">Dock Rate/Hr ($)</label>
+                      <input type="number" min="0" placeholder="System Default" value={dockRatePerHour} onChange={e => setDockRatePerHour(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-2 text-sm text-slate-900 dark:text-white focus:border-blue-500 outline-none" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-white/10">
                   <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white">{t('common.cancel')}</button>
                   <button type="submit" className="px-6 py-2 bg-[#0a84ff] hover:bg-blue-600 rounded-lg font-medium text-white">{t('common.save')}</button>
                 </div>
