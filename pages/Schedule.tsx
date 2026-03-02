@@ -1,8 +1,8 @@
-
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useData } from '../contexts/DataContext';
 import { GlassCard } from '../components/ui/GlassCard';
 import { AppointmentModal } from '../components/AppointmentModal';
+import { AppointmentDetailsModal } from '../components/AppointmentDetailsModal';
 import { DatePicker } from '../components/ui/DatePicker';
 import { Pagination } from '../components/ui/Pagination';
 import { Search, Plus, Clock, Edit2, Ban, Truck, User, Calendar, FileText, CheckCircle2, AlertTriangle, ArrowRight, ChevronDown, X, Check, Eye, Sparkles } from 'lucide-react';
@@ -92,6 +92,10 @@ export const Schedule: React.FC = () => {
     const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
     const [appointmentToProcess, setAppointmentToProcess] = useState<string | null>(null);
 
+    // Read Only Details Modal State
+    const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+    const [selectedDetailsApptId, setSelectedDetailsApptId] = useState<string | null>(null);
+
     const [currentPage, setCurrentPage] = useState(1);
     const pageSize = 10;
 
@@ -120,7 +124,7 @@ export const Schedule: React.FC = () => {
 
     const handleEdit = (e: React.MouseEvent, id: string) => {
         e.preventDefault();
-        e.stopPropagation();
+        e.stopPropagation(); // Prevent row click
         setEditingId(id);
         setIsModalOpen(true);
     };
@@ -146,6 +150,11 @@ export const Schedule: React.FC = () => {
             addToast('Rejected', 'Appointment request rejected.', 'info');
             setAppointmentToProcess(null);
         }
+    };
+
+    const handleRowClick = (id: string) => {
+        setSelectedDetailsApptId(id);
+        setIsDetailsModalOpen(true);
     };
 
     const getCarrierName = (id?: string) => {
@@ -396,7 +405,11 @@ export const Schedule: React.FC = () => {
                                     const canModify = ['Scheduled', 'GatedIn', 'MovingToDock', 'ReadyForCheckIn'].includes(appt.status);
 
                                     return (
-                                        <tr key={appt.id} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors group">
+                                        <tr
+                                            key={appt.id}
+                                            className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors group cursor-pointer"
+                                            onClick={() => handleRowClick(appt.id)}
+                                        >
                                             <td className="p-5">
                                                 <div className="flex items-center text-slate-900 dark:text-white font-medium">
                                                     <Clock className="w-4 h-4 mr-2 text-slate-400 dark:text-gray-500" />
@@ -439,7 +452,7 @@ export const Schedule: React.FC = () => {
                                                     {appt.status.replace(/([A-Z])/g, ' $1').trim()}
                                                 </span>
                                             </td>
-                                            <td className="p-5 text-right">
+                                            <td className="p-5 text-right" onClick={(e) => e.stopPropagation()}>
                                                 <div className="flex justify-end gap-2 items-center">
 
                                                     {/* Approval Actions - Updated to Text Buttons */}
@@ -526,6 +539,12 @@ export const Schedule: React.FC = () => {
                 onConfirm={handleConfirmReject}
                 title="Reject Request"
                 message="Are you sure you want to reject this appointment request? This will notify the requester that their slot is no longer reserved."
+            />
+
+            <AppointmentDetailsModal
+                isOpen={isDetailsModalOpen}
+                onClose={() => { setIsDetailsModalOpen(false); setSelectedDetailsApptId(null); }}
+                appointmentId={selectedDetailsApptId || ''}
             />
         </div>
     );

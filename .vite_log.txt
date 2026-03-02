@@ -29,3 +29,4 @@
 [0] Initializing Turso Schema & Seeding Data...
 [0] Schema initialization successful.
 [0] [Server] Database ready.
+[0] npm run server exited with code 137

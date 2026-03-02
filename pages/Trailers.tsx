@@ -625,10 +625,10 @@ export const Trailers: React.FC = () => {
                                                     {canInstruct && hasActiveAppt && canEditTrailers && (
                                                         <button
                                                             onClick={() => openActionMenu(trailer)}
-                                                            className="p-2 bg-indigo-50 dark:bg-indigo-500/10 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 rounded-lg transition-colors"
+                                                            className="flex items-center gap-2 px-3 py-2 bg-indigo-500 hover:bg-indigo-600 text-white font-bold rounded-lg shadow-sm transition-colors text-xs whitespace-nowrap"
                                                             title="Driver Instruction"
                                                         >
-                                                            <Navigation className="w-4 h-4" />
+                                                            <Navigation className="w-3.5 h-3.5" /> Instruct Driver
                                                         </button>
                                                     )}
                                                 </div>

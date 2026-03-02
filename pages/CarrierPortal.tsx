@@ -90,10 +90,12 @@ export const CarrierPortal: React.FC = () => {
 
     const carrierAppointments = useMemo(() => {
         if (!effectiveCarrierId) return [];
-        return appointments.filter(a =>
-            a.carrierId && a.carrierId.toLowerCase() === effectiveCarrierId?.toLowerCase()
-        ).sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
-    }, [appointments, effectiveCarrierId]);
+        return appointments.filter(a => {
+            const hasIdMatch = a.carrierId && a.carrierId.toLowerCase() === effectiveCarrierId?.toLowerCase();
+            const hasNameMatch = a.carrierId && carriers.some(c => c.id === effectiveCarrierId && c.name.toLowerCase() === a.carrierId?.toLowerCase());
+            return hasIdMatch || hasNameMatch;
+        }).sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
+    }, [appointments, effectiveCarrierId, carriers]);
 
     // New Driver Modal State
     const [isNewDriverModalOpen, setIsNewDriverModalOpen] = useState(false);
@@ -130,7 +132,7 @@ export const CarrierPortal: React.FC = () => {
         }
     };
 
-    const activeAppointments = carrierAppointments.filter(a => ['Scheduled', 'CheckingIn', 'CheckedIn', 'MovingToDock', 'ReadyForCheckIn', 'ReadyForCheckOut'].includes(a.status));
+    const activeAppointments = carrierAppointments.filter(a => ['Scheduled', 'CheckingIn', 'CheckedIn', 'MovingToDock', 'ReadyForCheckIn', 'ReadyForCheckOut', 'GatedIn', 'InYard', 'MovingToYard'].includes(a.status));
     const pastAppointments = carrierAppointments.filter(a => ['Completed', 'Departed', 'Cancelled', 'Rejected'].includes(a.status));
 
     const handleRefresh = async () => {
