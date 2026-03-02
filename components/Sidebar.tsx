@@ -2,7 +2,7 @@
 import React from 'react';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
-import { LayoutDashboard, CalendarClock, ShieldCheck, Settings, Box, Warehouse, Users, Truck, CalendarDays, Container, LogOut, Briefcase, TrafficCone, Building, UserCog, Shield, MonitorPlay, BookOpen } from 'lucide-react';
+import { LayoutDashboard, CalendarClock, ShieldCheck, Settings, Box, Warehouse, Users, Truck, CalendarDays, Container, LogOut, Briefcase, TrafficCone, Building, UserCog, Shield, MonitorPlay, BookOpen, FileText } from 'lucide-react';
 import { NAV_ITEMS } from '../constants';
 import { Logo } from './Logo';
 
@@ -34,7 +34,9 @@ const ICON_MAP: Record<string, React.FC<any>> = {
   'Users': Users,
   'LogOut': LogOut,
   'Settings': Settings,
-  'BookOpen': BookOpen
+  'BookOpen': BookOpen,
+  'Box': Box,
+  'FileText': FileText
 };
 
 export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView }) => {

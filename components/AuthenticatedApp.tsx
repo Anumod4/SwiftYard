@@ -126,7 +126,7 @@ const YardStaffApp = () => {
                 return <HelpDocs />;
             case "billing":
                 return <Billing />;
-            case "yard-visibility":
+            case "visibility":
                 return <YardVisibility />;
             default:
                 return isAdmin && !currentFacilityId ? (
