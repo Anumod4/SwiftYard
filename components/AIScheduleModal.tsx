@@ -56,7 +56,7 @@ export const AIScheduleModal: React.FC<AIScheduleModalProps> = ({ isOpen, onClos
 
             if (updates.length > 0) {
                 await bulkUpdateAppointments(updates);
-                addToast('AI Scheduling Complete', `Successfully auto-assigned ${updates.length} appointments.`, 'success');
+                addToast('Smart Scheduling Complete', `Successfully auto-assigned ${updates.length} appointments.`, 'success');
             } else {
                 addToast('No Eligible Appointments', 'Could not find any pending or scheduled appointments for this date.', 'info');
             }
@@ -68,8 +68,8 @@ export const AIScheduleModal: React.FC<AIScheduleModalProps> = ({ isOpen, onClos
             }, 500);
 
         } catch (error) {
-            console.error('AI Schedule Error:', error);
-            addToast('AI Error', 'An error occurred during schedule generation.', 'error');
+            console.error('Smart Schedule Error:', error);
+            addToast('Scheduling Error', 'An error occurred during schedule generation.', 'error');
             setIsProcessing(false);
             setProcessStep(0);
         }
@@ -101,8 +101,7 @@ export const AIScheduleModal: React.FC<AIScheduleModalProps> = ({ isOpen, onClos
             <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={onClose} />
 
             <div className="relative bg-white dark:bg-[#1a1a1a] rounded-[2rem] w-full max-w-2xl shadow-2xl border border-slate-200 dark:border-white/10 overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
-                {/* Header elements */}
-                <div className="p-8 border-b border-slate-100 dark:border-white/5 relative bg-gradient-to-r from-purple-500/10 to-blue-500/10 dark:from-purple-500/5 dark:to-blue-500/5">
+                <div className="p-8 border-b border-slate-100 dark:border-white/5 relative bg-gradient-to-r from-indigo-500/10 to-blue-500/10 dark:from-indigo-500/5 dark:to-blue-500/5">
                     <button
                         onClick={onClose}
                         className="absolute top-8 right-8 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"
@@ -111,14 +110,14 @@ export const AIScheduleModal: React.FC<AIScheduleModalProps> = ({ isOpen, onClos
                     </button>
 
                     <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 bg-gradient-to-tr from-purple-600 to-blue-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-purple-500/30 relative overflow-hidden">
-                            <Bot className="w-7 h-7 relative z-10" />
+                        <div className="w-14 h-14 bg-gradient-to-tr from-indigo-600 to-blue-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/30 relative overflow-hidden">
+                            <Sparkles className="w-7 h-7 relative z-10" />
                             <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20 mix-blend-overlay"></div>
                         </div>
                         <div>
                             <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                                AI Schedule Assistant
-                                <Sparkles className="w-5 h-5 text-purple-500 animate-pulse" />
+                                Smart Schedule Assistant
+                                <Sparkles className="w-5 h-5 text-indigo-500 animate-pulse" />
                             </h2>
                             <p className="text-sm text-slate-500 dark:text-gray-400 mt-1">
                                 Intelligently arrange and prioritize your daily dock operations.
@@ -131,9 +130,9 @@ export const AIScheduleModal: React.FC<AIScheduleModalProps> = ({ isOpen, onClos
                     {isProcessing ? (
                         <div className="h-64 flex flex-col items-center justify-center space-y-6">
                             <div className="relative">
-                                <div className="absolute inset-0 bg-purple-500/20 blur-xl rounded-full animate-pulse"></div>
-                                <Loader2 className="w-16 h-16 text-purple-500 animate-spin relative z-10" />
-                                <Bot className="w-6 h-6 text-blue-500 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+                                <div className="absolute inset-0 bg-indigo-500/20 blur-xl rounded-full animate-pulse"></div>
+                                <Loader2 className="w-16 h-16 text-indigo-500 animate-spin relative z-10" />
+                                <Sparkles className="w-6 h-6 text-blue-500 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
                             </div>
                             <div className="text-center space-y-2">
                                 <h3 className="text-lg font-bold text-slate-900 dark:text-white">
@@ -141,7 +140,7 @@ export const AIScheduleModal: React.FC<AIScheduleModalProps> = ({ isOpen, onClos
                                     {processStep === 2 && "Generating optimal schedules..."}
                                     {processStep === 3 && "Applying assignments..."}
                                 </h3>
-                                <p className="text-sm text-slate-500 dark:text-gray-400">Please wait while the AI computes the best dock routing.</p>
+                                <p className="text-sm text-slate-500 dark:text-gray-400">Please wait while the system computes the best dock routing.</p>
                             </div>
                         </div>
                     ) : (
@@ -234,10 +233,10 @@ export const AIScheduleModal: React.FC<AIScheduleModalProps> = ({ isOpen, onClos
                     <button
                         onClick={handleRunAI}
                         disabled={isProcessing || priorities.length === 0}
-                        className="px-8 py-2.5 bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-500 hover:to-blue-400 text-white rounded-xl font-bold shadow-lg shadow-purple-500/25 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-8 py-2.5 bg-gradient-to-r from-indigo-600 to-blue-500 hover:from-indigo-500 hover:to-blue-400 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/25 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <Sparkles className="w-4 h-4" />
-                        Generate AI Schedule
+                        Generate Smart Schedule
                     </button>
                 </div>
             </div>

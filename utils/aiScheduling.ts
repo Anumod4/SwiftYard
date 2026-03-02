@@ -20,8 +20,15 @@ export function generateAISchedule(config: AIScheduleConfig): { id: string; upda
     targetEnd.setHours(23, 59, 59, 999);
 
     const eligibleAppts = appointments.filter(a => {
-        // Only schedule PendingApproval or Scheduled
-        if (!['PendingApproval', 'Scheduled'].includes(a.status)) return false;
+        // Schedule if they are waiting for a dock or just scheduled (already scheduled ones can be moved or reconsidered, but let's re-assign only those without docks or pending assignment)
+        // Usually, 'Scheduled', 'GatedIn', 'InYard' are open states waiting for a dock assignment.
+        if (!['Scheduled', 'GatedIn', 'InYard'].includes(a.status)) return false;
+
+        // Exclude if it already has an assigned dock and is actively in use
+        if (['GatedIn', 'InYard'].includes(a.status) && a.assignedResourceId) {
+            // Re-evaluating is okay, but if it has a dock, it might not need one unless we want to reset all. Let's process everything that lacks a dock or is just 'Scheduled'.
+            if (a.assignedResourceId) return false;
+        }
 
         // Check if appointment is on the target date
         const apptTime = new Date(a.startTime);
@@ -77,11 +84,44 @@ export function generateAISchedule(config: AIScheduleConfig): { id: string; upda
     const updates: { id: string; updates: Partial<Appointment> }[] = [];
 
     for (const appt of sortedAppts) {
-        // Find the dock that is available earliest
-        dockAvailability.sort((a, b) => a.nextAvailableTime - b.nextAvailableTime);
+        // Determine eligibility
+        const cId = appt.carrierId;
+        const tType = appt.trailerType;
 
-        const selectedDock = dockAvailability[0];
-        const assignTime = new Date(selectedDock.nextAvailableTime);
+        // Filter docks that match eligibility
+        const eligibleDocks = dockAvailability.filter(da => {
+            const d = docks.find(r => r.id === da.dockId);
+            if (!d) return false;
+            if (d.status === 'Unavailable') return false;
+
+            // Check carrier
+            if (cId && d.allowedCarrierIds && d.allowedCarrierIds.length > 0) {
+                if (!d.allowedCarrierIds.includes(cId)) return false;
+            }
+
+            // Check trailer type
+            if (tType && d.allowedTrailerTypes && d.allowedTrailerTypes.length > 0) {
+                if (!d.allowedTrailerTypes.includes(tType)) return false;
+            }
+
+            return true;
+        });
+
+        if (eligibleDocks.length === 0) {
+            console.warn(`[Smart Schedule] No eligible docks found for appointment ${appt.id}`);
+            continue; // Skip if no docks are allowed to handle this
+        }
+
+        // Find the eligible dock that is available earliest
+        eligibleDocks.sort((a, b) => a.nextAvailableTime - b.nextAvailableTime);
+
+        const selectedDock = eligibleDocks[0];
+
+        // The assignment time must be at or after the dock's next availability
+        // AND at or after the appointment's requested startTime.
+        const requestedTime = new Date(appt.startTime).getTime();
+        const assignTimeMs = Math.max(selectedDock.nextAvailableTime, requestedTime);
+        const assignTime = new Date(assignTimeMs);
 
         // Default duration to 30 mins if not provided
         const durationMs = (appt.durationMinutes || 30) * 60000;
@@ -92,12 +132,12 @@ export function generateAISchedule(config: AIScheduleConfig): { id: string; upda
             updates: {
                 startTime: assignTime.toISOString(),
                 assignedResourceId: selectedDock.dockId,
-                status: 'Scheduled' // Ensure it's marked as Scheduled
+                status: appt.status === 'Scheduled' ? 'Scheduled' : appt.status // preserve InYard/GatedIn if they already arrived, or keep Scheduled
             }
         });
 
-        // Update the dock's availability
-        selectedDock.nextAvailableTime += durationMs;
+        // Update the dock's availability (+ 10 mins buffer for shuffling)
+        selectedDock.nextAvailableTime = assignTimeMs + durationMs + (10 * 60000);
     }
 
     return updates;

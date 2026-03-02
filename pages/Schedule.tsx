@@ -257,10 +257,11 @@ export const Schedule: React.FC = () => {
                         {settings.enableAiSchedule !== false && (
                             <button
                                 onClick={() => setIsAiModalOpen(true)}
-                                className="bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-500 hover:to-blue-400 text-white px-4 py-2 rounded-xl flex items-center shadow-lg shadow-purple-500/25 active:scale-95 transition-all font-bold"
+                                className="flex items-center gap-2 px-4 py-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 dark:text-purple-400 font-bold rounded-xl transition-colors border border-purple-500/20 text-sm whitespace-nowrap"
                             >
-                                <Sparkles className="w-5 h-5 mr-2" />
-                                AI Schedule
+                                <Sparkles className="w-4 h-4" />
+                                <span className="hidden sm:inline">Smart Schedule</span>
+                                <span className="sm:hidden">Smart</span>
                             </button>
                         )}
                         <button
