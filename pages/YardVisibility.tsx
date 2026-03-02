@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useData } from '../contexts/DataContext';
 import { GlassCard } from '../components/ui/GlassCard';
-import { Warehouse, Container, Truck, Box, Navigation, Clock, AlertTriangle } from 'lucide-react';
+import { Warehouse, Container, Truck, Box, Navigation, Clock, AlertTriangle, ArrowDown, ArrowUp } from 'lucide-react';
 import { DndContext, useDraggable, useDroppable, DragEndEvent, TouchSensor, MouseSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { Trailer, Resource } from '../types';
 import { differenceInMinutes } from 'date-fns';
@@ -26,7 +26,7 @@ const getDwellColor = (trailer: Trailer, thresholds: { yard: number, dock: numbe
 };
 
 // Draggable Trailer Component
-const DraggableTrailer = ({ trailer, thresholds }: { trailer: Trailer, thresholds: any }) => {
+const DraggableTrailer = ({ trailer, thresholds, indicator = 'none' }: { trailer: Trailer, thresholds: any, indicator?: 'inbound' | 'outbound' | 'none' }) => {
     const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
         id: trailer.id,
         data: { trailer }
@@ -44,6 +44,8 @@ const DraggableTrailer = ({ trailer, thresholds }: { trailer: Trailer, threshold
                 relative flex items-center justify-center p-2 rounded-lg cursor-grab active:cursor-grabbing shadow-sm border ${isDragging ? 'border-blue-500' : 'border-slate-700/20 dark:border-white/20'}
                 ${isDragging ? 'opacity-50 scale-105 z-50 ring-2 ring-blue-500 ' + colorClass : colorClass + ' hover:brightness-110 transition-all'}
                 w-full h-10 mt-1
+                ${indicator === 'outbound' ? 'opacity-50 border-dashed ring-2 ring-orange-500/50' : ''}
+                ${indicator === 'inbound' ? 'ring-2 ring-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.5)]' : ''}
             `}
         >
             {/* Top-down trailer roof styling */}
@@ -55,6 +57,17 @@ const DraggableTrailer = ({ trailer, thresholds }: { trailer: Trailer, threshold
 
             <span className="text-[10px] md:text-xs font-black text-white truncate px-2 drop-shadow-md z-10">{trailer.number || trailer.id}</span>
             {colorClass.includes('red') && <AlertTriangle className="absolute -top-2 -right-2 w-4 h-4 text-red-500 bg-white rounded-full p-0.5 shadow-sm" />}
+
+            {indicator === 'inbound' && (
+                <div className="absolute -left-2 -top-2 bg-blue-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow-lg animate-bounce flex items-center gap-0.5 z-20">
+                    <ArrowDown className="w-2.5 h-2.5" /> IN
+                </div>
+            )}
+            {indicator === 'outbound' && (
+                <div className="absolute -left-2 -top-2 bg-orange-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow flex items-center gap-0.5 z-20 opacity-90">
+                    <ArrowUp className="w-2.5 h-2.5" /> OUT
+                </div>
+            )}
         </div>
     );
 };
@@ -71,6 +84,13 @@ const DroppableResource = ({ resource, trailers, thresholds }: { resource: Resou
     const capacity = resource.capacity || 1;
     const isFull = trailers.length >= capacity;
     const isMulti = capacity > 1 && trailers.length > 1;
+
+    const getIndicator = (trailer: Trailer) => {
+        if (trailer.targetResourceId === resource.id && trailer.location !== resource.id) return 'inbound';
+        if (trailer.location === resource.id && trailer.targetResourceId && trailer.targetResourceId !== resource.id) return 'outbound';
+        if (trailer.location === resource.id && (trailer.status === 'ReadyForCheckOut' || trailer.status === 'CheckedOut')) return 'outbound';
+        return 'none';
+    };
 
     return (
         <div
@@ -109,7 +129,7 @@ const DroppableResource = ({ resource, trailers, thresholds }: { resource: Resou
                         )}
                         <div className={`flex flex-col gap-1 ${isMulti ? 'max-h-48 overflow-y-auto custom-scrollbar pr-1' : ''}`}>
                             {trailers.map(t => (
-                                <DraggableTrailer key={t.id} trailer={t} thresholds={thresholds} />
+                                <DraggableTrailer key={`${t.id}-${getIndicator(t)}`} trailer={t} thresholds={thresholds} indicator={getIndicator(t)} />
                             ))}
                         </div>
                     </>
