@@ -41,14 +41,20 @@ const DraggableTrailer = ({ trailer, thresholds }: { trailer: Trailer, threshold
             {...listeners}
             {...attributes}
             className={`
-                relative flex items-center p-2 rounded-lg cursor-grab active:cursor-grabbing shadow-sm border border-black/5 dark:border-white/10
-                ${isDragging ? 'opacity-50 scale-105 z-50 ring-2 ring-blue-500 bg-white dark:bg-slate-800' : 'bg-white/80 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all'}
+                relative flex items-center justify-center p-2 rounded-lg cursor-grab active:cursor-grabbing shadow-sm border ${isDragging ? 'border-blue-500' : 'border-slate-700/20 dark:border-white/20'}
+                ${isDragging ? 'opacity-50 scale-105 z-50 ring-2 ring-blue-500 ' + colorClass : colorClass + ' hover:brightness-110 transition-all'}
+                w-full h-10 mt-1
             `}
         >
-            <div className={`w-3 h-3 rounded-full mr-2 shrink-0 ${colorClass}`} />
-            {isBobtail ? <Truck className="w-4 h-4 mr-2 text-slate-500" /> : <Container className="w-4 h-4 mr-2 text-slate-500" />}
-            <span className="text-xs font-bold text-slate-700 dark:text-gray-200 truncate">{trailer.number}</span>
-            {colorClass.includes('red') && <AlertTriangle className="absolute -top-1 -right-1 w-3 h-3 text-red-500" />}
+            {/* Top-down trailer roof styling */}
+            <div className="absolute left-1 md:left-2 w-1.5 h-6 bg-slate-900/20 rounded-sm" />
+            <div className="absolute right-1 md:right-2 w-1.5 h-6 bg-slate-900/20 rounded-sm" />
+
+            <div className="absolute inset-x-2 top-0 border-t-2 border-white/30" />
+            <div className="absolute inset-x-2 bottom-0 border-b-2 border-slate-900/10" />
+
+            <span className="text-[10px] md:text-xs font-black text-white truncate px-2 drop-shadow-md z-10">{trailer.number || trailer.id}</span>
+            {colorClass.includes('red') && <AlertTriangle className="absolute -top-2 -right-2 w-4 h-4 text-red-500 bg-white rounded-full p-0.5 shadow-sm" />}
         </div>
     );
 };
@@ -59,16 +65,18 @@ const DroppableResource = ({ resource, trailers, thresholds }: { resource: Resou
         id: resource.id,
         data: { resource }
     });
+    const [expanded, setExpanded] = useState(false);
 
     const isDock = resource.type === 'Dock';
     const capacity = resource.capacity || 1;
     const isFull = trailers.length >= capacity;
+    const isMulti = capacity > 1 && trailers.length > 1;
 
     return (
         <div
             ref={setNodeRef}
             className={`
-                p-3 rounded-xl border-2 transition-all min-h-[100px] flex flex-col gap-2
+                p-3 rounded-xl border-2 transition-all min-h-[100px] flex flex-col gap-2 relative
                 ${isOver && !isFull ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/20'}
                 ${isFull ? 'opacity-70 border-amber-200 dark:border-amber-900' : ''}
             `}
@@ -81,10 +89,31 @@ const DroppableResource = ({ resource, trailers, thresholds }: { resource: Resou
                 <span className="text-[10px] font-mono text-slate-400">{trailers.length}/{capacity}</span>
             </div>
 
-            <div className="flex-1 flex flex-col gap-2">
-                {trailers.map(t => (
-                    <DraggableTrailer key={t.id} trailer={t} thresholds={thresholds} />
-                ))}
+            <div className="flex-1 flex flex-col gap-2 relative">
+                {isMulti && !expanded ? (
+                    <button
+                        onClick={(e) => { e.stopPropagation(); setExpanded(true); }}
+                        className="w-full py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 rounded-lg text-xs font-bold text-slate-700 dark:text-gray-300 transition-colors"
+                    >
+                        View {trailers.length} Trailers
+                    </button>
+                ) : (
+                    <>
+                        {isMulti && (
+                            <button
+                                onClick={(e) => { e.stopPropagation(); setExpanded(false); }}
+                                className="text-[10px] text-slate-500 hover:text-slate-700 dark:hover:text-white uppercase font-bold self-end mb-1"
+                            >
+                                Collapse
+                            </button>
+                        )}
+                        <div className={`flex flex-col gap-1 ${isMulti ? 'max-h-48 overflow-y-auto custom-scrollbar pr-1' : ''}`}>
+                            {trailers.map(t => (
+                                <DraggableTrailer key={t.id} trailer={t} thresholds={thresholds} />
+                            ))}
+                        </div>
+                    </>
+                )}
                 {trailers.length === 0 && (
                     <div className="flex-1 flex items-center justify-center text-xs text-slate-400 italic">Empty</div>
                 )}
@@ -97,7 +126,11 @@ export const YardVisibility: React.FC = () => {
     const { docks, yardSlots, trailers, updateTrailer, settings, addToast } = useData();
 
     // Map trailers to their locations
-    const activeTrailers = trailers.filter(t => ['GatedIn', 'MovingToDock', 'ReadyForCheckIn', 'CheckedIn', 'MovingToYard', 'InYard'].includes(t.status));
+    const activeTrailers = trailers.filter(t => ['InTransit', 'GatedIn', 'MovingToDock', 'ReadyForCheckIn', 'CheckedIn', 'MovingToYard', 'InYard'].includes(t.status));
+
+    // Sort locations alphabetically
+    const sortedDocks = useMemo(() => [...docks].sort((a, b) => a.name.localeCompare(b.name)), [docks]);
+    const sortedSlots = useMemo(() => [...yardSlots].sort((a, b) => a.name.localeCompare(b.name)), [yardSlots]);
 
     // We assume trailer current location matches its `targetResourceId` or `location` string
     const getTrailersForResource = (resId: string) => {
@@ -214,7 +247,7 @@ export const YardVisibility: React.FC = () => {
                                     <Box className="w-5 h-5 mr-2 text-blue-500" /> Dock Doors
                                 </h3>
                                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                                    {docks.map(dock => (
+                                    {sortedDocks.map(dock => (
                                         <DroppableResource
                                             key={dock.id}
                                             resource={dock}
@@ -222,7 +255,7 @@ export const YardVisibility: React.FC = () => {
                                             thresholds={settings.dwellThresholds}
                                         />
                                     ))}
-                                    {docks.length === 0 && <span className="text-slate-400 italic text-sm">No docks configured.</span>}
+                                    {sortedDocks.length === 0 && <span className="text-slate-400 italic text-sm">No docks configured.</span>}
                                 </div>
                             </div>
 
@@ -234,7 +267,7 @@ export const YardVisibility: React.FC = () => {
                                     <Warehouse className="w-5 h-5 mr-2 text-indigo-500" /> Parking Slots
                                 </h3>
                                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
-                                    {yardSlots.map(slot => (
+                                    {sortedSlots.map(slot => (
                                         <DroppableResource
                                             key={slot.id}
                                             resource={slot}
@@ -242,7 +275,7 @@ export const YardVisibility: React.FC = () => {
                                             thresholds={settings.dwellThresholds}
                                         />
                                     ))}
-                                    {yardSlots.length === 0 && <span className="text-slate-400 italic text-sm">No yard slots configured.</span>}
+                                    {sortedSlots.length === 0 && <span className="text-slate-400 italic text-sm">No yard slots configured.</span>}
                                 </div>
                             </div>
 
