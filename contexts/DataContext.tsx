@@ -419,14 +419,15 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const filterByFacility = useCallback(
     (items: any[]) => {
-      // If no facility context, return everything for admins
+      const isCarrier = userProfile && (userProfile.role === "carrier" || !!userProfile.carrierId);
+      // If no facility context, return everything for admins and carriers (need for name resolution)
       if (!currentFacilityId) {
-        return isAdmin ? items : [];
+        return (isAdmin || isCarrier) ? items : [];
       }
       // Return items matching the current facility context
       return items.filter((i) => i.facilityId === currentFacilityId);
     },
-    [currentFacilityId, isAdmin],
+    [currentFacilityId, isAdmin, userProfile],
   );
 
   const docks = useMemo(

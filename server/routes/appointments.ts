@@ -117,14 +117,15 @@ router.post("/save", async (req: AuthenticatedRequest, res) => {
           await update("trailers", trailer.id, { currentAppointmentId: id });
         } else {
           const newTrailerId = `TRL-${Date.now()}`;
+          const initialStatus = updates.status === 'Scheduled' || updates.status === 'PendingApproval' ? 'Scheduled' : 'InTransit';
           const newTrailer = {
             id: newTrailerId,
             number: updates.trailerNumber,
             carrierId: updates.carrierId || existing.carrierId,
             type: updates.trailerType || existing.trailerType || 'Standard 53ft',
-            status: 'InTransit',
+            status: initialStatus,
             currentAppointmentId: id,
-            history: [{ status: 'InTransit', timestamp: new Date().toISOString() }]
+            history: [{ status: initialStatus, timestamp: new Date().toISOString() }]
           };
           await insert("trailers", newTrailer);
           emitEvent(EVENTS.TRAILER_CREATED, newTrailer, facilityId);
@@ -167,14 +168,15 @@ router.post("/save", async (req: AuthenticatedRequest, res) => {
           await update("trailers", trailer.id, { currentAppointmentId: newId });
         } else {
           const newTrailerId = `TRL-${Date.now()}`;
+          const initialStatus = status === 'Scheduled' || status === 'PendingApproval' ? 'Scheduled' : 'InTransit';
           const newTrailer = {
             id: newTrailerId,
             number: rest.trailerNumber,
             carrierId: finalCarrierId,
             type: rest.trailerType || 'Standard 53ft',
-            status: 'InTransit',
+            status: initialStatus,
             currentAppointmentId: newId,
-            history: [{ status: 'InTransit', timestamp: new Date().toISOString() }]
+            history: [{ status: initialStatus, timestamp: new Date().toISOString() }]
           };
           await insert("trailers", newTrailer);
           emitEvent(EVENTS.TRAILER_CREATED, newTrailer, facilityId);
@@ -230,14 +232,15 @@ router.post("/bulk-update", async (req: AuthenticatedRequest, res) => {
             await update("trailers", trailer.id, { currentAppointmentId: id });
           } else {
             const newTrailerId = `TRL-${Date.now()}`;
+            const initialStatus = itemUpdates.status === 'Scheduled' || itemUpdates.status === 'PendingApproval' ? 'Scheduled' : 'InTransit';
             const newTrailer = {
               id: newTrailerId,
               number: itemUpdates.trailerNumber,
               carrierId: itemUpdates.carrierId || existing.carrierId,
               type: itemUpdates.trailerType || existing.trailerType || 'Standard 53ft',
-              status: 'InTransit',
+              status: initialStatus,
               currentAppointmentId: id,
-              history: [{ status: 'InTransit', timestamp: new Date().toISOString() }]
+              history: [{ status: initialStatus, timestamp: new Date().toISOString() }]
             };
             await insert("trailers", newTrailer);
             emitEvent(EVENTS.TRAILER_CREATED, newTrailer, facilityId);

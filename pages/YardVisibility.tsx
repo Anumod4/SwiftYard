@@ -138,7 +138,8 @@ export const YardVisibility: React.FC = () => {
     };
 
     // Trailers that are active but not mapped accurately to a resource (waiting in general yard)
-    const unassignedTrailers = activeTrailers.filter(t => !t.targetResourceId && !t.location);
+    const isLocationKnown = (loc?: string | null) => loc && [...docks, ...yardSlots].some(r => r.id === loc);
+    const unassignedTrailers = activeTrailers.filter(t => !isLocationKnown(t.targetResourceId) && !isLocationKnown(t.location));
 
     // Setup DnD Sensors (supports mouse and touch)
     const sensors = useSensors(
