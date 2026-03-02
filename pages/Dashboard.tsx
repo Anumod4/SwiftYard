@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useData } from '../contexts/DataContext';
 import { GlassCard } from '../components/ui/GlassCard';
-import { Resource } from '../types';
+import { Resource, Trailer } from '../types';
 import { Activity, Truck, Warehouse, Percent, CircleDot, AlertCircle, Briefcase, Timer, ArrowRight, Hourglass, AlertOctagon, MapPin, CalendarDays, Users, Navigation } from 'lucide-react';
 import { Pagination } from '../components/ui/Pagination';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
@@ -44,10 +44,11 @@ const EfficiencyCard = React.memo<{ title: string; value: number; sub: string; i
 const ResourceNode = React.memo<{
   resource: Resource;
   apptInfo?: { number?: string, type?: string, isBobtail: boolean };
+  inboundTrailer?: Trailer;
   occupancyCount: number;
   now: Date;
   onAction?: (apptId: string) => void;
-}>(({ resource, apptInfo, occupancyCount, now, onAction }) => {
+}>(({ resource, apptInfo, inboundTrailer, occupancyCount, now, onAction }) => {
   // Real-time status check: If status is Available BUT we are in a maintenance window, show Unavailable
   const isTimeUnavailable = resource.unavailability?.some(u =>
     new Date(u.startTime) <= now && new Date(u.endTime) >= now
@@ -120,6 +121,16 @@ const ResourceNode = React.memo<{
               <span className="text-[10px] text-blue-500 dark:text-blue-300 truncate opacity-80 pl-5">{apptInfo.type}</span>
             )}
           </div>
+        ) : inboundTrailer ? (
+          <div className="flex flex-col gap-1 text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 p-2 rounded-lg -ml-1 border border-emerald-100 dark:border-emerald-500/20 relative animate-pulse">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <Truck className="w-3.5 h-3.5 flex-shrink-0" />
+              <span className="text-sm font-bold truncate flex-1">Inbound: {inboundTrailer.number}</span>
+            </div>
+            {inboundTrailer.type && (
+              <span className="text-[10px] text-emerald-500 dark:text-emerald-300 truncate opacity-80 pl-5">{inboundTrailer.type}</span>
+            )}
+          </div>
         ) : isUnavailable && isTimeUnavailable ? (
           <div className="text-[10px] text-orange-500 font-bold flex items-center gap-1 bg-orange-50 dark:bg-orange-500/10 p-2 rounded-lg -ml-1 border border-orange-100 dark:border-orange-500/20">
             <AlertCircle className="w-3 h-3" /> Maintenance Active
@@ -185,12 +196,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
 
   // Get current occupancy count for a resource
   const getOccupancyCount = (resourceId: string) => {
-    // Find trailers where location == resourceId AND status is relevant
-    // Also consider MovingToYard as pending occupancy
     return trailers.filter(t =>
-      (t.location === resourceId && ['InYard', 'GatedIn', 'CheckedIn'].includes(t.status)) ||
-      (t.targetResourceId === resourceId && t.status === 'MovingToYard')
+      (t.location === resourceId && ['InYard', 'GatedIn', 'CheckedIn'].includes(t.status))
     ).length;
+  };
+
+  const getInboundTrailer = (resourceId: string) => {
+    return trailers.find(t => t.targetResourceId === resourceId && ['MovingToDock', 'MovingToYard'].includes(t.status));
   };
 
   const handleAction = (apptId: string) => {
@@ -368,6 +380,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                   resource={dock}
                   now={now}
                   apptInfo={getApptInfo(dock.currentAppId)}
+                  inboundTrailer={getInboundTrailer(dock.id)}
                   occupancyCount={dock.status === 'Occupied' ? 1 : 0}
                   onAction={handleAction}
                 />
@@ -384,6 +397,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                   resource={slot}
                   now={now}
                   apptInfo={getApptInfo(slot.currentAppId)}
+                  inboundTrailer={getInboundTrailer(slot.id)}
                   occupancyCount={getOccupancyCount(slot.id)}
                   onAction={handleAction}
                 />
