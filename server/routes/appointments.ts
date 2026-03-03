@@ -17,6 +17,24 @@ import { triggerWebhooks } from "../services/webhooks";
 
 const router = Router();
 
+// Helper to resolve carrierId from carrier name (use carrier name as carrierId)
+async function resolveCarrierId(carrierIdOrName: string): Promise<string> {
+  if (!carrierIdOrName) return '';
+
+  // If it looks like a CAR- ID, return as-is
+  if (carrierIdOrName.startsWith('CAR-')) {
+    const carrier = await fetchById('carriers', carrierIdOrName);
+    if (carrier) return carrier.name;
+    return carrierIdOrName;
+  }
+
+  const carriers = await fetchAll('carriers');
+  const carrier = carriers.find((c: any) => c.name.toLowerCase() === carrierIdOrName.toLowerCase());
+  if (carrier) return carrier.name;
+
+  return carrierIdOrName;
+}
+
 // Get all appointments (filtered by facility context and carrier)
 router.get("/", async (req: AuthenticatedRequest, res) => {
   try {
@@ -101,6 +119,9 @@ router.post("/save", async (req: AuthenticatedRequest, res) => {
       }
 
       const updates = rest;
+      if (updates.carrierId) {
+        updates.carrierId = await resolveCarrierId(updates.carrierId);
+      }
       const history = [...(existing.history || [])];
       if (updates.status && updates.status !== existing.status) {
         history.push({ status: updates.status, timestamp: new Date().toISOString() });
@@ -131,6 +152,7 @@ router.post("/save", async (req: AuthenticatedRequest, res) => {
           const newTrailer = {
             id: newTrailerId,
             number: trailerNumber,
+            facilityId: facilityId || existing?.facilityId,
             carrierId: updates.carrierId || existing.carrierId,
             type: updates.trailerType || existing.trailerType || 'Standard 53ft',
             status: targetTrailerStatus,
@@ -148,7 +170,7 @@ router.post("/save", async (req: AuthenticatedRequest, res) => {
     } else {
       const userCarrierId = req.user?.carrierId;
       const userRole = req.user?.role;
-      const finalCarrierId = rest.carrierId || userCarrierId;
+      const finalCarrierId = await resolveCarrierId(rest.carrierId || userCarrierId);
       const newId = `APT-${Date.now()}`;
 
       const isCarrierCreated = !!finalCarrierId && (userRole === 'carrier' || userRole?.toLowerCase().includes('carrier'));
@@ -183,6 +205,7 @@ router.post("/save", async (req: AuthenticatedRequest, res) => {
           const newTrailer = {
             id: newTrailerId,
             number: rest.trailerNumber,
+            facilityId,
             carrierId: finalCarrierId,
             type: rest.trailerType || 'Standard 53ft',
             status: initialStatus,
@@ -227,6 +250,8 @@ router.post("/bulk-update", async (req: AuthenticatedRequest, res) => {
       const existing = await fetchById("appointments", id);
 
       if (existing) {
+        if (itemUpdates.carrierId) itemUpdates.carrierId = await resolveCarrierId(itemUpdates.carrierId);
+
         const history = [...(existing.history || [])];
         if (itemUpdates.status && itemUpdates.status !== existing.status) {
           history.push({ status: itemUpdates.status, timestamp: new Date().toISOString() });
@@ -257,6 +282,7 @@ router.post("/bulk-update", async (req: AuthenticatedRequest, res) => {
             const newTrailer = {
               id: newTrailerId,
               number: bTrailerNumber,
+              facilityId: facilityId || existing?.facilityId,
               carrierId: itemUpdates.carrierId || existing.carrierId,
               type: itemUpdates.trailerType || existing.trailerType || 'Standard 53ft',
               status: initialStatus,
