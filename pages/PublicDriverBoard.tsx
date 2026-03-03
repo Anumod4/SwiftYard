@@ -111,9 +111,10 @@ export const PublicDriverBoard: React.FC = () => {
         let confirmLabel = '';
 
         // Resolve Location Name helper
-        const resolveResName = (id?: string) => {
+        const resolveResName = (id?: string | null) => {
             if (!id) return null;
-            return [...docks, ...yardSlots].find(r => r.id === id)?.name || id;
+            const cleanId = id.trim();
+            return [...docks, ...yardSlots].find(r => r.id === cleanId)?.name || cleanId;
         };
 
         // Calculate Current Location Name (if known)
@@ -224,6 +225,7 @@ export const PublicDriverBoard: React.FC = () => {
             timerData = getTimerDisplay(appt.instructionTimestamp, settings.instructionDurations?.moveToDock || 15);
             canConfirm = true;
             confirmLabel = 'Confirm Dock Arrival';
+            locationName = targetDock || locationName;
         }
 
         // Hotlist Logic: If timer is expired, flag for visual alerting

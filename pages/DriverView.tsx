@@ -280,6 +280,12 @@ export const DriverView: React.FC = () => {
     );
   };
 
+  // Resolve Location Name helper
+  const resolveResName = (id?: string | null) => {
+    if (!id) return null;
+    return [...docks, ...yardSlots].find((r) => r.id === id)?.name || id;
+  };
+
   // --- VIEW STATE LOGIC (Priority Order) ---
 
   let viewState = "STANDBY";
@@ -305,9 +311,10 @@ export const DriverView: React.FC = () => {
       settings.instructionDurations?.checkOut || 15,
     );
   } else if (activeTrailer?.status === "MovingToDock") {
+    const targetName = resolveResName(activeTrailer.targetResourceId);
     viewState = "MOVING_TO_DOCK";
     title = "Move to Dock";
-    subTitle = "Proceed to destination";
+    subTitle = `Proceed to ${targetName || "assigned dock"}`;
     icon = <Warehouse className="w-14 h-14" />;
     colorClass = "text-blue-500 bg-blue-500/10";
     timerElement = renderTimer(
@@ -315,9 +322,10 @@ export const DriverView: React.FC = () => {
       settings.instructionDurations?.moveToDock || 15,
     );
   } else if (activeTrailer?.status === "MovingToYard") {
+    const targetName = resolveResName(activeTrailer.targetResourceId);
     viewState = "MOVING_TO_YARD";
     title = "Move to Yard";
-    subTitle = "Proceed to yard slot";
+    subTitle = `Proceed to ${targetName || "yard slot"}`;
     icon = <Container className="w-14 h-14" />;
     colorClass = "text-indigo-500 bg-indigo-500/10";
     timerElement = renderTimer(

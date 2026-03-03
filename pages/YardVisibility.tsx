@@ -146,7 +146,7 @@ export const YardVisibility: React.FC = () => {
     const { docks, yardSlots, trailers, updateTrailer, settings, addToast } = useData();
 
     // Map trailers to their locations
-    const activeTrailers = trailers.filter(t => ['InTransit', 'GatedIn', 'MovingToDock', 'ReadyForCheckIn', 'CheckedIn', 'MovingToYard', 'InYard'].includes(t.status));
+    const activeTrailers = trailers.filter(t => ['Scheduled', 'InTransit', 'GatedIn', 'MovingToDock', 'ReadyForCheckIn', 'CheckedIn', 'MovingToYard', 'InYard'].includes(t.status));
 
     // Sort locations alphabetically
     const sortedDocks = useMemo(() => [...docks].sort((a, b) => a.name.localeCompare(b.name)), [docks]);
