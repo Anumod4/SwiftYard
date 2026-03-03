@@ -118,11 +118,12 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onCl
         // 2. Filter list
         let list = drivers;
         if (carrierId) {
-            list = list.filter(d => d.carrierId === carrierId);
+            const selectedCarrier = carriers.find(c => c.id === carrierId);
+            list = list.filter(d => d.carrierId === carrierId || (selectedCarrier && d.carrierId === selectedCarrier.name));
         }
 
         return list.filter(d => !onSiteDriverIds.has(d.id));
-    }, [drivers, carrierId, trailers]);
+    }, [drivers, carrierId, trailers, carriers]);
 
     // Auto-calculate Duration Logic
     useEffect(() => {
@@ -195,7 +196,12 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onCl
         // Auto-select carrier if driver is known AND carrier isn't already locked
         const knownDriver = drivers.find(d => d.name === val);
         if (knownDriver && knownDriver.carrierId && !carrierId) {
-            setCarrierId(knownDriver.carrierId);
+            const matchingCarrier = carriers.find(c => c.id === knownDriver.carrierId || c.name === knownDriver.carrierId);
+            if (matchingCarrier) {
+                setCarrierId(matchingCarrier.id);
+            } else {
+                setCarrierId(knownDriver.carrierId);
+            }
         }
     };
 

@@ -6,22 +6,7 @@ import { triggerWebhooks } from '../services/webhooks';
 
 const router = Router();
 
-// Helper to resolve carrierId from carrier name (use carrier name as carrierId)
-async function resolveDriverCarrierId(carrierIdOrName: string): Promise<string> {
-  if (!carrierIdOrName) return '';
-  
-  // If it's already a name (not starting with CAR-), return as-is
-  if (!carrierIdOrName.startsWith('CAR-')) {
-    return carrierIdOrName;
-  }
-  
-  // If it looks like a CAR- ID, find the carrier and return its name
-  const carriers = await fetchAll('carriers');
-  const carrier = carriers.find((c: any) => c.id === carrierIdOrName);
-  if (carrier) return carrier.name;
-  
-  return carrierIdOrName;
-}
+
 
 // Get all drivers (filtered by facility context)
 router.get('/', async (req: AuthenticatedRequest, res) => {
@@ -70,27 +55,20 @@ router.post('/save', async (req: AuthenticatedRequest, res) => {
       return;
     }
 
-    // Resolve carrierId to carrier name if needed
-    let resolvedCarrierId = rest.carrierId;
-    if (resolvedCarrierId) {
-      resolvedCarrierId = await resolveDriverCarrierId(resolvedCarrierId);
-    }
-
     if (id) {
       const existing = await fetchById('drivers', id);
       if (!existing) {
         res.status(404).json({ success: false, error: { message: 'Driver not found' } });
         return;
       }
-      await update('drivers', id, { ...rest, carrierId: resolvedCarrierId });
+      await update('drivers', id, { ...rest, carrierId: rest.carrierId });
       const updated = await fetchById('drivers', id);
       emitEvent(EVENTS.DRIVER_UPDATED, updated, updated?.facilityId);
       triggerWebhooks('driver.updated', updated, updated?.facilityId);
       res.json({ success: true, data: updated });
     } else {
       const newId = `DRV-${Date.now()}`;
-      const driver = { id: newId, facilityId, ...rest, carrierId: resolvedCarrierId };
-      await insert('drivers', driver);
+      const driver = { id: newId, facilityId, ...rest, carrierId: rest.carrierId };
       await insert('drivers', driver);
       const created = await fetchById('drivers', newId);
       emitEvent(EVENTS.DRIVER_CREATED, created, created.facilityId);
