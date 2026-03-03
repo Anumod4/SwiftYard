@@ -44,8 +44,7 @@ export const CarrierPortal: React.FC = () => {
 
     // Booking Form State
     const [bookingFacilityId, setBookingFacilityId] = useState('');
-    const [bookingDate, setBookingDate] = useState('');
-    const [bookingTime, setBookingTime] = useState('');
+    const [bookingStartTime, setBookingStartTime] = useState('');
     const [bookingTrailer, setBookingTrailer] = useState('');
     const [bookingType, setBookingType] = useState('');
     const [bookingDriverId, setBookingDriverId] = useState('');
@@ -143,9 +142,9 @@ export const CarrierPortal: React.FC = () => {
 
     // Operational Hours Validation
     const isWithinOperationalHours = useMemo(() => {
-        if (!bookingDate || !bookingTime) return true;
+        if (!bookingStartTime) return true;
 
-        const date = new Date(`${bookingDate}T${bookingTime}`);
+        const date = new Date(bookingStartTime);
         const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
         const shifts = settings.workingHours?.[dayName] || [];
 
@@ -162,17 +161,17 @@ export const CarrierPortal: React.FC = () => {
 
             return timeInMinutes >= shiftStart && timeInMinutes <= shiftEnd;
         });
-    }, [bookingDate, bookingTime, settings.workingHours]);
+    }, [bookingStartTime, settings.workingHours]);
 
     const operationalHint = useMemo(() => {
-        if (!bookingDate) return null;
-        const date = new Date(`${bookingDate}T00:00:00`);
+        if (!bookingStartTime) return null;
+        const date = new Date(bookingStartTime);
         const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
         const shifts = settings.workingHours?.[dayName] || [];
 
         if (shifts.length === 0) return `Facility is closed on ${dayName}`;
         return `Operating Hours: ${shifts.map(s => `${s.startTime}-${s.endTime}`).join(', ')}`;
-    }, [bookingDate, settings.workingHours]);
+    }, [bookingStartTime, settings.workingHours]);
 
     const handleBooking = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -195,12 +194,10 @@ export const CarrierPortal: React.FC = () => {
 
         setIsSubmitting(true);
         try {
-            const startDateTime = new Date(`${bookingDate}T${bookingTime}`);
-
             await addAppointment({
                 facilityId: bookingFacilityId,
                 carrierId: effectiveCarrierId,
-                startTime: startDateTime.toISOString(),
+                startTime: bookingStartTime,
                 durationMinutes: 60, // Default
                 trailerNumber: bookingTrailer,
                 trailerType: bookingType,
@@ -298,10 +295,8 @@ export const CarrierPortal: React.FC = () => {
                                     setBookingFacilityId={setBookingFacilityId}
                                     bookingLoad={bookingLoad}
                                     setBookingLoad={setBookingLoad}
-                                    bookingDate={bookingDate}
-                                    setBookingDate={setBookingDate}
-                                    bookingTime={bookingTime}
-                                    setBookingTime={setBookingTime}
+                                    bookingStartTime={bookingStartTime}
+                                    setBookingStartTime={setBookingStartTime}
                                     bookingTrailer={bookingTrailer}
                                     setBookingTrailer={setBookingTrailer}
                                     bookingType={bookingType}

@@ -2,6 +2,7 @@ import React from 'react';
 import { GlassCard } from '../../components/ui/GlassCard';
 import { Lock, MapPin, Truck, Calendar, Clock, User, ArrowRight, CheckCircle2, AlertCircle, Activity } from 'lucide-react';
 import { Facility, TrailerTypeDefinition, Driver } from '../../types';
+import { DateTimePicker } from '../../components/ui/DateTimePicker';
 
 interface CarrierBookingProps {
     canEditBooking: boolean;
@@ -10,10 +11,8 @@ interface CarrierBookingProps {
     setBookingFacilityId: (id: string) => void;
     bookingLoad: 'Inbound' | 'Outbound';
     setBookingLoad: (load: 'Inbound' | 'Outbound') => void;
-    bookingDate: string;
-    setBookingDate: (date: string) => void;
-    bookingTime: string;
-    setBookingTime: (time: string) => void;
+    bookingStartTime: string;
+    setBookingStartTime: (dateTime: string) => void;
     bookingTrailer: string;
     setBookingTrailer: (trailer: string) => void;
     bookingType: string;
@@ -38,10 +37,8 @@ export const CarrierBooking: React.FC<CarrierBookingProps> = ({
     setBookingFacilityId,
     bookingLoad,
     setBookingLoad,
-    bookingDate,
-    setBookingDate,
-    bookingTime,
-    setBookingTime,
+    bookingStartTime,
+    setBookingStartTime,
     bookingTrailer,
     setBookingTrailer,
     bookingType,
@@ -143,33 +140,14 @@ export const CarrierBooking: React.FC<CarrierBookingProps> = ({
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-6">
-                            <div className="space-y-2">
-                                <label className="block text-[10px] font-black text-slate-400 dark:text-gray-500 uppercase tracking-widest ml-1">Arrival Date</label>
-                                <input
-                                    type="date"
-                                    required
-                                    value={bookingDate}
-                                    onChange={e => setBookingDate(e.target.value)}
-                                    className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-2xl p-4 text-slate-900 dark:text-white font-bold focus:border-blue-500 outline-none transition-all cursor-pointer"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="block text-[10px] font-black text-slate-400 dark:text-gray-500 uppercase tracking-widest ml-1">Scheduled Time</label>
-                                <input
-                                    type="time"
-                                    required
-                                    value={bookingTime}
-                                    onChange={e => setBookingTime(e.target.value)}
-                                    className={`w-full bg-slate-50 dark:bg-black/20 border ${!isWithinOperationalHours ? 'border-red-500' : 'border-slate-200 dark:border-white/10'} rounded-2xl p-4 text-slate-900 dark:text-white font-bold focus:border-blue-500 outline-none transition-all cursor-pointer`}
-                                />
-                                {bookingDate && bookingTime && (
-                                    <div className={`mt-2 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest ml-1 ${!isWithinOperationalHours ? 'text-red-500' : 'text-emerald-500'}`}>
-                                        {isWithinOperationalHours ? <CheckCircle2 className="w-3 h-3" /> : <AlertCircle className="w-3 h-3" />}
-                                        {operationalHint}
-                                    </div>
-                                )}
-                            </div>
+                        <div className="space-y-2">
+                            <label className="block text-[10px] font-black text-slate-400 dark:text-gray-500 uppercase tracking-widest ml-1">Arrival Date & Time</label>
+                            <DateTimePicker
+                                value={bookingStartTime}
+                                onChange={setBookingStartTime}
+                                isInvalid={!isWithinOperationalHours}
+                                hint={bookingStartTime ? operationalHint : null}
+                            />
                         </div>
                     </section>
 

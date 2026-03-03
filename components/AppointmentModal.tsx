@@ -5,6 +5,7 @@ import { ModalPortal } from './ui/ModalPortal';
 import { X, Calendar, Clock, Truck, User, Briefcase, FileText, Package, Plus, Warehouse, Sparkles, Check, AlertCircle } from 'lucide-react';
 import { Appointment, Resource } from '../types';
 import { QuickAddDriverModal } from './QuickAddDriverModal';
+import { DateTimePicker } from './ui/DateTimePicker';
 
 interface AppointmentModalProps {
     isOpen: boolean;
@@ -66,7 +67,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onCl
             if (editingId) {
                 const appt = appointments.find(a => a.id === editingId);
                 if (appt) {
-                    setStartTime(appt.startTime.slice(0, 16)); // Format for datetime-local
+                    setStartTime(appt.startTime);
                     setDuration(appt.durationMinutes);
 
                     setTrailerNumber(appt.trailerNumber || '');
@@ -85,8 +86,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onCl
             } else {
                 // Defaults
                 const now = new Date();
-                now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-                setStartTime(now.toISOString().slice(0, 16));
+                setStartTime(now.toISOString());
                 setDuration(60);
 
                 setTrailerNumber('');
@@ -361,26 +361,15 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onCl
                             </div>
                         )}
 
-                        {/* 2. Date & Time */}
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Date & Time *</label>
-                                <div className="relative">
-                                    <Calendar className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
-                                    <input
-                                        type="datetime-local"
-                                        required
-                                        value={startTime}
-                                        onChange={e => setStartTime(e.target.value)}
-                                        className={`w-full bg-slate-100 dark:bg-black/20 border ${!isWithinOperationalHours ? 'border-red-500' : 'border-slate-200 dark:border-white/10'} rounded-xl pl-10 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#0a84ff]`}
-                                    />
-                                    {startTime && (
-                                        <div className={`mt-1.5 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider ${!isWithinOperationalHours ? 'text-red-500' : 'text-emerald-500'}`}>
-                                            {isWithinOperationalHours ? <Check className="w-3 h-3" /> : <AlertCircle className="w-3 h-3" />}
-                                            {operationalHint}
-                                        </div>
-                                    )}
-                                </div>
+                                <DateTimePicker
+                                    value={startTime}
+                                    onChange={setStartTime}
+                                    isInvalid={!isWithinOperationalHours}
+                                    hint={startTime ? operationalHint : null}
+                                />
                             </div>
                             <div>
                                 <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Duration (Min)</label>
