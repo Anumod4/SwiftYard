@@ -25,19 +25,6 @@ const getDwellColor = (trailer: Trailer, thresholds: { yard: number, dock: numbe
     return 'bg-red-500 animate-pulse'; // Critical
 };
 
-// Helper for trailer status explicit color dot
-const getTrailerStatusColor = (status: Trailer['status']) => {
-    switch (status) {
-        case 'Scheduled': return 'bg-purple-500';
-        case 'GatedIn': return 'bg-blue-400';
-        case 'MovingToDock': case 'MovingToYard': return 'bg-emerald-400';
-        case 'ReadyForCheckIn': case 'ReadyForCheckOut': return 'bg-amber-500';
-        case 'CheckedIn': return 'bg-indigo-500';
-        case 'CheckedOut': return 'bg-emerald-600';
-        case 'InYard': default: return 'bg-slate-300';
-    }
-};
-
 // Draggable Trailer Component
 const DraggableTrailer = ({ trailer, thresholds, indicator = 'none' }: { trailer: Trailer, thresholds: any, indicator?: 'inbound' | 'outbound' | 'none' }) => {
     const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
@@ -68,9 +55,7 @@ const DraggableTrailer = ({ trailer, thresholds, indicator = 'none' }: { trailer
             <div className="absolute inset-x-2 top-0 border-t-2 border-white/30" />
             <div className="absolute inset-x-2 bottom-0 border-b-2 border-slate-900/10" />
 
-            <div className={`w-2 h-2 rounded-full absolute left-1.5 md:left-3 shadow-inner ${getTrailerStatusColor(trailer.status)} border border-slate-900/20`} title={`Status: ${trailer.status}`} />
-
-            <span className="text-[10px] md:text-xs font-black text-white pl-4 pr-1 text-center truncate drop-shadow-md z-10 w-full">{trailer.number || trailer.id}</span>
+            <span className="text-[10px] md:text-xs font-black text-white truncate px-2 drop-shadow-md z-10">{trailer.number || trailer.id}</span>
             {colorClass.includes('red') && <AlertTriangle className="absolute -top-2 -right-2 w-4 h-4 text-red-500 bg-white rounded-full p-0.5 shadow-sm" />}
 
             {indicator === 'inbound' && (
@@ -228,7 +213,7 @@ export const YardVisibility: React.FC = () => {
 
     return (
         <div className="h-full flex flex-col p-4 md:p-8 animate-in fade-in duration-500">
-            <div className="mb-6 flex flex-col xl:flex-row justify-between xl:items-end gap-6">
+            <div className="mb-6 flex justify-between items-end">
                 <div>
                     <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2 flex items-center">
                         <Warehouse className="w-8 h-8 mr-3 text-emerald-500" />
@@ -237,29 +222,10 @@ export const YardVisibility: React.FC = () => {
                     <p className="text-slate-500 dark:text-gray-400">Interactive Digital Twin. Drag trailers to instruct operators.</p>
                 </div>
 
-                <div className="flex flex-col gap-3 bg-white/50 dark:bg-black/20 p-4 rounded-xl border border-slate-200 dark:border-white/10 shadow-sm">
-                    <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-bold text-slate-600 dark:text-gray-300">
-                        <span className="text-[10px] uppercase text-slate-400 dark:text-gray-500 tracking-wider w-20">Dwell Time</span>
-                        <div className="flex items-center"><div className="w-3 h-3 bg-emerald-500 rounded border border-slate-900/10 mr-2" /> Recent</div>
-                        <div className="flex items-center"><div className="w-3 h-3 bg-amber-400 rounded border border-slate-900/10 mr-2" /> Warning</div>
-                        <div className="flex items-center"><div className="w-3 h-3 bg-red-500 animate-pulse rounded border border-slate-900/10 mr-2" /> Critical</div>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-bold text-slate-600 dark:text-gray-300">
-                        <span className="text-[10px] uppercase text-slate-400 dark:text-gray-500 tracking-wider w-20">Movement</span>
-                        <div className="flex items-center"><div className="w-4 h-4 rounded ring-2 ring-blue-500 bg-emerald-500/20 mr-2 shadow-[0_0_10px_rgba(59,130,246,0.5)] relative flex justify-center items-center"><ArrowDown className="w-2.5 h-2.5 text-blue-500" /></div> Inbound Target</div>
-                        <div className="flex items-center"><div className="w-4 h-4 rounded ring-2 ring-orange-500/50 bg-emerald-500/20 mr-2 border border-dashed border-orange-500 relative flex justify-center items-center opacity-70"><ArrowUp className="w-2.5 h-2.5 text-orange-500" /></div> Outbound Source</div>
-                        <div className="flex items-center"><div className="w-4 h-4 rounded bg-emerald-500 mr-2" /> Stationary</div>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-bold text-slate-600 dark:text-gray-300">
-                        <span className="text-[10px] uppercase text-slate-400 dark:text-gray-500 tracking-wider w-20">Task Status</span>
-                        <div className="flex items-center"><div className="w-2.5 h-2.5 rounded-full bg-blue-400 mr-1.5" /> Gated In</div>
-                        <div className="flex items-center"><div className="w-2.5 h-2.5 rounded-full bg-emerald-400 mr-1.5" /> In Transit</div>
-                        <div className="flex items-center"><div className="w-2.5 h-2.5 rounded-full bg-amber-500 mr-1.5" /> Ready for Staff</div>
-                        <div className="flex items-center"><div className="w-2.5 h-2.5 rounded-full bg-indigo-500 mr-1.5" /> Processing</div>
-                        <div className="flex items-center"><div className="w-2.5 h-2.5 rounded-full bg-slate-400 mr-1.5" /> Parked / Idle</div>
-                    </div>
+                <div className="flex gap-4 text-xs font-bold text-slate-500 dark:text-gray-400">
+                    <div className="flex items-center"><div className="w-3 h-3 bg-emerald-500 rounded-full mr-2" /> Recent</div>
+                    <div className="flex items-center"><div className="w-3 h-3 bg-amber-400 rounded-full mr-2" /> Warning</div>
+                    <div className="flex items-center"><div className="w-3 h-3 bg-red-500 animate-pulse rounded-full mr-2" /> Critical</div>
                 </div>
             </div>
 
