@@ -34,7 +34,7 @@ const CarrierFacilities = lazy(() => import('./carrier/CarrierFacilities').then(
 
 export const CarrierPortal: React.FC = () => {
     const { userProfile, signOut, currentCarrier } = useAuth();
-    const { facilities, appointments, addAppointment, trailerTypes, addToast, refreshData, canEdit, theme, actionLoading, actionLoadingMessage, drivers, addDriver, carriers } = useData();
+    const { facilities, appointments, addAppointment, trailerTypes, addToast, refreshData, canEdit, theme, actionLoading, actionLoadingMessage, drivers, addDriver, carriers, settings } = useData();
     const [currentView, setCurrentView] = useState(VIEW_IDS.CARRIER_DASHBOARD);
     const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -141,6 +141,39 @@ export const CarrierPortal: React.FC = () => {
         setIsRefreshing(false);
     };
 
+    // Operational Hours Validation
+    const isWithinOperationalHours = useMemo(() => {
+        if (!bookingDate || !bookingTime) return true;
+
+        const date = new Date(`${bookingDate}T${bookingTime}`);
+        const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
+        const shifts = settings.workingHours?.[dayName] || [];
+
+        if (Object.keys(settings.workingHours || {}).length === 0) return true;
+        if (shifts.length === 0) return false;
+
+        const timeInMinutes = date.getHours() * 60 + date.getMinutes();
+
+        return shifts.some(shift => {
+            const [startH, startM] = shift.startTime.split(':').map(Number);
+            const [endH, endM] = shift.endTime.split(':').map(Number);
+            const shiftStart = startH * 60 + startM;
+            const shiftEnd = endH * 60 + endM;
+
+            return timeInMinutes >= shiftStart && timeInMinutes <= shiftEnd;
+        });
+    }, [bookingDate, bookingTime, settings.workingHours]);
+
+    const operationalHint = useMemo(() => {
+        if (!bookingDate) return null;
+        const date = new Date(`${bookingDate}T00:00:00`);
+        const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
+        const shifts = settings.workingHours?.[dayName] || [];
+
+        if (shifts.length === 0) return `Facility is closed on ${dayName}`;
+        return `Operating Hours: ${shifts.map(s => `${s.startTime}-${s.endTime}`).join(', ')}`;
+    }, [bookingDate, settings.workingHours]);
+
     const handleBooking = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -152,6 +185,11 @@ export const CarrierPortal: React.FC = () => {
 
         if (!bookingFacilityId) {
             addToast('Error', 'Please select a facility.', 'error');
+            return;
+        }
+
+        if (!isWithinOperationalHours) {
+            addToast('Outside Operational Hours', operationalHint || 'Selected time is outside facility operational hours.', 'error');
             return;
         }
 
@@ -277,6 +315,8 @@ export const CarrierPortal: React.FC = () => {
                                     trailerTypes={trailerTypes}
                                     availableDrivers={availableDrivers}
                                     isSubmitting={isSubmitting}
+                                    isWithinOperationalHours={isWithinOperationalHours}
+                                    operationalHint={operationalHint}
                                 />
                             )}
                             {currentView === VIEW_IDS.CARRIER_APPOINTMENTS && (

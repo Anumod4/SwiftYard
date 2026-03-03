@@ -11,6 +11,7 @@ export const PublicDriverBoard: React.FC = () => {
         docks,
         yardSlots,
         settings,
+        allResources,
         refreshData,
         updateAppointment,
         updateTrailer,
@@ -114,7 +115,7 @@ export const PublicDriverBoard: React.FC = () => {
         const resolveResName = (id?: string | null) => {
             if (!id) return null;
             const cleanId = id.trim();
-            return [...docks, ...yardSlots].find(r => r.id === cleanId)?.name || cleanId;
+            return allResources.find(r => r.id === cleanId)?.name || cleanId;
         };
 
         // Calculate Current Location Name (if known)

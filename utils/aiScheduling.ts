@@ -1,4 +1,4 @@
-import { Appointment, Resource, Trailer } from '../types';
+import { Appointment, Resource, Trailer, AppSettings } from '../types';
 
 export type PriorityAttribute = 'carrier' | 'trailerType' | 'createdTime' | 'gatedInTime' | 'yardDuration';
 
@@ -8,10 +8,11 @@ export interface AIScheduleConfig {
     appointments: Appointment[];
     docks: Resource[];
     trailers: Trailer[];
+    settings: AppSettings;
 }
 
 export function generateAISchedule(config: AIScheduleConfig): { id: string; updates: Partial<Appointment> }[] {
-    const { targetDate, priorities, appointments, docks, trailers } = config;
+    const { targetDate, priorities, appointments, docks, trailers, settings } = config;
 
     // 1. Filter eligible appointments for the target date
     const targetStart = new Date(targetDate);
@@ -69,11 +70,24 @@ export function generateAISchedule(config: AIScheduleConfig): { id: string; upda
     });
 
     // 3. Assign to available dock slots prioritizing time over location
-    // We need to keep a rolling schedule of availability for each dock.
-    // We'll initialize each dock's available time starting at targetStart (e.g., 08:00 AM if we have working hours, or 00:00).
-    // Let's assume scheduling starts at 08:00 AM for simplicity, or we can use targetStart with 00:00.
-    const scheduleStart = new Date(targetStart);
-    scheduleStart.setHours(8, 0, 0, 0); // Start at 8 AM 
+    // Get shift timings for the target date
+    const dayName = new Date(targetDate).toLocaleDateString('en-US', { weekday: 'long' });
+    const shifts = settings.workingHours?.[dayName] || [];
+
+    // Find earliest shift start
+    let minStartMs = targetStart.getTime(); // fallback to 00:00
+    if (shifts.length > 0) {
+        const sortedShifts = [...shifts].sort((a, b) => a.startTime.localeCompare(b.startTime));
+        const [h, m] = sortedShifts[0].startTime.split(':').map(Number);
+        const shiftStart = new Date(targetStart);
+        shiftStart.setHours(h, m, 0, 0);
+        minStartMs = shiftStart.getTime();
+    } else {
+        // If closed, return empty (already filtered by date, but just in case)
+        if (Object.keys(settings.workingHours || {}).length > 0) return [];
+    }
+
+    const scheduleStart = new Date(minStartMs);
 
     // Tracking when each dock is next available
     const dockAvailability = docks.map(d => ({
@@ -127,7 +141,32 @@ export function generateAISchedule(config: AIScheduleConfig): { id: string; upda
         // The assignment time must be at or after the dock's next availability
         // AND at or after the appointment's requested startTime.
         const requestedTime = new Date(appt.startTime).getTime();
-        const assignTimeMs = Math.max(selectedDock.nextAvailableTime, requestedTime);
+        let assignTimeMs = Math.max(selectedDock.nextAvailableTime, requestedTime);
+
+        // Ensure assignTimeMs falls within a shift
+        // If it falls outside all shifts, jump to the start of the next shift
+        let isValidTime = false;
+        let nextPotentialStartMs = Infinity;
+
+        for (const shift of shifts) {
+            const [sH, sM] = shift.startTime.split(':').map(Number);
+            const [eH, eM] = shift.endTime.split(':').map(Number);
+            const sTime = new Date(targetStart); sTime.setHours(sH, sM, 0, 0);
+            const eTime = new Date(targetStart); eTime.setHours(eH, eM, 0, 0);
+
+            if (assignTimeMs >= sTime.getTime() && assignTimeMs <= eTime.getTime()) {
+                isValidTime = true;
+                break;
+            }
+            if (sTime.getTime() > assignTimeMs && sTime.getTime() < nextPotentialStartMs) {
+                nextPotentialStartMs = sTime.getTime();
+            }
+        }
+
+        if (!isValidTime && nextPotentialStartMs !== Infinity) {
+            assignTimeMs = nextPotentialStartMs;
+        }
+
         const assignTime = new Date(assignTimeMs);
 
         // Default duration to 30 mins if not provided

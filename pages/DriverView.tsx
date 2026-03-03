@@ -28,6 +28,7 @@ export const DriverView: React.FC = () => {
     yardSlots,
     facilities,
     trailers,
+    allResources,
     updateTrailer,
     moveTrailerToYard,
     addToast,
@@ -101,9 +102,6 @@ export const DriverView: React.FC = () => {
   const assignedResource = useMemo(() => {
     if (!activeTrailer) return null;
 
-    // Unified resource pool for more robust lookup
-    const allResources = [...docks, ...yardSlots];
-
     // Case A: Moving TO Dock — use targetResourceId as destination dock
     if (activeTrailer.status === "MovingToDock") {
       const targetId = activeTrailer.targetResourceId || activeTrailer.location;
@@ -146,7 +144,7 @@ export const DriverView: React.FC = () => {
     }
 
     return null;
-  }, [activeTrailer, docks, yardSlots]);
+  }, [activeTrailer, allResources]);
 
   // Facility Info
   const driverFacility = useMemo(() => {
@@ -283,7 +281,7 @@ export const DriverView: React.FC = () => {
   // Resolve Location Name helper
   const resolveResName = (id?: string | null) => {
     if (!id) return null;
-    return [...docks, ...yardSlots].find((r) => r.id === id)?.name || id;
+    return allResources.find((r) => r.id === id)?.name || id;
   };
 
   // --- VIEW STATE LOGIC (Priority Order) ---

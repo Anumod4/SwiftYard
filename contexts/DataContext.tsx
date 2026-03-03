@@ -75,7 +75,10 @@ interface DataContextType {
   allTrailers: Trailer[]; // Unfiltered for driver view
   drivers: Driver[];
   docks: Resource[];
+  allDocks: Resource[];
   yardSlots: Resource[];
+  allYardSlots: Resource[];
+  allResources: Resource[];
   carriers: Carrier[];
   allCarriers: Carrier[]; // Unfiltered for admin/carrier linking
   trailerTypes: TrailerTypeDefinition[];
@@ -276,11 +279,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
         resRes, resAppt, resDrv, resTrl, resCarr,
         resTypes, resSettings, resUsers, resRoles, resFacs,
       ] = await Promise.all([
-        hasAuth ? api.resources.getAll() : Promise.resolve({ success: true, data: [] } as any),
-        hasAuth ? api.appointments.getAll() : Promise.resolve({ success: true, data: [] } as any),
+        api.resources.getAll(),
+        api.appointments.getAll(),
         hasAuth ? api.drivers.getAll() : Promise.resolve({ success: true, data: [] } as any),
-        hasAuth ? api.trailers.getAll() : Promise.resolve({ success: true, data: [] } as any),
-        api.carriers.getPublic(),
+        api.trailers.getAll(),
+        api.carriers.getAll(),
         hasAuth ? api.trailerTypes.getAll() : Promise.resolve({ success: true, data: [] } as any),
         api.settings.getAll(),
         (!isDriverOnly && hasAuth) ? api.admin.getUsers() : Promise.resolve({ success: true, data: [] } as any),
@@ -434,10 +437,19 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     () => filterByFacility(state.rawResources).filter((r) => r.type === "Dock"),
     [state.rawResources, filterByFacility],
   );
+  const allDocks = useMemo(
+    () => state.rawResources.filter((r: any) => r.type === "Dock"),
+    [state.rawResources],
+  );
   const yardSlots = useMemo(
     () => filterByFacility(state.rawResources).filter((r) => r.type === "YardSlot"),
     [state.rawResources, filterByFacility],
   );
+  const allYardSlots = useMemo(
+    () => state.rawResources.filter((r: any) => r.type === "YardSlot"),
+    [state.rawResources],
+  );
+  const allResources = useMemo(() => state.rawResources, [state.rawResources]);
   const appointments = useMemo(
     () => filterByFacility(state.rawAppointments),
     [state.rawAppointments, filterByFacility],
@@ -808,8 +820,13 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     if (!res.id) return;
     setActionLoading(true);
     setActionLoadingMessage('Updating resource...');
-    const response = await api.resources.update(res.id, res);
-    if (response.success) await fetchData();
+    try {
+      const response = await api.resources.update(res.id, res);
+      if (response.success) await fetchData();
+    } finally {
+      setActionLoading(false);
+      setActionLoadingMessage('');
+    }
   };
 
   const deleteResource = async (id: string) => {
@@ -1074,7 +1091,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     allTrailers: state.rawTrailers,
     drivers,
     docks,
+    allDocks,
     yardSlots,
+    allYardSlots,
+    allResources,
     carriers,
     allCarriers: state.rawCarriers,
     trailerTypes,
@@ -1091,8 +1111,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     actionLoading,
     actionLoadingMessage,
   }), [
-    appointments, state.rawAppointments, trailers, state.rawTrailers, drivers, docks,
-    yardSlots, carriers, state.rawCarriers, trailerTypes, settings, theme, facilities,
+    appointments, state.rawAppointments, trailers, state.rawTrailers, drivers, docks, allDocks,
+    yardSlots, allYardSlots, allResources, carriers, state.rawCarriers, trailerTypes, settings, theme, facilities,
     roles, allUsers, metrics, toasts, currentFacilityId, allowedFacilities,
     dataLoading, actionLoading, actionLoadingMessage
   ]);

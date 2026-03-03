@@ -29,7 +29,8 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onCl
         docks,
         t,
         addToast,
-        trailers
+        trailers,
+        settings
     } = useData();
 
     // Core Fields
@@ -125,7 +126,6 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onCl
         return list.filter(d => !onSiteDriverIds.has(d.id));
     }, [drivers, carrierId, trailers, carriers]);
 
-    // Auto-calculate Duration Logic
     useEffect(() => {
         const typeDef = trailerTypes.find(t => t.name === trailerType);
         if (!typeDef) return;
@@ -141,6 +141,41 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onCl
         setDuration(calculated);
     }, [palletCount, trailerType, trailerTypes]);
 
+    // Operational Hours Validation
+    const isWithinOperationalHours = useMemo(() => {
+        if (!startTime) return true;
+
+        const date = new Date(startTime);
+        const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
+        const shifts = settings.workingHours?.[dayName] || [];
+
+        // If no shifts defined for a day, we assume it's closed? 
+        // Or if the settings are empty, we allow anything (failsafe).
+        if (Object.keys(settings.workingHours || {}).length === 0) return true;
+        if (shifts.length === 0) return false;
+
+        const timeInMinutes = date.getHours() * 60 + date.getMinutes();
+
+        return shifts.some(shift => {
+            const [startH, startM] = shift.startTime.split(':').map(Number);
+            const [endH, endM] = shift.endTime.split(':').map(Number);
+            const shiftStart = startH * 60 + startM;
+            const shiftEnd = endH * 60 + endM;
+
+            return timeInMinutes >= shiftStart && timeInMinutes <= shiftEnd;
+        });
+    }, [startTime, settings.workingHours]);
+
+    const operationalHint = useMemo(() => {
+        if (!startTime) return null;
+        const date = new Date(startTime);
+        const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
+        const shifts = settings.workingHours?.[dayName] || [];
+
+        if (shifts.length === 0) return `Facility is closed on ${dayName}`;
+        return `Operating Hours: ${shifts.map(s => `${s.startTime}-${s.endTime}`).join(', ')}`;
+    }, [startTime, settings.workingHours]);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (isSubmitting) return;
@@ -148,6 +183,11 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onCl
         // Validation
         if (!isBobtail && !trailerNumber.trim()) {
             addToast('Required', 'Trailer Number is required.', 'error');
+            return;
+        }
+
+        if (!isWithinOperationalHours) {
+            addToast('Outside Operational Hours', operationalHint || 'Selected time is outside facility operational hours.', 'error');
             return;
         }
 
@@ -332,8 +372,14 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onCl
                                         required
                                         value={startTime}
                                         onChange={e => setStartTime(e.target.value)}
-                                        className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#0a84ff]"
+                                        className={`w-full bg-slate-100 dark:bg-black/20 border ${!isWithinOperationalHours ? 'border-red-500' : 'border-slate-200 dark:border-white/10'} rounded-xl pl-10 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#0a84ff]`}
                                     />
+                                    {startTime && (
+                                        <div className={`mt-1.5 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider ${!isWithinOperationalHours ? 'text-red-500' : 'text-emerald-500'}`}>
+                                            {isWithinOperationalHours ? <Check className="w-3 h-3" /> : <AlertCircle className="w-3 h-3" />}
+                                            {operationalHint}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                             <div>

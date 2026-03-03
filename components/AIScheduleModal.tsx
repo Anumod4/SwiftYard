@@ -17,7 +17,7 @@ const AVAILABLE_ATTRIBUTES: { id: PriorityAttribute; label: string; desc: string
 ];
 
 export const AIScheduleModal: React.FC<AIScheduleModalProps> = ({ isOpen, onClose }) => {
-    const { appointments, docks, trailers, bulkUpdateAppointments, t, addToast } = useData();
+    const { appointments, docks, trailers, bulkUpdateAppointments, t, addToast, settings } = useData();
     const [targetDate, setTargetDate] = useState<string>('');
     const [priorities, setPriorities] = useState<PriorityAttribute[]>(['carrier', 'gatedInTime']);
 
@@ -48,7 +48,8 @@ export const AIScheduleModal: React.FC<AIScheduleModalProps> = ({ isOpen, onClos
                 priorities,
                 appointments,
                 docks,
-                trailers
+                trailers,
+                settings
             });
 
             setProcessStep(3); // Applying changes...

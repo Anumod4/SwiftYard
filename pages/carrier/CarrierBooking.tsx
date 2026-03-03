@@ -27,6 +27,8 @@ interface CarrierBookingProps {
     trailerTypes: TrailerTypeDefinition[];
     availableDrivers: Driver[];
     isSubmitting: boolean;
+    isWithinOperationalHours: boolean;
+    operationalHint: string | null;
 }
 
 export const CarrierBooking: React.FC<CarrierBookingProps> = ({
@@ -53,6 +55,8 @@ export const CarrierBooking: React.FC<CarrierBookingProps> = ({
     trailerTypes,
     availableDrivers,
     isSubmitting,
+    isWithinOperationalHours,
+    operationalHint,
 }) => {
     if (!canEditBooking) {
         return (
@@ -157,8 +161,14 @@ export const CarrierBooking: React.FC<CarrierBookingProps> = ({
                                     required
                                     value={bookingTime}
                                     onChange={e => setBookingTime(e.target.value)}
-                                    className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-2xl p-4 text-slate-900 dark:text-white font-bold focus:border-blue-500 outline-none transition-all cursor-pointer"
+                                    className={`w-full bg-slate-50 dark:bg-black/20 border ${!isWithinOperationalHours ? 'border-red-500' : 'border-slate-200 dark:border-white/10'} rounded-2xl p-4 text-slate-900 dark:text-white font-bold focus:border-blue-500 outline-none transition-all cursor-pointer`}
                                 />
+                                {bookingDate && bookingTime && (
+                                    <div className={`mt-2 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest ml-1 ${!isWithinOperationalHours ? 'text-red-500' : 'text-emerald-500'}`}>
+                                        {isWithinOperationalHours ? <CheckCircle2 className="w-3 h-3" /> : <AlertCircle className="w-3 h-3" />}
+                                        {operationalHint}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </section>
