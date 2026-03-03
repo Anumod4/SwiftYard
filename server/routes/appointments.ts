@@ -126,7 +126,8 @@ router.post("/save", async (req: AuthenticatedRequest, res) => {
           }
           await update("trailers", trailer.id, trailerUpdates);
         } else {
-          const newTrailerId = `TRL-${Date.now()}`;
+          // FEATURE: Use Trailer Number directly as Trailer ID on DB per user request
+          const newTrailerId = trailerNumber;
           const newTrailer = {
             id: newTrailerId,
             number: trailerNumber,
@@ -176,7 +177,8 @@ router.post("/save", async (req: AuthenticatedRequest, res) => {
         if (trailer) {
           await update("trailers", trailer.id, { currentAppointmentId: newId });
         } else {
-          const newTrailerId = `TRL-${Date.now()}`;
+          // FEATURE: Use Trailer Number directly as Trailer ID on DB per user request
+          const newTrailerId = rest.trailerNumber;
           const initialStatus = status === 'Scheduled' || status === 'PendingApproval' ? 'Scheduled' : 'InTransit';
           const newTrailer = {
             id: newTrailerId,
@@ -250,7 +252,8 @@ router.post("/bulk-update", async (req: AuthenticatedRequest, res) => {
             }
             await update("trailers", trailer.id, trUpdates);
           } else {
-            const newTrailerId = `TRL-${Date.now()}`;
+            // FEATURE: Use Trailer Number directly as Trailer ID on DB per user request
+            const newTrailerId = bTrailerNumber;
             const newTrailer = {
               id: newTrailerId,
               number: bTrailerNumber,

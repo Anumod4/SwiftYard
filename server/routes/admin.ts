@@ -103,6 +103,22 @@ router.post('/users/save', async (req: AuthenticatedRequest, res) => {
       }
       await update('users', uid, updates, 'uid');
       const updated = await fetchById('users', uid, 'uid');
+
+      // AUTO-LINK: If this user belongs to a Carrier and was just assigned Facilities, link the Carrier to those Facilities directly
+      if (updated.carrierId && updated.assignedFacilities && Array.isArray(updated.assignedFacilities)) {
+        for (const facId of updated.assignedFacilities) {
+          const fac = await fetchById('facilities', facId);
+          if (fac) {
+            const existingCarriers = fac.allowedCarrierIds || [];
+            if (!existingCarriers.includes(updated.carrierId)) {
+              await update('facilities', facId, {
+                allowedCarrierIds: [...existingCarriers, updated.carrierId]
+              });
+            }
+          }
+        }
+      }
+
       res.json({
         success: true, data: {
           uid: updated.uid,
@@ -179,6 +195,21 @@ router.post('/users/save', async (req: AuthenticatedRequest, res) => {
 
       const created = await fetchById('users', newUid, 'uid');
       console.log('[Admin] Created user fetched uid:', created?.uid);
+      // AUTO-LINK: If this new user belongs to a Carrier and was assigned Facilities, link the Carrier to those Facilities directly
+      if (created.carrierId && created.assignedFacilities && Array.isArray(created.assignedFacilities)) {
+        for (const facId of created.assignedFacilities) {
+          const fac = await fetchById('facilities', facId);
+          if (fac) {
+            const existingCarriers = fac.allowedCarrierIds || [];
+            if (!existingCarriers.includes(created.carrierId)) {
+              await update('facilities', facId, {
+                allowedCarrierIds: [...existingCarriers, created.carrierId]
+              });
+            }
+          }
+        }
+      }
+
       res.status(201).json({
         success: true, data: {
           uid: created.uid,
