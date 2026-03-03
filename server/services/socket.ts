@@ -29,6 +29,7 @@ export const EVENTS = {
   APPOINTMENT_CHECKED_OUT: "appointment:checkedOut",
   TRAILER_CREATED: "trailer:created",
   TRAILER_UPDATED: "trailer:updated",
+  TRAILER_DELETED: "trailer:deleted",
   TRAILER_GATE_OUT: "trailer:gateOut",
   TRAILER_MOVED_TO_YARD: "trailer:movedToYard",
   DRIVER_CREATED: "driver:created",

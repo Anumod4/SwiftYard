@@ -139,7 +139,12 @@ router.post("/save", async (req: AuthenticatedRequest, res) => {
         const currentStatus = updates.status || existing.status;
         const targetTrailerStatus = currentStatus === 'Scheduled' || currentStatus === 'PendingApproval' ? 'Scheduled' : 'InTransit';
 
-        if (trailer) {
+        if (currentStatus === 'Rejected') {
+          if (trailer) {
+            await remove('trailers', trailer.id);
+            emitEvent(EVENTS.TRAILER_DELETED, { id: trailer.id }, facilityId);
+          }
+        } else if (trailer) {
           const trailerUpdates: any = { currentAppointmentId: id };
           if (currentStatus === 'Scheduled' && trailer.status !== 'Scheduled') {
             trailerUpdates.status = 'Scheduled';
@@ -269,7 +274,12 @@ router.post("/bulk-update", async (req: AuthenticatedRequest, res) => {
           const targetStatus = itemUpdates.status || existing.status;
           const initialStatus = targetStatus === 'Scheduled' || targetStatus === 'PendingApproval' ? 'Scheduled' : 'InTransit';
 
-          if (trailer) {
+          if (targetStatus === 'Rejected') {
+            if (trailer) {
+              await remove('trailers', trailer.id);
+              emitEvent(EVENTS.TRAILER_DELETED, { id: trailer.id }, facilityId);
+            }
+          } else if (trailer) {
             const trUpdates: any = { currentAppointmentId: id };
             if (targetStatus === 'Scheduled' && trailer.status !== 'Scheduled') {
               trUpdates.status = 'Scheduled';
