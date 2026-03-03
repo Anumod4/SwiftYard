@@ -112,8 +112,15 @@ export function generateAISchedule(config: AIScheduleConfig): { id: string; upda
             continue; // Skip if no docks are allowed to handle this
         }
 
-        // Find the eligible dock that is available earliest
-        eligibleDocks.sort((a, b) => a.nextAvailableTime - b.nextAvailableTime);
+        // Find the eligible dock that is available earliest. Tie-break using dock id to assign sequentially.
+        eligibleDocks.sort((a, b) => {
+            if (a.nextAvailableTime !== b.nextAvailableTime) {
+                return a.nextAvailableTime - b.nextAvailableTime;
+            }
+            const dockA = docks.find(d => d.id === a.dockId)?.name || a.dockId;
+            const dockB = docks.find(d => d.id === b.dockId)?.name || b.dockId;
+            return dockA.localeCompare(dockB, undefined, { numeric: true });
+        });
 
         const selectedDock = eligibleDocks[0];
 

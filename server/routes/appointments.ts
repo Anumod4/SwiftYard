@@ -109,23 +109,32 @@ router.post("/save", async (req: AuthenticatedRequest, res) => {
       await update("appointments", id, { ...updates, history });
       const updated = await fetchById("appointments", id);
 
-      // Link trailer if number is provided
-      if (updates.trailerNumber) {
+      // Link trailer if number is provided or exists on record
+      const trailerNumber = updates.trailerNumber || existing.trailerNumber;
+      if (trailerNumber) {
         const trailers = await fetchAll("trailers");
-        const trailer = trailers.find((t: any) => t.number?.toLowerCase() === updates.trailerNumber.toLowerCase());
+        const trailer = trailers.find((t: any) => t.number?.toLowerCase() === trailerNumber.toLowerCase());
+
+        const currentStatus = updates.status || existing.status;
+        const targetTrailerStatus = currentStatus === 'Scheduled' || currentStatus === 'PendingApproval' ? 'Scheduled' : 'InTransit';
+
         if (trailer) {
-          await update("trailers", trailer.id, { currentAppointmentId: id });
+          const trailerUpdates: any = { currentAppointmentId: id };
+          if (currentStatus === 'Scheduled' && trailer.status !== 'Scheduled') {
+            trailerUpdates.status = 'Scheduled';
+            trailerUpdates.history = [...(trailer.history || []), { status: 'Scheduled', timestamp: new Date().toISOString() }];
+          }
+          await update("trailers", trailer.id, trailerUpdates);
         } else {
           const newTrailerId = `TRL-${Date.now()}`;
-          const initialStatus = updates.status === 'Scheduled' || updates.status === 'PendingApproval' ? 'Scheduled' : 'InTransit';
           const newTrailer = {
             id: newTrailerId,
-            number: updates.trailerNumber,
+            number: trailerNumber,
             carrierId: updates.carrierId || existing.carrierId,
             type: updates.trailerType || existing.trailerType || 'Standard 53ft',
-            status: initialStatus,
+            status: targetTrailerStatus,
             currentAppointmentId: id,
-            history: [{ status: initialStatus, timestamp: new Date().toISOString() }]
+            history: [{ status: targetTrailerStatus, timestamp: new Date().toISOString() }]
           };
           await insert("trailers", newTrailer);
           emitEvent(EVENTS.TRAILER_CREATED, newTrailer, facilityId);
@@ -224,18 +233,27 @@ router.post("/bulk-update", async (req: AuthenticatedRequest, res) => {
         await update("appointments", id, { ...itemUpdates, history });
         const updated = await fetchById("appointments", id);
 
-        // Link trailer if number is provided
-        if (itemUpdates.trailerNumber) {
+        // Link trailer if number is provided or available
+        const bTrailerNumber = itemUpdates.trailerNumber || existing.trailerNumber;
+        if (bTrailerNumber) {
           const trailers = await fetchAll("trailers");
-          const trailer = trailers.find((t: any) => t.number?.toLowerCase() === itemUpdates.trailerNumber.toLowerCase());
+          const trailer = trailers.find((t: any) => t.number?.toLowerCase() === bTrailerNumber.toLowerCase());
+
+          const targetStatus = itemUpdates.status || existing.status;
+          const initialStatus = targetStatus === 'Scheduled' || targetStatus === 'PendingApproval' ? 'Scheduled' : 'InTransit';
+
           if (trailer) {
-            await update("trailers", trailer.id, { currentAppointmentId: id });
+            const trUpdates: any = { currentAppointmentId: id };
+            if (targetStatus === 'Scheduled' && trailer.status !== 'Scheduled') {
+              trUpdates.status = 'Scheduled';
+              trUpdates.history = [...(trailer.history || []), { status: 'Scheduled', timestamp: new Date().toISOString() }];
+            }
+            await update("trailers", trailer.id, trUpdates);
           } else {
             const newTrailerId = `TRL-${Date.now()}`;
-            const initialStatus = itemUpdates.status === 'Scheduled' || itemUpdates.status === 'PendingApproval' ? 'Scheduled' : 'InTransit';
             const newTrailer = {
               id: newTrailerId,
-              number: itemUpdates.trailerNumber,
+              number: bTrailerNumber,
               carrierId: itemUpdates.carrierId || existing.carrierId,
               type: itemUpdates.trailerType || existing.trailerType || 'Standard 53ft',
               status: initialStatus,
