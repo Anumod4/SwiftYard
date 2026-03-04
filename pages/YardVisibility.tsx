@@ -223,6 +223,18 @@ export const YardVisibility: React.FC = () => {
     const isLocationKnown = (loc?: string | null) => loc && [...docks, ...yardSlots].some(r => r.id === loc);
     const unassignedTrailers = activeTrailers.filter(t => !isLocationKnown(t.targetResourceId) && !isLocationKnown(t.location));
 
+    // Calculate dynamic box width based on the longest trailer name on the board so it doesn't truncate heavily
+    const minBoxWidth = useMemo(() => {
+        let maxLen = 0;
+        activeTrailers.forEach(t => {
+            const name = t.number || t.id || '';
+            if (name.length > maxLen) maxLen = name.length;
+        });
+        // Base width of 140px + roughly 8px per character. Max it out at something reasonable so it doesn't break the layout.
+        const calculatedWidth = 140 + (maxLen * 8);
+        return Math.min(Math.max(calculatedWidth, 140), 300); // Between 140px and 300px min-width
+    }, [activeTrailers]);
+
     // Setup DnD Sensors (supports mouse and touch)
     const sensors = useSensors(
         useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
@@ -361,7 +373,7 @@ export const YardVisibility: React.FC = () => {
                                 <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4 flex items-center">
                                     <Box className="w-5 h-5 mr-2 text-blue-500" /> Dock Doors
                                 </h3>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                                <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(auto-fill, minmax(${minBoxWidth}px, 1fr))` }}>
                                     {sortedDocks.map(dock => (
                                         <DroppableResource
                                             key={dock.id}
@@ -381,7 +393,7 @@ export const YardVisibility: React.FC = () => {
                                 <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4 flex items-center">
                                     <Warehouse className="w-5 h-5 mr-2 text-indigo-500" /> Parking Slots
                                 </h3>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
+                                <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(auto-fill, minmax(${minBoxWidth}px, 1fr))` }}>
                                     {sortedSlots.map(slot => (
                                         <DroppableResource
                                             key={slot.id}
