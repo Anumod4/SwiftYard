@@ -106,7 +106,8 @@ export const DriverView: React.FC = () => {
     if (activeTrailer.status === "MovingToDock") {
       const targetId = activeTrailer.targetResourceId || activeTrailer.location;
       if (targetId) {
-        return allResources.find((r) => r.id === targetId);
+        const cleanId = targetId.trim();
+        return allResources.find((r) => r.id === cleanId) || { id: cleanId, name: cleanId, type: "Dock" };
       }
       return null;
     }
@@ -115,14 +116,16 @@ export const DriverView: React.FC = () => {
     if (activeTrailer.status === "MovingToYard") {
       const targetId = activeTrailer.targetResourceId;
       if (targetId) {
-        return allResources.find((r) => r.id === targetId);
+        const cleanId = targetId.trim();
+        return allResources.find((r) => r.id === cleanId) || { id: cleanId, name: cleanId, type: "YardSlot" };
       }
       return null;
     }
 
     // Case C: In Yard (Location is in trailer record)
     if (activeTrailer.status === "InYard" && activeTrailer.location) {
-      return allResources.find((r) => r.id === activeTrailer.location);
+      const cleanId = activeTrailer.location.trim();
+      return allResources.find((r) => r.id === cleanId) || { id: cleanId, name: cleanId, type: "YardSlot" };
     }
 
     // Case D: At Dock — current location
@@ -130,17 +133,20 @@ export const DriverView: React.FC = () => {
       ["CheckedIn", "ReadyForCheckIn"].includes(activeTrailer.status) &&
       activeTrailer.location
     ) {
-      return allResources.find((r) => r.id === activeTrailer.location);
+      const cleanId = activeTrailer.location.trim();
+      return allResources.find((r) => r.id === cleanId) || { id: cleanId, name: cleanId, type: "Dock" };
     }
 
     // Case E: ReadyForCheckOut (Departure)
     if (activeTrailer.status === "ReadyForCheckOut" && activeTrailer.location) {
-      return allResources.find((r) => r.id === activeTrailer.location);
+      const cleanId = activeTrailer.location.trim();
+      return allResources.find((r) => r.id === cleanId) || { id: cleanId, name: cleanId, type: "Dock" };
     }
 
     // Fallback if targetResourceId is provided directly but missed by specific cases
     if (activeTrailer.targetResourceId) {
-      return allResources.find((r) => r.id === activeTrailer.targetResourceId);
+      const cleanId = activeTrailer.targetResourceId.trim();
+      return allResources.find((r) => r.id === cleanId) || { id: cleanId, name: cleanId, type: "YardSlot" };
     }
 
     return null;
@@ -281,7 +287,8 @@ export const DriverView: React.FC = () => {
   // Resolve Location Name helper
   const resolveResName = (id?: string | null) => {
     if (!id) return null;
-    return allResources.find((r) => r.id === id)?.name || id;
+    const cleanId = id.trim();
+    return allResources.find((r) => r.id === cleanId)?.name || cleanId;
   };
 
   // --- VIEW STATE LOGIC (Priority Order) ---

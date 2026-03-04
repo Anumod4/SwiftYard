@@ -306,7 +306,8 @@ export const GuardGate: React.FC = () => {
                 checkInWeight: weight ? parseFloat(weight) : undefined,
                 targetResourceId: targetResId,
                 instructionTimestamp: instructionTime,
-                facilityId: facilityIdForTrailer || localStorageFacility || undefined  // Include facilityId for trailer creation
+                facilityId: facilityIdForTrailer || localStorageFacility || undefined,  // Include facilityId for trailer creation
+                location: null // Clear previous trip's location when gating in
             };
             console.log('[GuardGate] Trailer payload:', trailerPayload);
 
