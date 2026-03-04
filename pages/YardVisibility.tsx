@@ -240,6 +240,14 @@ export const YardVisibility: React.FC = () => {
         if (!trailer || !targetResource) return;
         if (trailer.targetResourceId === targetResource.id || trailer.location === targetResource.id) return; // Dropped in same place
 
+        // Check Capacity
+        const capacity = targetResource.capacity || 1;
+        const currentOccupants = activeTrailers.filter(t => t.targetResourceId === targetResource.id || (t.location === targetResource.id && !t.targetResourceId)).length;
+        if (currentOccupants >= capacity) {
+            addToast('Capacity Full', `${targetResource.name} is already full (Capacity: ${capacity}).`, 'error');
+            return;
+        }
+
         // Determine intended action based on target type
         try {
             if (targetResource.type === 'Dock') {

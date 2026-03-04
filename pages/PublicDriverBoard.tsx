@@ -157,8 +157,8 @@ export const PublicDriverBoard: React.FC = () => {
                         ? resolveResName(appt.assignedResourceId)
                         : null;
                 instruction = targetDock ? `Proceed to ${targetDock}` : 'Proceed to assigned dock';
-                // Show destination as location for MovingToDock
-                locationName = targetDock || locationName;
+                // Show destination as location for MovingToDock (do not fall back to current location)
+                locationName = targetDock || 'Assigned Dock';
                 color = 'bg-emerald-500 animate-pulse';
                 icon = Play;
                 timerData = getTimerDisplay(trailer.instructionTimestamp || appt?.instructionTimestamp, settings.instructionDurations?.moveToDock || 15);
@@ -202,8 +202,8 @@ export const PublicDriverBoard: React.FC = () => {
                 statusLabel = 'MOVE TO YARD';
                 const targetSlot = trailer.targetResourceId ? resolveResName(trailer.targetResourceId) : null;
                 instruction = targetSlot ? `Park in ${targetSlot}` : 'Proceed to yard slot';
-                // Show destination as location for MovingToYard
-                locationName = targetSlot || locationName;
+                // Show destination as location for MovingToYard (do not fall back to current location)
+                locationName = targetSlot || 'Assigned Slot';
                 color = 'bg-emerald-500 animate-pulse';
                 icon = Play;
                 timerData = getTimerDisplay(trailer.instructionTimestamp, settings.instructionDurations?.moveToYard || 15);
@@ -232,7 +232,7 @@ export const PublicDriverBoard: React.FC = () => {
             timerData = getTimerDisplay(appt.instructionTimestamp, settings.instructionDurations?.moveToDock || 15);
             canConfirm = true;
             confirmLabel = 'Confirm Dock Arrival';
-            locationName = targetDock || locationName;
+            locationName = targetDock;
         }
 
         // Hotlist Logic: If timer is expired, flag for visual alerting
