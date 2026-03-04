@@ -492,6 +492,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     const rate =
       docks.length > 0 ? Math.round((occupied / docks.length) * 100) : 0;
 
+    const now = new Date();
+
     let g2dSum = 0,
       g2dCount = 0,
       ddSum = 0,
@@ -507,17 +509,23 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
             new Date(gatedIn.timestamp).getTime()) /
           60000;
         g2dCount++;
+      } else if (gatedIn && !checkedIn && a.status !== 'Completed' && a.status !== 'Cancelled' && a.status !== 'Departed') {
+        g2dSum += (now.getTime() - new Date(gatedIn.timestamp).getTime()) / 60000;
+        g2dCount++;
       }
+
       if (checkedIn && completed) {
         ddSum +=
           (new Date(completed.timestamp).getTime() -
             new Date(checkedIn.timestamp).getTime()) /
           60000;
         ddCount++;
+      } else if (checkedIn && !completed && a.status !== 'Completed' && a.status !== 'Cancelled' && a.status !== 'Departed') {
+        ddSum += (now.getTime() - new Date(checkedIn.timestamp).getTime()) / 60000;
+        ddCount++;
       }
     });
 
-    const now = new Date();
     let yardDwellSum = 0;
     let yardDwellCount = 0;
     const thresholdYard = settings.dwellThresholds?.yard || 4;
@@ -542,7 +550,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
       return false;
     }).length;
 
-    // Calculate Average Yard Dwell for completed stays
+    // Calculate Average Yard Dwell for completed stays AND active stays
     trailers.forEach(t => {
       const h = t.history || [];
       const gatedIn = h.find(x => x.status === 'GatedIn');
@@ -558,6 +566,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
         }
 
         yardDwellSum += (new Date(gatedOut.timestamp).getTime() - new Date(gatedIn.timestamp).getTime()) / 60000;
+        yardDwellCount++;
+      } else if (gatedIn && !gatedOut && t.status !== 'GatedOut' && t.status !== 'Cancelled' && t.status !== 'Unknown') {
+        // Count currently active trailers in Yard
+        yardDwellSum += (now.getTime() - new Date(gatedIn.timestamp).getTime()) / 60000;
         yardDwellCount++;
       }
     });
