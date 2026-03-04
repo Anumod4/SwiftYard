@@ -46,13 +46,19 @@ export const PublicDriverBoard: React.FC = () => {
             // 1. Confirm Arrival at Dock
             if (trailer.status === 'MovingToDock' || appt?.status === 'MovingToDock') {
                 if (appt) await updateAppointment(appt.id, { status: 'ReadyForCheckIn' });
-                await updateTrailer(trailer.id, { status: 'ReadyForCheckIn' });
+                const targetLocation = trailer.targetResourceId || trailer.location;
+                await updateTrailer(trailer.id, {
+                    status: 'ReadyForCheckIn',
+                    location: targetLocation,
+                    targetResourceId: null
+                });
                 addToast('Confirmed', `${trailer.number} marked as Arrived at Dock.`, 'success');
             }
             // 2. Confirm Arrival at Yard
             else if (trailer.status === 'MovingToYard' && trailer.targetResourceId) {
-                moveTrailerToYard(trailer.id, trailer.targetResourceId, appt?.id);
-                await updateTrailer(trailer.id, { targetResourceId: null });
+                const targetLocation = trailer.targetResourceId;
+                moveTrailerToYard(trailer.id, targetLocation, appt?.id);
+                await updateTrailer(trailer.id, { targetResourceId: null, location: targetLocation });
                 addToast('Confirmed', `${trailer.number} parked in Yard.`, 'success');
             }
             // 3. Confirm Departure from Dock

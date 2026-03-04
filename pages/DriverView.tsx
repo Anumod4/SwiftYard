@@ -168,7 +168,8 @@ export const DriverView: React.FC = () => {
         const targetLocation = activeTrailer.targetResourceId || activeTrailer.location;
         await updateTrailer(activeTrailer.id, {
           status: "ReadyForCheckIn",
-          location: targetLocation
+          location: targetLocation,
+          targetResourceId: null
         });
         addToast(
           "Arrival Confirmed",

@@ -26,7 +26,7 @@ const getDwellColor = (trailer: Trailer, thresholds: { yard: number, dock: numbe
 };
 
 // Draggable Trailer Component
-const DraggableTrailer = ({ trailer, thresholds, indicator = 'none' }: { trailer: Trailer, thresholds: any, indicator?: 'inbound' | 'outbound' | 'none' }) => {
+const DraggableTrailer = ({ trailer, thresholds, indicator = 'none', onClick }: { trailer: Trailer, thresholds: any, indicator?: 'inbound' | 'outbound' | 'none', onClick?: (t: Trailer) => void }) => {
     const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
         id: trailer.id,
         data: { trailer }
@@ -40,6 +40,10 @@ const DraggableTrailer = ({ trailer, thresholds, indicator = 'none' }: { trailer
             ref={setNodeRef}
             {...listeners}
             {...attributes}
+            onClick={(e) => {
+                e.stopPropagation();
+                if (onClick) onClick(trailer);
+            }}
             className={`
                 relative flex items-center justify-center p-2 rounded-lg cursor-grab active:cursor-grabbing shadow-sm border ${isDragging ? 'border-blue-500' : 'border-slate-700/20 dark:border-white/20'}
                 ${isDragging ? 'opacity-50 scale-105 z-50 ring-2 ring-blue-500 ' + colorClass : colorClass + ' hover:brightness-110 transition-all'}
@@ -129,7 +133,7 @@ const DroppableResource = ({ resource, trailers, thresholds }: { resource: Resou
                         )}
                         <div className={`flex flex-col gap-1 ${isMulti ? 'max-h-48 overflow-y-auto custom-scrollbar pr-1' : ''}`}>
                             {trailers.map(t => (
-                                <DraggableTrailer key={`${t.id}-${getIndicator(t)}`} trailer={t} thresholds={thresholds} indicator={getIndicator(t)} />
+                                <DraggableTrailer key={`${t.id}-${getIndicator(t)}`} trailer={t} thresholds={thresholds} indicator={getIndicator(t)} onClick={(t) => (window as any)._setTrailerDetails?.(t)} />
                             ))}
                         </div>
                     </>
@@ -146,6 +150,26 @@ export const YardVisibility: React.FC = () => {
     const { docks, yardSlots, trailers, updateTrailer, settings, addToast } = useData();
     const [locationFilter, setLocationFilter] = useState('');
     const [trailerFilter, setTrailerFilter] = useState('');
+    const [selectedTrailer, setSelectedTrailer] = useState<Trailer | null>(null);
+
+    // Provide setter globally for DroppableResource components to access
+    (window as any)._setTrailerDetails = setSelectedTrailer;
+
+    const getTrailerDwellDetails = (trailer: Trailer) => {
+        const yardThresh = settings?.dwellThresholds?.yard || 4;
+        const dockThresh = settings?.dwellThresholds?.dock || 2;
+        const arrivedEvent = trailer.history.find(h => h.status === 'GatedIn' || h.status === 'CheckedIn') || trailer.history[0];
+        if (!arrivedEvent) return null;
+
+        const arrivedDate = new Date(arrivedEvent.timestamp);
+        const isAtDock = trailer.status === 'CheckedIn' || trailer.status === 'ReadyForCheckOut';
+        const limit = isAtDock ? dockThresh : yardThresh;
+
+        const warningDate = new Date(arrivedDate.getTime() + (limit * 0.75 * 60 * 60 * 1000));
+        const criticalDate = new Date(arrivedDate.getTime() + (limit * 60 * 60 * 1000));
+
+        return { arrivedDate, warningDate, criticalDate, limit };
+    };
 
     const matchSearchQuery = (text: string, query: string) => {
         if (!query.trim()) return true;
@@ -166,7 +190,7 @@ export const YardVisibility: React.FC = () => {
 
     // Map trailers to their locations
     const activeTrailers = useMemo(() => {
-        let list = trailers.filter(t => ['Scheduled', 'InTransit', 'GatedIn', 'MovingToDock', 'ReadyForCheckIn', 'CheckedIn', 'MovingToYard', 'InYard'].includes(t.status));
+        let list = trailers.filter(t => ['Scheduled', 'InTransit', 'GatedIn', 'MovingToDock', 'ReadyForCheckIn', 'CheckedIn', 'MovingToYard', 'InYard', 'ReadyForCheckOut', 'CheckedOut'].includes(t.status));
         if (trailerFilter) {
             list = list.filter(t => matchSearchQuery(t.number || t.id, trailerFilter));
         }
@@ -306,7 +330,7 @@ export const YardVisibility: React.FC = () => {
 
                             <div className="flex-1 overflow-y-auto pr-2 flex flex-col gap-3 custom-scrollbar p-2 bg-slate-50 dark:bg-black/20 rounded-xl border border-dashed border-slate-300 dark:border-white/5 whitespace-normal break-words">
                                 {unassignedTrailers.map(t => (
-                                    <DraggableTrailer key={t.id} trailer={t} thresholds={settings.dwellThresholds} />
+                                    <DraggableTrailer key={t.id} trailer={t} thresholds={settings.dwellThresholds} onClick={setSelectedTrailer} />
                                 ))}
                                 {unassignedTrailers.length === 0 && (
                                     <div className="flex-1 flex items-center justify-center text-sm text-slate-400 italic">
@@ -367,6 +391,41 @@ export const YardVisibility: React.FC = () => {
 
                 </div>
             </DndContext>
+
+            {selectedTrailer && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4" onClick={(e) => { e.stopPropagation(); setSelectedTrailer(null); }}>
+                    <div className="bg-white dark:bg-[#0f172a] rounded-2xl p-6 w-full max-w-sm shadow-xl border border-slate-200 dark:border-white/10 relative" onClick={(e) => e.stopPropagation()}>
+                        <button onClick={() => setSelectedTrailer(null)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-white">✕</button>
+                        <h2 className="text-2xl font-black text-slate-800 dark:text-white mb-1">{selectedTrailer.number}</h2>
+                        <p className="text-sm font-semibold text-slate-500 mb-6">{selectedTrailer.type} • {selectedTrailer.owner}</p>
+
+                        {(() => {
+                            const details = getTrailerDwellDetails(selectedTrailer);
+                            if (!details) return <p className="text-sm text-slate-500 italic">No dwell history recorded yet.</p>;
+                            return (
+                                <div className="space-y-4">
+                                    <div className="flex flex-col gap-1 p-3 bg-slate-50 dark:bg-black/20 rounded-xl">
+                                        <p className="text-[10px] text-slate-500 uppercase font-black tracking-wider">Arrival Time</p>
+                                        <p className="text-sm font-bold text-slate-800 dark:text-slate-200">{details.arrivedDate.toLocaleString()}</p>
+                                    </div>
+                                    <div className="flex flex-col gap-1 p-3 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
+                                        <p className="text-[10px] text-emerald-600 dark:text-emerald-400 uppercase font-black tracking-wider flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-500" /> Recent Status</p>
+                                        <p className="text-sm font-bold text-emerald-900 dark:text-emerald-300">Until {details.warningDate.toLocaleString()}</p>
+                                    </div>
+                                    <div className="flex flex-col gap-1 p-3 bg-amber-500/10 rounded-xl border border-amber-500/20">
+                                        <p className="text-[10px] text-amber-600 dark:text-amber-400 uppercase font-black tracking-wider flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-amber-400" /> Warning Status</p>
+                                        <p className="text-sm font-bold text-amber-900 dark:text-amber-300">Until {details.criticalDate.toLocaleString()}</p>
+                                    </div>
+                                    <div className="flex flex-col gap-1 p-3 bg-red-500/10 rounded-xl border border-red-500/20">
+                                        <p className="text-[10px] text-red-600 dark:text-red-400 uppercase font-black tracking-wider flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" /> Critical Status</p>
+                                        <p className="text-sm font-bold text-red-900 dark:text-red-300">From {details.criticalDate.toLocaleTimeString()}</p>
+                                    </div>
+                                </div>
+                            );
+                        })()}
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
