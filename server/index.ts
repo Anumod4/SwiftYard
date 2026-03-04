@@ -101,20 +101,13 @@ app.get("/api/public/facilities", async (req, res) => {
   }
 });
 
-app.get("/api/public/carriers", async (req, res) => {
-  try {
-    const { fetchAll } = await import("./db");
-    const carriers = await fetchAll("carriers");
-    res.json({ success: true, data: carriers });
-  } catch (error: any) {
-    res.status(500).json({ success: false, error: { message: error.message } });
-  }
-});
-
-// Public driver/trailer/resources lookup for driver login (no auth required)
+// Public lookup for driver login (no auth required)
 app.use("/api/public/trailers", trailersRoutes);
 app.use("/api/public/resources", resourcesRoutes);
 app.use("/api/public/drivers", driversRoutes); // Use more specific path for drivers
+app.use("/api/public/appointments", appointmentsRoutes);
+app.use("/api/public/settings", settingsRoutes);
+app.use("/api/public/carriers", carriersRoutes);
 app.use("/api/public", driversRoutes); // Keep as fallback but after more specific ones
 
 // Protected routes - authenticate all /api routes EXCEPT /api/public/*

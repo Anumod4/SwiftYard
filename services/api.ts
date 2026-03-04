@@ -301,8 +301,10 @@ export const appointmentsApi = {
     if (facilityId !== undefined) {
       params.set("facilityId", facilityId || "null");
     }
+    const token = getToken();
+    const endpoint = token ? "/appointments" : "/public/appointments";
     return request(
-      `/appointments${params.toString() ? `?${params.toString()}` : ""}`,
+      `${endpoint}${params.toString() ? `?${params.toString()}` : ""}`,
     );
   },
 
@@ -536,7 +538,8 @@ export const driversApi = {
 
 export const carriersApi = {
   getAll: async (): Promise<ApiResponse<Carrier[]>> => {
-    return request("/carriers");
+    const token = getToken();
+    return request(token ? "/carriers" : "/public/carriers");
   },
 
   getById: async (id: string): Promise<ApiResponse<Carrier>> => {
@@ -739,7 +742,8 @@ export const settingsApi = {
   },
 
   getAll: async (): Promise<ApiResponse<any[]>> => {
-    return request("/settings/all/list");
+    const token = getToken();
+    return request(token ? "/settings/all/list" : "/public/settings/all/list");
   },
 };
 
