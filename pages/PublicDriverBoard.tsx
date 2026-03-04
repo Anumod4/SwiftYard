@@ -144,11 +144,11 @@ export const PublicDriverBoard: React.FC = () => {
 
             case 'MovingToDock':
                 statusLabel = 'MOVE TO DOCK';
-                // Resolve destination dock: appointment's resource, trailer's target, or fallback
-                const targetDock = appt?.assignedResourceId
-                    ? resolveResName(appt.assignedResourceId)
-                    : trailer.targetResourceId
-                        ? resolveResName(trailer.targetResourceId)
+                // Resolve destination dock: trailer's target prioritizes over appointment's resource
+                const targetDock = trailer.targetResourceId
+                    ? resolveResName(trailer.targetResourceId)
+                    : appt?.assignedResourceId
+                        ? resolveResName(appt.assignedResourceId)
                         : null;
                 instruction = targetDock ? `Proceed to ${targetDock}` : 'Proceed to assigned dock';
                 // Show destination as location for MovingToDock
@@ -198,7 +198,7 @@ export const PublicDriverBoard: React.FC = () => {
                 instruction = targetSlot ? `Park in ${targetSlot}` : 'Proceed to yard slot';
                 // Show destination as location for MovingToYard
                 locationName = targetSlot || locationName;
-                color = 'bg-emerald-500';
+                color = 'bg-emerald-500 animate-pulse';
                 icon = Play;
                 timerData = getTimerDisplay(trailer.instructionTimestamp, settings.instructionDurations?.moveToYard || 15);
                 canConfirm = true;

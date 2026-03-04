@@ -196,7 +196,6 @@ export const YardVisibility: React.FC = () => {
                 // Moving to a Yard Slot
                 await updateTrailer(trailer.id, {
                     status: 'MovingToYard',
-                    location: targetResource.id,
                     targetResourceId: targetResource.id,
                     instructionTimestamp: new Date().toISOString(),
                     history: [
