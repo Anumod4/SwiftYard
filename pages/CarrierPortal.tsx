@@ -22,7 +22,9 @@ import {
     Lock,
     Plus,
     User,
-    X
+    X,
+    Menu,
+    Search
 } from 'lucide-react';
 import { VIEW_IDS, CARRIER_NAV_ITEMS } from '../constants';
 
@@ -37,6 +39,8 @@ export const CarrierPortal: React.FC = () => {
     const { facilities, appointments, addAppointment, trailerTypes, addToast, refreshData, canEdit, theme, actionLoading, actionLoadingMessage, drivers, addDriver, carriers, settings } = useData();
     const [currentView, setCurrentView] = useState(VIEW_IDS.CARRIER_DASHBOARD);
     const [isRefreshing, setIsRefreshing] = useState(false);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
 
     // Modal State
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
@@ -221,56 +225,107 @@ export const CarrierPortal: React.FC = () => {
         }
     };
 
-    const renderSidebar = () => (
-        <div className="w-20 lg:w-64 h-screen fixed left-0 top-0 border-r border-slate-200 dark:border-white/10 bg-white/90 dark:bg-[#121212]/90 backdrop-blur-xl flex flex-col z-50 transition-colors duration-300">
-            <div className="h-24 flex items-center justify-center lg:justify-start lg:px-6 border-b border-slate-200 dark:border-white/5">
-                <div className="w-20 h-20 flex items-center justify-center">
-                    <Logo className="w-full h-full" />
-                </div>
-                <div className="hidden lg:flex ml-3 flex-col">
-                    <span className="font-bold text-2xl tracking-tight text-slate-900 dark:text-white block leading-none">
-                        SwiftYard
-                    </span>
-                    <span className="text-[10px] uppercase font-black tracking-widest text-blue-500 dark:text-blue-400">Carrier Portal</span>
-                </div>
-            </div>
+    const renderSidebar = () => {
+        const filteredItems = CARRIER_NAV_ITEMS.filter(item => item.label.replace('Carrier: ', '').toLowerCase().includes(searchTerm.toLowerCase()));
 
-            <nav className="flex-1 py-8 flex flex-col gap-2 px-3 overflow-y-auto custom-scrollbar">
-                {CARRIER_NAV_ITEMS.map(item => {
-                    const Icon = item.icon === 'LayoutDashboard' ? LayoutDashboard :
-                        item.icon === 'CalendarPlus' ? CalendarPlus :
-                            item.icon === 'Calendar' ? Calendar : Building2;
-                    const isActive = currentView === item.id;
-
-                    return (
+        return (
+            <>
+                {isSidebarOpen && (
+                    <div
+                        className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+                        onClick={() => setIsSidebarOpen(false)}
+                    />
+                )}
+                <div className={`
+                    w-[280px] h-screen fixed left-0 top-0 border-r border-slate-200 dark:border-white/10 
+                    bg-white/95 dark:bg-[#121212]/95 backdrop-blur-xl flex flex-col z-50 transition-transform duration-300 shadow-2xl
+                    ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+                `}>
+                    <div className="h-24 flex items-center justify-between px-6 border-b border-slate-200 dark:border-white/5 shrink-0">
+                        <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 flex items-center justify-center">
+                                <Logo className="w-full h-full" />
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="font-bold text-xl tracking-tight text-slate-900 dark:text-white block leading-none">
+                                    SwiftYard
+                                </span>
+                                <span className="text-[10px] uppercase font-black tracking-widest text-blue-500 dark:text-blue-400">Carrier Portal</span>
+                            </div>
+                        </div>
                         <button
-                            key={item.id}
-                            onClick={() => setCurrentView(item.id)}
-                            className={`
-                              flex items-center p-3 rounded-xl transition-all duration-200 group
-                              ${isActive
-                                    ? 'bg-[#0a84ff] text-white shadow-lg shadow-blue-900/50'
-                                    : 'text-slate-500 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'
-                                }
-                          `}
+                            onClick={() => setIsSidebarOpen(false)}
+                            className="p-2 bg-slate-100 dark:bg-white/10 rounded-full hover:bg-slate-200 dark:hover:bg-white/20 transition-colors"
                         >
-                            <Icon className={`w-6 h-6 ${isActive ? 'text-white' : 'text-slate-400 dark:text-gray-400 group-hover:text-slate-900 dark:group-hover:text-white'}`} />
-                            <span className="hidden lg:block ml-3 font-medium">{item.label.replace('Carrier: ', '')}</span>
+                            <X className="w-4 h-4 text-slate-600 dark:text-gray-300" />
                         </button>
-                    );
-                })}
-            </nav>
-        </div>
-    );
+                    </div>
+
+                    <div className="p-4 border-b border-slate-200 dark:border-white/5 shrink-0">
+                        <div className="relative">
+                            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                            <input
+                                type="text"
+                                placeholder="Search UI..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full pl-9 pr-3 py-2 bg-slate-100 dark:bg-white/5 border-none rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#0a84ff] text-slate-900 dark:text-white transition-all"
+                            />
+                        </div>
+                    </div>
+
+                    <nav className="flex-1 py-4 flex flex-col gap-1 px-3 overflow-y-auto custom-scrollbar">
+                        {filteredItems.length === 0 ? (
+                            <div className="py-8 text-center text-sm text-slate-500">
+                                No UI matches "{searchTerm}"
+                            </div>
+                        ) : (
+                            filteredItems.map(item => {
+                                const Icon = item.icon === 'LayoutDashboard' ? LayoutDashboard :
+                                    item.icon === 'CalendarPlus' ? CalendarPlus :
+                                        item.icon === 'Calendar' ? Calendar : Building2;
+                                const isActive = currentView === item.id;
+
+                                return (
+                                    <button
+                                        key={item.id}
+                                        onClick={() => { setCurrentView(item.id); setIsSidebarOpen(false); }}
+                                        className={`
+                                        flex items-center p-3 rounded-xl transition-all duration-200 group w-full text-left
+                                        ${isActive
+                                                ? 'bg-[#0a84ff] text-white shadow-lg shadow-blue-900/50'
+                                                : 'text-slate-500 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'
+                                            }
+                                    `}
+                                    >
+                                        <Icon className={`w-6 h-6 shrink-0 ${isActive ? 'text-white' : 'text-slate-400 dark:text-gray-400 group-hover:text-slate-900 dark:group-hover:text-white'}`} />
+                                        <span className="ml-3 font-bold truncate flex-1">{item.label.replace('Carrier: ', '')}</span>
+                                    </button>
+                                );
+                            })
+                        )}
+                    </nav>
+                </div>
+            </>
+        );
+    };
 
     return (
         <>
             {actionLoading && <LoadingIndicator message={actionLoadingMessage} fullScreen overlay />}
-            <div className="flex h-screen bg-slate-50 dark:bg-[#0f172a] text-slate-900 dark:text-white">
+            <div className="flex h-screen bg-slate-50 dark:bg-[#0f172a] text-slate-900 dark:text-white w-full overflow-hidden">
                 {renderSidebar()}
-                <main className="flex-1 flex flex-col h-full relative ml-20 lg:ml-64 transition-all duration-300">
+                <main className="flex-1 flex flex-col h-full relative w-full transition-all duration-300">
                     {/* Header with UserProfile and Refresh - Matching Yard App style */}
-                    <div className="w-full flex justify-end items-center px-8 pt-6 pb-2 shrink-0">
+                    <div className="w-full flex justify-between items-center px-8 pt-6 pb-2 shrink-0">
+                        <div className="flex items-center">
+                            <button
+                                onClick={() => setIsSidebarOpen(true)}
+                                className="p-3 bg-white/60 dark:bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-sm hover:bg-white/80 dark:hover:bg-white/10 transition-colors mr-4"
+                            >
+                                <Menu className="w-6 h-6 text-slate-700 dark:text-gray-300" />
+                            </button>
+                        </div>
                         <div className="flex items-center gap-3">
                             <button onClick={handleRefresh} disabled={isRefreshing} className="p-2.5 rounded-full bg-white dark:bg-white/10 shadow-sm border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-white/20 transition-all"><RefreshCw className={`w-5 h-5 text-slate-600 dark:text-white ${isRefreshing ? 'animate-spin' : ''}`} /></button>
                             <UserProfile />

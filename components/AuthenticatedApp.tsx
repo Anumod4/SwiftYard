@@ -11,6 +11,7 @@ import {
     RefreshCw,
     ChevronDown,
     Loader2,
+    Menu,
 } from "lucide-react";
 
 // Lazy load pages inside AuthenticatedApp to ensure isolation
@@ -55,6 +56,7 @@ const YardStaffApp = () => {
     const [currentView, setCurrentView] = useState("dashboard");
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [isFacilityMenuOpen, setIsFacilityMenuOpen] = useState(false);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [hasRedirectedToAdmin, setHasRedirectedToAdmin] = useState(false);
     const facilityMenuRef = useRef<HTMLDivElement>(null);
 
@@ -142,11 +144,26 @@ const YardStaffApp = () => {
             <Toaster />
             {actionLoading && <LoadingIndicator message={actionLoadingMessage} fullScreen overlay />}
             <div className="flex h-screen w-full overflow-hidden bg-slate-50 dark:bg-[#121212] text-slate-900 dark:text-white">
-                <Sidebar currentView={currentView} setCurrentView={setCurrentView} />
-                <main className="flex-1 ml-20 lg:ml-64 h-full bg-gradient-to-br from-slate-50 to-slate-200 dark:from-[#121212] dark:to-[#0f172a] relative flex flex-col">
-                    <div className="w-full flex justify-between items-center px-8 pt-6 pb-2 z-40 shrink-0 pointer-events-none print:hidden">
+                <Sidebar
+                    currentView={currentView}
+                    setCurrentView={(v) => { setCurrentView(v); setIsSidebarOpen(false); }}
+                    isOpen={isSidebarOpen}
+                    setIsOpen={setIsSidebarOpen}
+                />
+                <main className="flex-1 h-full bg-gradient-to-br from-slate-50 to-slate-200 dark:from-[#121212] dark:to-[#0f172a] relative flex flex-col w-full">
+                    <div className="w-full flex items-center px-8 pt-6 pb-2 z-40 shrink-0 pointer-events-none print:hidden">
+
+                        <div className="pointer-events-auto mr-4 flex-shrink-0">
+                            <button
+                                onClick={() => setIsSidebarOpen(true)}
+                                className="p-3 bg-white/60 dark:bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-sm hover:bg-white/80 dark:hover:bg-white/10 transition-colors"
+                            >
+                                <Menu className="w-6 h-6 text-slate-700 dark:text-gray-300" />
+                            </button>
+                        </div>
+
                         <div
-                            className="relative pointer-events-auto"
+                            className="relative pointer-events-auto flex-1 flex"
                             ref={facilityMenuRef}
                         >
                             <button
