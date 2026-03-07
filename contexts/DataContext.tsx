@@ -556,25 +556,12 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
       return false;
     }).length;
 
-    // Calculate Average Yard Dwell for completed stays AND active stays
+    // Calculate Average Yard Dwell for currently active trailers ONLY
     trailers.forEach(t => {
       const h = t.history || [];
       const gatedIn = h.find(x => x.status === 'GatedIn');
-      const gatedOut = h.find(x => x.status === 'GatedOut');
 
-      if (gatedIn && gatedOut) {
-        // Apply metrics range filter if active
-        if (settings.metricsRange) {
-          const outTime = new Date(gatedOut.timestamp).getTime();
-          const start = new Date(settings.metricsRange.start).getTime();
-          const end = new Date(settings.metricsRange.end).getTime() + 86400000;
-          if (outTime < start || outTime > end) return;
-        }
-
-        yardDwellSum += (new Date(gatedOut.timestamp).getTime() - new Date(gatedIn.timestamp).getTime()) / 60000;
-        yardDwellCount++;
-      } else if (gatedIn && !gatedOut && t.status !== 'GatedOut' && t.status !== 'Cancelled' && t.status !== 'Unknown') {
-        // Count currently active trailers in Yard
+      if (gatedIn && t.status !== 'GatedOut' && t.status !== 'Cancelled' && t.status !== 'Unknown') {
         yardDwellSum += (now.getTime() - new Date(gatedIn.timestamp).getTime()) / 60000;
         yardDwellCount++;
       }
