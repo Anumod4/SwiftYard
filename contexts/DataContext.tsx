@@ -224,6 +224,12 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
   const [actionLoading, setActionLoading] = useState(false);
   const [actionLoadingMessage, setActionLoadingMessage] = useState('');
 
+  const [metricsTick, setMetricsTick] = useState(0);
+  useEffect(() => {
+    const timer = setInterval(() => setMetricsTick(t => t + 1), 60000);
+    return () => clearInterval(timer);
+  }, []);
+
   // App-specific theme management (per user)
   const appType = useMemo(() => {
     if (typeof window === 'undefined') return 'yard';
@@ -584,7 +590,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
       avgYardDwell: yardDwellCount > 0 ? Math.round(yardDwellSum / yardDwellCount) : 0,
       longStayTrailers: longStayCount,
     };
-  }, [appointments, trailers, docks, settings.metricsRange, settings.dwellThresholds]);
+  }, [appointments, trailers, docks, settings.metricsRange, settings.dwellThresholds, metricsTick]);
 
   const addToast = useCallback(
     (
