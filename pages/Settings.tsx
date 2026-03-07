@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useData } from '../contexts/DataContext';
 import { GlassCard } from '../components/ui/GlassCard';
 import { Settings as SettingsIcon, Moon, Database, Trash2, AlertTriangle, Download, Upload, HardDrive, Clock, Plus, X, Calendar, Languages, Timer, MessageSquare, Briefcase, Phone, Key, ShieldCheck, Activity, RefreshCw, Navigation, Eye, EyeOff, Workflow, Container, Bot, Sparkles } from 'lucide-react';
-import { Shift, WhatsAppRecipient } from '../types';
+import { Shift, WhatsAppRecipient, AppSettings } from '../types';
 import { Pagination } from '../components/ui/Pagination';
 import { DatePicker } from '../components/ui/DatePicker';
 import { DeleteConfirmationModal } from '../components/ui/DeleteConfirmationModal';
@@ -97,13 +97,28 @@ export const Settings: React.FC = () => {
     const [localYardThresh, setLocalYardThresh] = useState(String(settings.dwellThresholds?.yard || 4));
     const [localDockThresh, setLocalDockThresh] = useState(String(settings.dwellThresholds?.dock || 2));
 
+    // Localization states
+    const [localCountry, setLocalCountry] = useState(settings.country || '');
+    const [localTimezone, setLocalTimezone] = useState(settings.timezone || '');
+    const [localCurrency, setLocalCurrency] = useState(settings.currency || 'USD');
+    const [localDateFormat, setLocalDateFormat] = useState(settings.dateFormat || 'MM/DD/YYYY');
+    const [localTimeFormat, setLocalTimeFormat] = useState(settings.timeFormat || '12h');
+
     // Sync local state when settings change from external source
     useEffect(() => {
         setLocalYardName(settings.yardName || 'SwiftYard');
         setLocalLanguage(settings.language || 'en');
         setLocalYardThresh(String(settings.dwellThresholds?.yard || 4));
         setLocalDockThresh(String(settings.dwellThresholds?.dock || 2));
-    }, [settings.yardName, settings.language, settings.dwellThresholds]);
+        setLocalCountry(settings.country || '');
+        setLocalTimezone(settings.timezone || '');
+        setLocalCurrency(settings.currency || 'USD');
+        setLocalDateFormat(settings.dateFormat || 'MM/DD/YYYY');
+        setLocalTimeFormat(settings.timeFormat || '12h');
+    }, [
+        settings.yardName, settings.language, settings.dwellThresholds,
+        settings.country, settings.timezone, settings.currency, settings.dateFormat, settings.timeFormat
+    ]);
 
     // Save handlers
     const handleYardNameBlur = () => {
@@ -116,6 +131,10 @@ export const Settings: React.FC = () => {
     const handleLanguageChange = (val: string) => {
         setLocalLanguage(val as 'en' | 'hi');
         updateSettings({ ...settings, language: val as 'en' | 'hi' });
+    };
+
+    const handleLocalizationChange = (key: keyof AppSettings, val: string) => {
+        updateSettings({ ...settings, [key]: val });
     };
 
     const handleYardThreshBlur = () => {
@@ -457,6 +476,106 @@ export const Settings: React.FC = () => {
                                 </select>
                             </div>
 
+                            {/* Localization & Geography */}
+                            <div className="pt-4 space-y-4 border-t border-slate-200 dark:border-white/5">
+                                <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-4">
+                                    <Languages className="w-4 h-4 text-blue-500" /> Localization & Geography
+                                </h3>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-bold uppercase text-slate-500 dark:text-gray-400 mb-1">Country</label>
+                                        <select
+                                            value={localCountry}
+                                            onChange={(e) => {
+                                                setLocalCountry(e.target.value);
+                                                handleLocalizationChange('country', e.target.value);
+                                            }}
+                                            className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-2 text-sm text-slate-900 dark:text-white focus:border-blue-500 outline-none appearance-none"
+                                        >
+                                            <option value="">Default (US)</option>
+                                            <option value="US">🇺🇸 United States</option>
+                                            <option value="GB">🇬🇧 United Kingdom</option>
+                                            <option value="IN">🇮🇳 India</option>
+                                            <option value="CA">🇨🇦 Canada</option>
+                                            <option value="AU">🇦🇺 Australia</option>
+                                            <option value="EU">🇪🇺 Europe</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold uppercase text-slate-500 dark:text-gray-400 mb-1">Timezone</label>
+                                        <select
+                                            value={localTimezone}
+                                            onChange={(e) => {
+                                                setLocalTimezone(e.target.value);
+                                                handleLocalizationChange('timezone', e.target.value);
+                                            }}
+                                            className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-2 text-sm text-slate-900 dark:text-white focus:border-blue-500 outline-none appearance-none"
+                                        >
+                                            <option value="">Browser Default</option>
+                                            <option value="UTC">UTC (Coordinated Universal Time)</option>
+                                            <option value="America/New_York">Eastern Time (ET)</option>
+                                            <option value="America/Chicago">Central Time (CT)</option>
+                                            <option value="America/Denver">Mountain Time (MT)</option>
+                                            <option value="America/Los_Angeles">Pacific Time (PT)</option>
+                                            <option value="Europe/London">London (GMT/BST)</option>
+                                            <option value="Europe/Paris">Central Europe (CET)</option>
+                                            <option value="Asia/Kolkata">India (IST)</option>
+                                            <option value="Asia/Tokyo">Japan (JST)</option>
+                                            <option value="Australia/Sydney">Sydney (AEST)</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold uppercase text-slate-500 dark:text-gray-400 mb-1">Currency</label>
+                                        <select
+                                            value={localCurrency}
+                                            onChange={(e) => {
+                                                setLocalCurrency(e.target.value);
+                                                handleLocalizationChange('currency', e.target.value);
+                                            }}
+                                            className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-2 text-sm text-slate-900 dark:text-white focus:border-blue-500 outline-none appearance-none"
+                                        >
+                                            <option value="USD">USD ($)</option>
+                                            <option value="EUR">EUR (€)</option>
+                                            <option value="GBP">GBP (£)</option>
+                                            <option value="INR">INR (₹)</option>
+                                            <option value="CAD">CAD ($)</option>
+                                            <option value="AUD">AUD ($)</option>
+                                            <option value="JPY">JPY (¥)</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold uppercase text-slate-500 dark:text-gray-400 mb-1">Date Format</label>
+                                        <select
+                                            value={localDateFormat}
+                                            onChange={(e) => {
+                                                setLocalDateFormat(e.target.value);
+                                                handleLocalizationChange('dateFormat', e.target.value);
+                                            }}
+                                            className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-2 text-sm text-slate-900 dark:text-white focus:border-blue-500 outline-none appearance-none"
+                                        >
+                                            <option value="MM/DD/YYYY">MM/DD/YYYY (US format)</option>
+                                            <option value="DD/MM/YYYY">DD/MM/YYYY (Global format)</option>
+                                            <option value="YYYY-MM-DD">YYYY-MM-DD (ISO format)</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold uppercase text-slate-500 dark:text-gray-400 mb-1">Time Format</label>
+                                        <select
+                                            value={localTimeFormat}
+                                            onChange={(e) => {
+                                                const val = e.target.value as '12h' | '24h';
+                                                setLocalTimeFormat(val);
+                                                handleLocalizationChange('timeFormat', val);
+                                            }}
+                                            className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-2 text-sm text-slate-900 dark:text-white focus:border-blue-500 outline-none appearance-none"
+                                        >
+                                            <option value="12h">12-hour (AM/PM)</option>
+                                            <option value="24h">24-hour</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
                         </GlassCard>
                     </section>
 

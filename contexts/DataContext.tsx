@@ -194,6 +194,7 @@ interface DataContextType {
   t: (key: string) => string;
   formatDate: (dateStr: string) => string;
   formatDateTime: (dateStr: string) => string;
+  formatCurrency: (amount: number) => string;
 }
 
 const DataStateContext = createContext<any>(undefined);
@@ -1189,10 +1190,59 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     return (dict as any)[key] || key;
   };
 
-  const formatDate = (dateStr: string) =>
-    new Date(dateStr).toLocaleDateString();
-  const formatDateTime = (dateStr: string) =>
-    new Date(dateStr).toLocaleString();
+  const formatDate = (dateStr: string) => {
+    try {
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) return dateStr;
+
+      const locale = settings.country ? `en-${settings.country}` : 'en-US';
+      const options: Intl.DateTimeFormatOptions = {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        timeZone: settings.timezone || undefined
+      };
+
+      return new Intl.DateTimeFormat(locale, options).format(date);
+    } catch (e) {
+      return new Date(dateStr).toLocaleDateString();
+    }
+  };
+
+  const formatDateTime = (dateStr: string) => {
+    try {
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) return dateStr;
+
+      const locale = settings.country ? `en-${settings.country}` : 'en-US';
+      const options: Intl.DateTimeFormatOptions = {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: settings.timeFormat === '12h' ? true : (settings.timeFormat === '24h' ? false : undefined),
+        timeZone: settings.timezone || undefined
+      };
+
+      return new Intl.DateTimeFormat(locale, options).format(date);
+    } catch (e) {
+      return new Date(dateStr).toLocaleString();
+    }
+  };
+
+  const formatCurrency = (amount: number) => {
+    try {
+      const locale = settings.country ? `en-${settings.country}` : 'en-US';
+      const currency = settings.currency || 'USD';
+      return new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency: currency
+      }).format(amount);
+    } catch (e) {
+      return `$${amount.toFixed(2)}`;
+    }
+  };
 
   const stateValue = useMemo(() => ({
     appointments,
@@ -1278,6 +1328,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     t,
     formatDate,
     formatDateTime,
+    formatCurrency,
     logActivity,
   }), [
     toggleTheme, handleSetCurrentFacilityId, refreshData, canEdit, addAppointment,
@@ -1288,7 +1339,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     deleteCarrier, addTrailerType, updateTrailerType, deleteTrailerType, addUser,
     updateUser, deleteUser, addRole, updateRole, deleteRole, addFacility,
     updateFacility, deleteFacility, updateSettings, performHousekeeping,
-    exportDatabase, importDatabase, addToast, removeToast, t, formatDate, formatDateTime, resetData, resetEfficiencyStats,
+    exportDatabase, importDatabase, addToast, removeToast, t, formatDate, formatDateTime, formatCurrency, resetData, resetEfficiencyStats,
     logActivity
   ]);
 

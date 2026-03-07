@@ -175,6 +175,11 @@ export interface WhatsAppRecipient {
 export interface AppSettings {
   yardName: string;
   language: 'en' | 'hi';
+  dateFormat?: string;
+  timeFormat?: '12h' | '24h';
+  currency?: string;
+  country?: string;
+  timezone?: string;
   enableNotifications: boolean;
   enableWhatsAppAlerts?: boolean;
   enableInstructionTimers?: boolean;

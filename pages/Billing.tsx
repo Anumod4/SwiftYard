@@ -25,7 +25,7 @@ interface BillingRecord {
 }
 
 export const Billing: React.FC = () => {
-    const { trailers, carriers, settings, t, addToast } = useData();
+    const { trailers, carriers, settings, t, addToast, formatCurrency, formatDateTime } = useData();
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCarrier, setSelectedCarrier] = useState<string>('ALL');
 
@@ -122,10 +122,10 @@ export const Billing: React.FC = () => {
             const tableRows = filteredRecords.map(r => [
                 r.trailerNumber,
                 r.carrierName,
-                format(r.arrivalTime, 'MM/dd HH:mm'),
+                formatDateTime(r.arrivalTime.toISOString()).replace(/,?\s+/g, ' '),
                 r.totalYardHours.toFixed(1),
                 r.totalDockHours.toFixed(1),
-                `$${r.totalDue.toFixed(2)}`
+                formatCurrency(r.totalDue)
             ]);
 
             autoTable(doc, {
@@ -141,7 +141,7 @@ export const Billing: React.FC = () => {
             const finalY = (doc as any).lastAutoTable.finalY || 42;
             doc.setFontSize(14);
             doc.setTextColor(0);
-            doc.text(`Total Accrued Penalties: $${totalPenalties.toFixed(2)}`, 14, finalY + 15);
+            doc.text(`Total Accrued Penalties: ${formatCurrency(totalPenalties)}`, 14, finalY + 15);
 
             doc.save(`swiftyard-billing-${format(new Date(), 'yyyy-MM-dd')}.pdf`);
             addToast('Export Complete', 'PDF Ledger downloaded successfully.', 'success');
@@ -196,7 +196,7 @@ export const Billing: React.FC = () => {
                 <GlassCard className="p-6 relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-4 opacity-10"><DollarSign className="w-24 h-24" /></div>
                     <h3 className="text-sm font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-2">Total Accrued Penalties</h3>
-                    <div className="text-4xl font-black text-slate-900 dark:text-white">${totalPenalties.toFixed(2)}</div>
+                    <div className="text-4xl font-black text-slate-900 dark:text-white">{formatCurrency(totalPenalties)}</div>
                     <div className="text-xs text-red-500 mt-2 flex items-center"><ArrowUpRight className="w-3 h-3 mr-1" /> Active Overage Risk</div>
                 </GlassCard>
                 <GlassCard className="p-6">
@@ -235,7 +235,7 @@ export const Billing: React.FC = () => {
                                         {record.carrierName}
                                     </td>
                                     <td className="p-4 text-sm text-slate-600 dark:text-gray-400">
-                                        {format(record.arrivalTime, 'MMM dd, HH:mm')}
+                                        {formatDateTime(record.arrivalTime.toISOString())}
                                     </td>
                                     <td className="p-4 text-right">
                                         <div className={`font-mono text-sm ${record.totalYardHours > record.freeYardHours ? 'text-red-500 font-bold' : 'text-slate-600 dark:text-gray-400'}`}>
@@ -250,7 +250,7 @@ export const Billing: React.FC = () => {
                                     <td className="p-4 text-right">
                                         {record.totalDue > 0 ? (
                                             <div className="font-mono text-base font-black text-red-500">
-                                                ${record.totalDue.toFixed(2)}
+                                                {formatCurrency(record.totalDue)}
                                             </div>
                                         ) : (
                                             <div className="flex items-center justify-end text-green-500">
