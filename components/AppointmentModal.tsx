@@ -31,12 +31,14 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onCl
         t,
         addToast,
         trailers,
+        allTrailers,
         settings
     } = useData();
 
     // Core Fields
     const [startTime, setStartTime] = useState('');
     const [duration, setDuration] = useState(60);
+    const [loadType, setLoadType] = useState<'Inbound' | 'Outbound'>('Inbound');
 
     // Vehicle Fields
     const [trailerNumber, setTrailerNumber] = useState('');
@@ -81,6 +83,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onCl
                     setAsnNumber(appt.asnNumber || '');
                     setPalletCount(appt.palletCount || '');
                     setLoadStatus(appt.loadStatus || 'Loaded');
+                    setLoadType(appt.loadType || 'Inbound');
                     setAssignedResourceId(appt.assignedResourceId || '');
                 }
             } else {
@@ -100,6 +103,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onCl
                 setAsnNumber('');
                 setPalletCount('');
                 setLoadStatus('Loaded');
+                setLoadType('Inbound');
                 setAssignedResourceId('');
             }
             setSuggestedDocks([]);
@@ -186,6 +190,26 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onCl
             return;
         }
 
+        if (!isBobtail) {
+            const isTrailerActiveElsewhere = allTrailers.some(t =>
+                t.number.toLowerCase() === trailerNumber.toLowerCase() &&
+                t.status !== 'GatedOut' && t.status !== 'Unknown' && t.status !== 'Cancelled'
+            );
+
+            // In Edit Mode, if the trailer is active elsewhere BUT it belongs to the exact same appointment we're editing, it's fine.
+            // Oh, we are modifying an existing trailer inside current appt. But trailers array represents standalone trailers.
+            // If the active trailer belongs to the SAME facility and context, we might safely assume it's okay? No, 'isTrailerActiveElsewhere' usually stops re-booking a GatedIn trailer. Wait, if it's GatedIn here, we can't book it again either. That's fine.
+            // But what if it's already actively linked to THIS appointment?
+            if (isTrailerActiveElsewhere) {
+                // Determine if the found active trailer is literally linked to the same appointment (for edits).
+                const conflictingTrailer = allTrailers.find(t => t.number.toLowerCase() === trailerNumber.toLowerCase() && t.status !== 'GatedOut' && t.status !== 'Unknown' && t.status !== 'Cancelled');
+                if (!(editingId && conflictingTrailer?.currentAppointmentId === editingId)) {
+                    addToast('Trailer Busy', `Trailer ${trailerNumber} is already active at a facility. It must depart before it can be booked again.`, 'error');
+                    return;
+                }
+            }
+        }
+
         if (!isWithinOperationalHours) {
             addToast('Outside Operational Hours', operationalHint || 'Selected time is outside facility operational hours.', 'error');
             return;
@@ -210,6 +234,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onCl
                 asnNumber: asnNumber || null,
                 palletCount: palletCount === '' ? null : Number(palletCount),
                 loadStatus: loadStatus,
+                loadType: loadType,
                 assignedResourceId: assignedResourceId || null
             };
 
@@ -360,6 +385,28 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onCl
                                 </div>
                             </div>
                         )}
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Traffic Direction</label>
+                                <div className="flex bg-slate-100 dark:bg-black/20 rounded-xl p-1 border border-slate-200 dark:border-white/10">
+                                    <button
+                                        type="button"
+                                        onClick={() => setLoadType('Inbound')}
+                                        className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${loadType === 'Inbound' ? 'bg-[#0a84ff] text-white shadow-sm' : 'text-slate-500 dark:text-gray-400'}`}
+                                    >
+                                        Inbound
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setLoadType('Outbound')}
+                                        className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${loadType === 'Outbound' ? 'bg-[#0a84ff] text-white shadow-sm' : 'text-slate-500 dark:text-gray-400'}`}
+                                    >
+                                        Outbound
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
 
                         <div className="grid grid-cols-2 gap-4">
                             <div>
