@@ -36,7 +36,7 @@ const CarrierFacilities = lazy(() => import('./carrier/CarrierFacilities').then(
 
 export const CarrierPortal: React.FC = () => {
     const { userProfile, signOut, currentCarrier } = useAuth();
-    const { facilities, appointments, addAppointment, trailerTypes, addToast, refreshData, canEdit, theme, actionLoading, actionLoadingMessage, drivers, addDriver, carriers, settings } = useData();
+    const { facilities, appointments, addAppointment, trailerTypes, addToast, refreshData, canEdit, theme, actionLoading, actionLoadingMessage, drivers, addDriver, carriers, settings, addTrailerType } = useData();
     const [currentView, setCurrentView] = useState(VIEW_IDS.CARRIER_DASHBOARD);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -137,6 +137,38 @@ export const CarrierPortal: React.FC = () => {
 
     const activeAppointments = carrierAppointments.filter(a => ['Scheduled', 'CheckingIn', 'CheckedIn', 'MovingToDock', 'ReadyForCheckIn', 'ReadyForCheckOut', 'GatedIn', 'InYard', 'MovingToYard'].includes(a.status));
     const pastAppointments = carrierAppointments.filter(a => ['Completed', 'Departed', 'Cancelled', 'Rejected'].includes(a.status));
+
+    const availableTrailerTypes = useMemo(() => {
+        if (!bookingFacilityId) return trailerTypes;
+        return trailerTypes.filter(t => !t.facilityId || t.facilityId === bookingFacilityId);
+    }, [trailerTypes, bookingFacilityId]);
+
+    // New Trailer Type Modal State
+    const [isNewTrailerTypeModalOpen, setIsNewTrailerTypeModalOpen] = useState(false);
+    const [newTrailerTypeName, setNewTrailerTypeName] = useState('');
+    const [isCreatingTrailerType, setIsCreatingTrailerType] = useState(false);
+
+    const handleCreateTrailerType = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!bookingFacilityId || !newTrailerTypeName.trim()) return;
+
+        setIsCreatingTrailerType(true);
+        try {
+            await addTrailerType({
+                name: newTrailerTypeName,
+                facilityId: bookingFacilityId,
+                defaultDuration: 60
+            });
+            addToast('Trailer Type Created', 'New equipment type has been added.', 'success');
+            setIsNewTrailerTypeModalOpen(false);
+            setNewTrailerTypeName('');
+            await refreshData();
+        } catch (err: any) {
+            addToast('Error', err.message || 'Failed to create trailer type', 'error');
+        } finally {
+            setIsCreatingTrailerType(false);
+        }
+    };
 
     const handleRefresh = async () => {
         setIsRefreshing(true);
@@ -360,9 +392,10 @@ export const CarrierPortal: React.FC = () => {
                                     setBookingDriverId={setBookingDriverId}
                                     setBookingDriverName={setBookingDriverName}
                                     setIsNewDriverModalOpen={setIsNewDriverModalOpen}
+                                    setIsNewTrailerTypeModalOpen={setIsNewTrailerTypeModalOpen}
                                     facilities={facilities}
                                     userProfile={userProfile}
-                                    trailerTypes={trailerTypes}
+                                    trailerTypes={availableTrailerTypes}
                                     availableDrivers={availableDrivers}
                                     isSubmitting={isSubmitting}
                                     isWithinOperationalHours={isWithinOperationalHours}
@@ -453,6 +486,49 @@ export const CarrierPortal: React.FC = () => {
                                             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2"
                                         >
                                             {isCreatingDriver ? 'Creating...' : 'Add Driver'}
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* New Trailer Type Modal */}
+                    {isNewTrailerTypeModalOpen && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setIsNewTrailerTypeModalOpen(false)} />
+                            <div className="relative bg-white dark:bg-[#1e1e1e] rounded-2xl shadow-2xl w-full max-w-md p-6 animate-in zoom-in-95 duration-200">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="text-xl font-bold text-slate-900 dark:text-white">Add New Equipment Type</h3>
+                                    <button onClick={() => setIsNewTrailerTypeModalOpen(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
+                                        <X className="w-5 h-5 text-slate-500" />
+                                    </button>
+                                </div>
+
+                                <div className="mb-4 p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg border border-indigo-200 dark:border-indigo-800">
+                                    <p className="text-sm text-indigo-800 dark:text-indigo-200">
+                                        <span className="font-bold">Facility:</span> {facilities.find(f => f.id === bookingFacilityId)?.name || bookingFacilityId}
+                                    </p>
+                                </div>
+
+                                <form onSubmit={handleCreateTrailerType} className="space-y-4">
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-2 uppercase">Equipment / Trailer Type Name</label>
+                                        <input
+                                            required
+                                            value={newTrailerTypeName}
+                                            onChange={e => setNewTrailerTypeName(e.target.value)}
+                                            placeholder="e.g. 53ft Dry Van"
+                                            className="w-full bg-slate-100 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-slate-900 dark:text-white focus:border-indigo-500 outline-none"
+                                        />
+                                    </div>
+                                    <div className="pt-2">
+                                        <button
+                                            type="submit"
+                                            disabled={isCreatingTrailerType}
+                                            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2"
+                                        >
+                                            {isCreatingTrailerType ? 'Creating...' : 'Add Equipment Type'}
                                         </button>
                                     </div>
                                 </form>
