@@ -107,15 +107,6 @@ const ResourceNode = React.memo<{
                 <Truck className="w-3.5 h-3.5 flex-shrink-0" />
                 <span className="text-sm font-bold truncate">{apptInfo.isBobtail ? 'Bobtail' : apptInfo.number || 'Occupied'}</span>
               </div>
-              {onAction && resource.currentAppId && (
-                <button
-                  onClick={(e) => { e.stopPropagation(); onAction(resource.currentAppId!); }}
-                  className="p-1.5 bg-blue-500 text-white rounded-md hover:bg-blue-600 shadow-sm transition-all z-20"
-                  title="Send Driver Instruction"
-                >
-                  <Navigation className="w-3 h-3" />
-                </button>
-              )}
             </div>
             {!apptInfo.isBobtail && apptInfo.type && (
               <span className="text-[10px] text-blue-500 dark:text-blue-300 truncate opacity-80 pl-5">{apptInfo.type}</span>
@@ -140,25 +131,6 @@ const ResourceNode = React.memo<{
         )}
       </div>
 
-      {/* Footer / Caps */}
-      <div className="pl-2 pt-2 border-t border-slate-100 dark:border-white/5 flex flex-wrap gap-1 mt-auto">
-        {hasCarrierRestriction && (
-          <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-300 border border-purple-100 dark:border-purple-500/20 font-bold flex items-center gap-0.5" title="Carrier Restricted">
-            <Briefcase className="w-3 h-3" /> Carrier
-          </span>
-        )}
-        {hasTypeRestriction ? resource.allowedTrailerTypes.slice(0, 2).map(t => (
-          <span key={t} className="text-[9px] px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-gray-400 border border-slate-200 dark:border-white/10 font-bold truncate max-w-[80px]" title={t}>
-            {t}
-          </span>
-        )) : null}
-        {hasTypeRestriction && resource.allowedTrailerTypes.length > 2 && (
-          <span className="text-[9px] text-slate-400 font-bold py-0.5">+{resource.allowedTrailerTypes.length - 2}</span>
-        )}
-        {!hasCarrierRestriction && !hasTypeRestriction && (
-          <span className="text-[9px] text-slate-300 dark:text-gray-600 font-medium">Universal</span>
-        )}
-      </div>
     </GlassCard>
   );
 });
