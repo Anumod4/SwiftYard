@@ -17,7 +17,6 @@ const ADMIN_NAV_ITEMS = [
   { id: 'admin-users', label: 'Manage Users', icon: UserCog },
   { id: 'admin-roles', label: 'Manage Roles', icon: Shield },
   { id: 'admin-facilities', label: 'Facilities', icon: Building },
-  { id: 'settings', label: 'Settings', icon: Settings },
   { id: 'help', label: 'Help & Docs', icon: BookOpen },
 ];
 
@@ -69,7 +68,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, i
       {/* Backdrop */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/50 z-40"
           onClick={() => setIsOpen(false)}
         />
       )}
