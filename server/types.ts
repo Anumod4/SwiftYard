@@ -59,7 +59,8 @@ export interface CreateAppointmentDTO {
 export interface UpdateAppointmentDTO extends Partial<CreateAppointmentDTO> {
   status?: string;
   rejectionReason?: string;
-  acknowledgementStatus?: 'Pending' | 'Confirmed' | 'Rejected';
+  acknowledgementStatus?: 'Pending' | 'Confirmed' | 'Rejected' | 'RescheduleSuggested';
+  suggestedStartTime?: string;
 }
 
 export interface CreateTrailerDTO {

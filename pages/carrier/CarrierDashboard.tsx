@@ -71,6 +71,7 @@ export const CarrierDashboard: React.FC<CarrierDashboardProps> = ({
             outboundCount: allAppointments.filter(a => a.loadType === 'Outbound').length,
             liveCount: allAppointments.filter(a => a.appointmentType === 'Live').length,
             dropCount: allAppointments.filter(a => a.appointmentType === 'Drop').length,
+            rescheduleSuggestions: activeAppointments.filter(a => a.acknowledgementStatus === 'RescheduleSuggested').length,
         };
     }, [activeAppointments, pastAppointments, allAppointments]);
 
@@ -97,6 +98,31 @@ export const CarrierDashboard: React.FC<CarrierDashboardProps> = ({
                     </div>
                 </div>
             </header>
+
+            {metrics.rescheduleSuggestions > 0 && (
+                <div
+                    className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-[2rem] flex items-center justify-between cursor-pointer hover:bg-blue-500/15 transition-all group animate-pulse"
+                    onClick={() => {
+                        // Find the first one and open it
+                        const firstSuggestion = activeAppointments.find(a => a.acknowledgementStatus === 'RescheduleSuggested');
+                        if (firstSuggestion) {
+                            onSetSelectedApptId(firstSuggestion.id);
+                            onSetIsDetailsModalOpen(true);
+                        }
+                    }}
+                >
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-2xl bg-blue-500 flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
+                            <Clock className="w-6 h-6" />
+                        </div>
+                        <div>
+                            <h4 className="text-lg font-black text-blue-600 dark:text-blue-400 leading-none">Reschedule Suggestions</h4>
+                            <p className="text-xs text-slate-500 dark:text-gray-400 mt-1">Facility has proposed new times for {metrics.rescheduleSuggestions} appointments. Action required.</p>
+                        </div>
+                    </div>
+                    <ArrowRight className="w-6 h-6 text-blue-500 group-hover:translate-x-1 transition-transform" />
+                </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <KPICard
@@ -202,8 +228,8 @@ export const CarrierDashboard: React.FC<CarrierDashboardProps> = ({
                                 >
                                     <div className="flex items-center gap-5">
                                         <div className={`w-14 h-14 rounded-3xl flex items-center justify-center transition-all group-hover:scale-110 ${appt.status === 'PendingApproval' ? 'bg-amber-500/10 text-amber-500' :
-                                                appt.status === 'CheckedIn' ? 'bg-blue-500/10 text-blue-500' :
-                                                    'bg-indigo-500/10 text-indigo-500'
+                                            appt.status === 'CheckedIn' ? 'bg-blue-500/10 text-blue-500' :
+                                                'bg-indigo-500/10 text-indigo-500'
                                             }`}>
                                             <Truck className="w-7 h-7" />
                                         </div>
@@ -227,11 +253,12 @@ export const CarrierDashboard: React.FC<CarrierDashboardProps> = ({
                                         </div>
                                     </div>
                                     <div className="flex flex-col items-end gap-3">
-                                        <div className={`text-[10px] font-black px-4 py-1.5 rounded-2xl uppercase tracking-tighter shadow-sm ${appt.status === 'PendingApproval' ? 'bg-amber-500 text-white shadow-amber-500/20' :
-                                                appt.status === 'CheckedIn' ? 'bg-blue-500 text-white shadow-blue-500/20' :
-                                                    'bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-gray-400'
+                                        <div className={`text-[10px] font-black px-4 py-1.5 rounded-2xl uppercase tracking-tighter shadow-sm ${appt.acknowledgementStatus === 'RescheduleSuggested' ? 'bg-blue-500 text-white shadow-blue-500/20' :
+                                                appt.status === 'PendingApproval' ? 'bg-amber-500 text-white shadow-amber-500/20' :
+                                                    appt.status === 'CheckedIn' ? 'bg-blue-500 text-white shadow-blue-500/20' :
+                                                        'bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-gray-400'
                                             }`}>
-                                            {appt.status.replace(/([A-Z])/g, ' $1').trim()}
+                                            {appt.acknowledgementStatus === 'RescheduleSuggested' ? 'Re-schedule Offered' : appt.status.replace(/([A-Z])/g, ' $1').trim()}
                                         </div>
                                         <p className="text-[11px] font-mono font-black text-slate-900 dark:text-white flex items-center gap-1 bg-slate-100 dark:bg-white/5 px-2 py-1 rounded-lg">
                                             <Clock className="w-3 h-3 text-slate-400" /> {new Date(appt.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}

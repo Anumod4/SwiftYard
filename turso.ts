@@ -174,6 +174,10 @@ export const runMigrations = async () => {
   try {
     await turso.execute("ALTER TABLE carriers ADD COLUMN billingOverrides TEXT");
   } catch (e: any) { /* Ignore */ }
+
+  try {
+    await turso.execute("ALTER TABLE appointments ADD COLUMN suggestedStartTime TEXT");
+  } catch (e: any) { /* Ignore */ }
 };
 
 export const initializeSchema = async () => {
@@ -300,7 +304,8 @@ export const initializeSchema = async () => {
         instructionTimestamp TEXT,
         loadType TEXT,
         appointmentType TEXT,
-        rejectionReason TEXT
+        rejectionReason TEXT,
+        suggestedStartTime TEXT
       );
     `);
 

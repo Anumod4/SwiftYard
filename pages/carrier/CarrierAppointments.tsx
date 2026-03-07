@@ -57,8 +57,8 @@ export const CarrierAppointments: React.FC<CarrierAppointmentsProps> = ({
                         >
                             <div className="flex items-center gap-5 md:min-w-[250px]">
                                 <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 ${['Completed', 'Departed'].includes(appt.status) ? 'bg-emerald-500/10 text-emerald-500' :
-                                        ['Cancelled', 'Rejected'].includes(appt.status) ? 'bg-red-500/10 text-red-500' :
-                                            'bg-blue-500/10 text-blue-500'
+                                    ['Cancelled', 'Rejected'].includes(appt.status) ? 'bg-red-500/10 text-red-500' :
+                                        'bg-blue-500/10 text-blue-500'
                                     }`}>
                                     <Calendar className="w-7 h-7" />
                                 </div>
@@ -99,11 +99,12 @@ export const CarrierAppointments: React.FC<CarrierAppointmentsProps> = ({
 
                             <div className="flex items-center justify-between md:justify-end gap-6 border-t md:border-t-0 pt-4 md:pt-0 border-slate-100 dark:border-white/5">
                                 <div className="text-right flex flex-col items-end">
-                                    <span className={`text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-tighter border ${appt.status === 'Completed' || appt.status === 'Departed' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
-                                            appt.status === 'Cancelled' || appt.status === 'Rejected' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
-                                                'bg-blue-500/10 text-blue-500 border-blue-500/20'
+                                    <span className={`text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-tighter border ${appt.acknowledgementStatus === 'RescheduleSuggested' ? 'bg-blue-500 text-white border-blue-500/20 shadow-lg shadow-blue-500/20' :
+                                            appt.status === 'Completed' || appt.status === 'Departed' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
+                                                appt.status === 'Cancelled' || appt.status === 'Rejected' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
+                                                    'bg-blue-500/10 text-blue-500 border-blue-500/20'
                                         }`}>
-                                        {appt.status.replace(/([A-Z])/g, ' $1').trim()}
+                                        {appt.acknowledgementStatus === 'RescheduleSuggested' ? 'Re-schedule Offered' : appt.status.replace(/([A-Z])/g, ' $1').trim()}
                                     </span>
                                 </div>
                                 <ChevronRight className="w-5 h-5 text-slate-300 dark:text-gray-700 group-hover:text-blue-500 transition-colors" />

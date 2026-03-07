@@ -2,6 +2,7 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useData } from '../contexts/DataContext';
 import { GlassCard } from '../components/ui/GlassCard';
 import { AppointmentModal } from '../components/AppointmentModal';
+import { SuggestTimeModal } from '../components/SuggestTimeModal';
 import { AppointmentDetailsModal } from '../components/AppointmentDetailsModal';
 import { DatePicker } from '../components/ui/DatePicker';
 import { Pagination } from '../components/ui/Pagination';
@@ -90,6 +91,7 @@ export const Schedule: React.FC = () => {
     const [editingId, setEditingId] = useState<string | null>(null);
     const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
     const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+    const [isSuggestModalOpen, setIsSuggestModalOpen] = useState(false);
     const [appointmentToProcess, setAppointmentToProcess] = useState<string | null>(null);
 
     // Read Only Details Modal State
@@ -140,17 +142,41 @@ export const Schedule: React.FC = () => {
     };
 
     const handleRejectClick = (id: string) => {
-        setAppointmentToProcess(id);
-        setIsRejectModalOpen(true);
-    };
-
-    const handleConfirmReject = async () => {
-        if (appointmentToProcess) {
-            await updateAppointment(appointmentToProcess, { status: 'Rejected' });
-            addToast('Rejected', 'Appointment request rejected.', 'info');
-            setAppointmentToProcess(null);
+        const appt = appointments.find(a => a.id === id);
+        if (appt?.acknowledgementStatus === 'RescheduleSuggested') {
+            setAppointmentToProcess(id);
+            setIsRejectModalOpen(true);
+        } else {
+            setAppointmentToProcess(id);
+            setIsSuggestModalOpen(true);
         }
     };
+
+    const handleConfirmFullReject = async () => {
+        if (appointmentToProcess) {
+            await updateAppointment(appointmentToProcess, {
+                status: 'Rejected',
+                acknowledgementStatus: 'Rejected'
+            });
+            setIsRejectModalOpen(false);
+            setAppointmentToProcess(null);
+            addToast('Rejected', 'Appointment fully rejected.', 'info');
+        }
+    };
+
+    const handleSuggestConfirm = async (suggestedTime: string) => {
+        if (appointmentToProcess) {
+            await updateAppointment(appointmentToProcess, {
+                suggestedStartTime: suggestedTime,
+                acknowledgementStatus: 'RescheduleSuggested'
+            });
+            setIsSuggestModalOpen(false);
+            setAppointmentToProcess(null);
+            addToast('Suggestion Sent', 'Alternate time has been suggested.', 'success');
+        }
+    };
+
+    const handleConfirmReject = handleConfirmFullReject; // Fallback for any legacy calls
 
     const handleRowClick = (id: string) => {
         setSelectedDetailsApptId(id);
@@ -542,9 +568,16 @@ export const Schedule: React.FC = () => {
             <DeleteConfirmationModal
                 isOpen={isRejectModalOpen}
                 onClose={() => setIsRejectModalOpen(false)}
-                onConfirm={handleConfirmReject}
+                onConfirm={handleConfirmFullReject}
                 title="Reject Request"
-                message="Are you sure you want to reject this appointment request? This will notify the requester that their slot is no longer reserved."
+                message="Are you sure you want to completely reject this appointment request? This will notify the carrier that their request is cancelled."
+            />
+
+            <SuggestTimeModal
+                isOpen={isSuggestModalOpen}
+                onClose={() => setIsSuggestModalOpen(false)}
+                onConfirm={handleSuggestConfirm}
+                currentStartTime={appointmentToProcess ? appointments.find(a => a.id === appointmentToProcess)?.startTime || new Date().toISOString() : new Date().toISOString()}
             />
 
             <AppointmentDetailsModal

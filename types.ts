@@ -141,9 +141,10 @@ export interface Appointment {
   appointmentType?: 'Live' | 'Drop';
   rejectionReason?: string;
   // Driver App Fields
-  acknowledgementStatus?: 'Pending' | 'Confirmed' | 'Rejected';
+  acknowledgementStatus?: 'Pending' | 'Confirmed' | 'Rejected' | 'RescheduleSuggested';
   acknowledgementTime?: string;
   instructionTimestamp?: string;
+  suggestedStartTime?: string;
 }
 
 export interface DashboardMetrics {
