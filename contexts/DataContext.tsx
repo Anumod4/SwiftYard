@@ -494,7 +494,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
       (a) => a.status === "Scheduled",
     ).length;
     const occupied = docks.filter((d) => d.status === "Occupied").length;
-    const inYardCount = trailers.filter((t) => t.status === "InYard").length;
+    const inYardCount = trailers.filter((t) =>
+      !['Scheduled', 'GatedOut', 'Cancelled', 'Unknown'].includes(t.status)
+    ).length;
     const rate =
       docks.length > 0 ? Math.round((occupied / docks.length) * 100) : 0;
 
@@ -506,9 +508,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
       ddCount = 0;
     statsAppointments.forEach((a) => {
       const h = a.history || [];
-      const gatedIn = h.find((x) => x.status === "GatedIn");
+      const gatedIn = h.find((x) => x.status === "GatedIn") || h.find(x => x.status !== 'Scheduled' && x.status !== 'Draft');
       const checkedIn = h.find((x) => x.status === "CheckedIn");
       const completed = h.find((x) => x.status === "Completed");
+
       if (gatedIn && checkedIn) {
         g2dSum +=
           (new Date(checkedIn.timestamp).getTime() -
@@ -539,10 +542,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
 
     // Calculate long stay trailers (currently in yard)
     const longStayCount = trailers.filter(t => {
+      if (['Scheduled', 'GatedOut', 'Cancelled', 'Unknown'].includes(t.status)) return false;
       const history = t.history || [];
-      const gatedIn = history.find(h => h.status === 'GatedIn');
-      if (t.status !== 'GatedOut' && gatedIn) {
-        const totalHours = (now.getTime() - new Date(gatedIn.timestamp).getTime()) / (1000 * 60 * 60);
+      const arrival = history.find(h => h.status !== 'Scheduled');
+      if (arrival) {
+        const totalHours = (now.getTime() - new Date(arrival.timestamp).getTime()) / (1000 * 60 * 60);
         if (totalHours > thresholdYard) return true;
 
         if (t.status === 'CheckedIn') {
@@ -559,11 +563,20 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     // Calculate Average Yard Dwell for currently active trailers ONLY
     trailers.forEach(t => {
       const h = t.history || [];
-      const gatedIn = h.find(x => x.status === 'GatedIn');
+      // If it's not currently in the facility, skip it
+      if (['Scheduled', 'GatedOut', 'Cancelled', 'Unknown'].includes(t.status)) {
+        return;
+      }
 
-      if (gatedIn && t.status !== 'GatedOut' && t.status !== 'Cancelled' && t.status !== 'Unknown') {
-        yardDwellSum += (now.getTime() - new Date(gatedIn.timestamp).getTime()) / 60000;
-        yardDwellCount++;
+      // Find the first event that marks arrival (anything not Scheduled)
+      const arrival = h.find(x => x.status !== 'Scheduled');
+
+      if (arrival && arrival.timestamp) {
+        const diff = (now.getTime() - new Date(arrival.timestamp).getTime()) / 60000;
+        if (diff > 0) {
+          yardDwellSum += diff;
+          yardDwellCount++;
+        }
       }
     });
 
