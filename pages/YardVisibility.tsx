@@ -77,17 +77,31 @@ const DraggableTrailer = ({ trailer, thresholds, indicator = 'none', onClick }: 
 };
 
 // Droppable Resource Area (Dock or Yard Slot)
-const DroppableResource = ({ resource, trailers, thresholds }: { resource: Resource, trailers: Trailer[], thresholds: any }) => {
-    const { setNodeRef, isOver } = useDroppable({
-        id: resource.id,
-        data: { resource }
-    });
-    const [expanded, setExpanded] = useState(false);
-
+const DroppableResource = ({ resource, trailers, thresholds, activeDragTrailer }: { resource: Resource, trailers: Trailer[], thresholds: any, activeDragTrailer?: Trailer | null }) => {
     const isDock = resource.type === 'Dock';
     const capacity = resource.capacity || 1;
     const isFull = trailers.length >= capacity;
     const isMulti = capacity > 1 && trailers.length > 1;
+
+    const isEligible = useMemo(() => {
+        if (!activeDragTrailer) return true;
+        if (!isDock) return true;
+
+        const carrierAllowed = !resource.allowedCarrierIds?.length ||
+            (activeDragTrailer.carrierId && resource.allowedCarrierIds.includes(activeDragTrailer.carrierId));
+
+        const typeAllowed = !resource.allowedTrailerTypes?.length ||
+            (activeDragTrailer.type && resource.allowedTrailerTypes.includes(activeDragTrailer.type));
+
+        return carrierAllowed && typeAllowed;
+    }, [activeDragTrailer, resource, isDock]);
+
+    const { setNodeRef, isOver } = useDroppable({
+        id: resource.id,
+        data: { resource },
+        disabled: !isEligible
+    });
+    const [expanded, setExpanded] = useState(false);
 
     const getIndicator = (trailer: Trailer) => {
         if (trailer.targetResourceId === resource.id && trailer.location !== resource.id) return 'inbound';
@@ -101,8 +115,10 @@ const DroppableResource = ({ resource, trailers, thresholds }: { resource: Resou
             ref={setNodeRef}
             className={`
                 p-3 rounded-xl border-2 transition-all min-h-[100px] flex flex-col gap-2 relative
-                ${isOver && !isFull ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/20'}
-                ${isFull ? 'opacity-70 border-amber-200 dark:border-amber-900' : ''}
+                ${!isEligible ? 'opacity-40 grayscale bg-slate-200 dark:bg-slate-800/50 border-slate-300 dark:border-slate-700 cursor-not-allowed' :
+                    isOver && !isFull ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' :
+                        'border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/20'}
+                ${isFull && isEligible ? 'opacity-70 border-amber-200 dark:border-amber-900' : ''}
             `}
         >
             <div className="flex items-center justify-between mb-1 pb-2 border-b border-slate-200 dark:border-white/10">
@@ -151,6 +167,8 @@ export const YardVisibility: React.FC = () => {
     const [locationFilter, setLocationFilter] = useState('');
     const [trailerFilter, setTrailerFilter] = useState('');
     const [selectedTrailer, setSelectedTrailer] = useState<Trailer | null>(null);
+    const [activeDragTrailer, setActiveDragTrailer] = useState<Trailer | null>(null);
+    const [capacityAlert, setCapacityAlert] = useState<{ open: boolean, message: string } | null>(null);
 
     // Provide setter globally for DroppableResource components to access
     (window as any)._setTrailerDetails = setSelectedTrailer;
@@ -256,7 +274,10 @@ export const YardVisibility: React.FC = () => {
         const capacity = targetResource.capacity || 1;
         const currentOccupants = activeTrailers.filter(t => t.targetResourceId === targetResource.id || (t.location === targetResource.id && !t.targetResourceId)).length;
         if (currentOccupants >= capacity) {
-            addToast('Capacity Full', `${targetResource.name} is already full (Capacity: ${capacity}).`, 'error');
+            setCapacityAlert({
+                open: true,
+                message: `${targetResource.name} is already full (Capacity: ${capacity}).`
+            });
             return;
         }
 
@@ -335,7 +356,13 @@ export const YardVisibility: React.FC = () => {
                 </div>
             </div>
 
-            <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+            <DndContext sensors={sensors} onDragStart={(e) => {
+                const trailer = e.active.data.current?.trailer;
+                if (trailer) setActiveDragTrailer(trailer);
+            }} onDragEnd={(e) => {
+                setActiveDragTrailer(null);
+                handleDragEnd(e);
+            }}>
                 <div className="flex-1 min-h-0 flex flex-col lg:flex-row gap-6">
 
                     {/* Left Panel: General Pool / Unassigned Arrivals */}
@@ -380,6 +407,7 @@ export const YardVisibility: React.FC = () => {
                                             resource={dock}
                                             trailers={getTrailersForResource(dock.id)}
                                             thresholds={settings.dwellThresholds}
+                                            activeDragTrailer={activeDragTrailer}
                                         />
                                     ))}
                                     {sortedDocks.length === 0 && <span className="text-slate-400 italic text-sm">No docks configured.</span>}
@@ -400,6 +428,7 @@ export const YardVisibility: React.FC = () => {
                                             resource={slot}
                                             trailers={getTrailersForResource(slot.id)}
                                             thresholds={settings.dwellThresholds}
+                                            activeDragTrailer={activeDragTrailer}
                                         />
                                     ))}
                                     {sortedSlots.length === 0 && <span className="text-slate-400 italic text-sm">No yard slots configured.</span>}
@@ -443,6 +472,24 @@ export const YardVisibility: React.FC = () => {
                                 </div>
                             );
                         })()}
+                    </div>
+                </div>
+            )}
+
+            {capacityAlert?.open && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-300" onClick={(e) => { e.stopPropagation(); setCapacityAlert(null); }}>
+                    <div className="bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 w-full max-w-sm shadow-xl border border-white/10 relative text-center flex flex-col items-center" onClick={(e) => e.stopPropagation()}>
+                        <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-4">
+                            <AlertTriangle className="w-8 h-8 text-red-600 dark:text-red-500 animate-pulse" />
+                        </div>
+                        <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Capacity Full</h2>
+                        <p className="text-slate-500 dark:text-gray-400 mb-8 px-4 text-sm leading-relaxed">{capacityAlert.message}</p>
+                        <button
+                            onClick={() => setCapacityAlert(null)}
+                            className="w-full px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold shadow-lg shadow-red-500/30 transition-all active:scale-95"
+                        >
+                            Confirm
+                        </button>
                     </div>
                 </div>
             )}
