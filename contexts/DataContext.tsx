@@ -1237,10 +1237,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
       const currency = settings.currency || 'USD';
       return new Intl.NumberFormat(locale, {
         style: 'currency',
+        currencyDisplay: 'code',
         currency: currency
       }).format(amount);
     } catch (e) {
-      return `$${amount.toFixed(2)}`;
+      return `${settings.currency || 'USD'} ${amount.toFixed(2)}`;
     }
   };
 

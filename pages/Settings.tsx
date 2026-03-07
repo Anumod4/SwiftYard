@@ -168,10 +168,10 @@ export const Settings: React.FC = () => {
 
     const currencySymbol = useMemo(() => {
         try {
-            return new Intl.NumberFormat(settings.country || 'en-US', { style: 'currency', currency: settings.currency || 'USD' })
-                .formatToParts(0).find(x => x.type === 'currency')?.value || '$';
+            return new Intl.NumberFormat(settings.country || 'en-US', { style: 'currency', currency: settings.currency || 'USD', currencyDisplay: 'code' })
+                .formatToParts(0).find(x => x.type === 'currency')?.value || (settings.currency || 'USD');
         } catch {
-            return '$';
+            return settings.currency || 'USD';
         }
     }, [settings.currency, settings.country]);
 
