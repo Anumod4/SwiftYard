@@ -513,7 +513,7 @@ export const Settings: React.FC = () => {
                                         />
                                         <div>
                                             <span className="block font-bold text-slate-900 dark:text-white text-sm">Option 1: Move to Default Yard</span>
-                                            <span className="block text-xs text-slate-500 dark:text-gray-400 mt-1">Automatically instructs driver to proceed to a specific yard holding area upon gate entry.</span>
+                                            <span className="block text-xs text-slate-500 dark:text-gray-400 mt-1">Directs to default yard slot. If unassigned or occupied, falls back to the next available yard slot sorted by name.</span>
                                         </div>
                                     </label>
 
@@ -527,7 +527,7 @@ export const Settings: React.FC = () => {
                                         />
                                         <div>
                                             <span className="block font-bold text-slate-900 dark:text-white text-sm">Option 2: Move to Assigned Dock</span>
-                                            <span className="block text-xs text-slate-500 dark:text-gray-400 mt-1">Directs driver to their assigned dock if available. Defaults to 'Gated In' status for ad-hoc arrivals.</span>
+                                            <span className="block text-xs text-slate-500 dark:text-gray-400 mt-1">Directs to assigned dock. If unavailable, searches for any matching available dock door (carrier & type). Falls back to Option 1 if failed.</span>
                                         </div>
                                     </label>
                                 </div>
