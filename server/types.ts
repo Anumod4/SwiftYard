@@ -115,6 +115,12 @@ export interface CreateCarrierDTO {
   contactPhone?: string;
   facilityIds?: string[];
   bufferTimeMinutes?: number;
+  billingOverrides?: {
+    freeYardHours?: number;
+    freeDockHours?: number;
+    yardRatePerDay?: number;
+    dockRatePerHour?: number;
+  };
 }
 
 export interface UpdateCarrierDTO extends Partial<CreateCarrierDTO> { }

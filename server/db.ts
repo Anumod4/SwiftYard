@@ -4,7 +4,7 @@ const JSON_FIELDS = [
   'history', 'photos', 'documents', 'allowedTrailerTypes', 'allowedCarrierIds',
   'unavailability', 'assignedFacilities', 'permissions', 'accessLevels', 'data', 'workingHours',
   'googleDrive', 'dwellThresholds', 'metricsRange', 'instructionDurations', 'adminWhatsappRecipients',
-  'adminWhatsappNumbers', 'whatsappConfig'
+  'adminWhatsappNumbers', 'whatsappConfig', 'billingOverrides'
 ];
 
 const BOOLEAN_FIELDS = ['isBobtail', 'isSystem'];

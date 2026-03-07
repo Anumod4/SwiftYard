@@ -38,7 +38,7 @@ export const fetchTable = async (tableName: string) => {
     const obj: any = { ...row };
 
     // Common JSON fields
-    ['history', 'photos', 'documents', 'allowedTrailerTypes', 'allowedCarrierIds', 'unavailability', 'assignedFacilities', 'permissions', 'accessLevels'].forEach(key => {
+    ['history', 'photos', 'documents', 'allowedTrailerTypes', 'allowedCarrierIds', 'unavailability', 'assignedFacilities', 'permissions', 'accessLevels', 'billingOverrides'].forEach(key => {
       if (obj[key] && typeof obj[key] === 'string') {
         obj[key] = safeJsonParse(obj[key]);
       }
@@ -170,6 +170,10 @@ export const runMigrations = async () => {
   try {
     await turso.execute("ALTER TABLE carriers ADD COLUMN bufferTimeMinutes INTEGER");
   } catch (e: any) { /* Ignore */ }
+
+  try {
+    await turso.execute("ALTER TABLE carriers ADD COLUMN billingOverrides TEXT");
+  } catch (e: any) { /* Ignore */ }
 };
 
 export const initializeSchema = async () => {
@@ -243,7 +247,8 @@ export const initializeSchema = async () => {
         name TEXT,
         contactEmail TEXT,
         contactPhone TEXT,
-        bufferTimeMinutes INTEGER
+        bufferTimeMinutes INTEGER,
+        billingOverrides TEXT
       );
     `);
 
