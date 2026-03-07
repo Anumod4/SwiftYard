@@ -19,6 +19,7 @@ import {
   UserProfileData,
   RoleDefinition,
   Facility,
+  Activity,
 } from "../types";
 import { TRANSLATIONS } from "../constants";
 import { useAuth } from "./AuthContext";
@@ -38,6 +39,7 @@ interface DataState {
   rawRoles: RoleDefinition[];
   rawFacilities: Facility[];
   rawSettings: any[];
+  rawActivities: Activity[];
 }
 
 const initialState: DataState = {
@@ -51,6 +53,7 @@ const initialState: DataState = {
   rawRoles: [],
   rawFacilities: [],
   rawSettings: [],
+  rawActivities: [],
 };
 
 type DataAction =
@@ -98,6 +101,8 @@ interface DataContextType {
   dataLoading: boolean;
   actionLoading: boolean;
   actionLoadingMessage: string;
+  activities: Activity[];
+  logActivity: (action: string, details?: string, refs?: { appointmentId?: string, trailerId?: string, carrierName?: string, driverName?: string, locationName?: string }) => Promise<void>;
 
   refreshData: () => Promise<void>;
 
@@ -284,6 +289,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
       const [
         resRes, resAppt, resDrv, resTrl, resCarr,
         resTypes, resSettings, resUsers, resRoles, resFacs,
+        resActivities,
       ] = await Promise.all([
         api.resources.getAll(),
         api.appointments.getAll(),
@@ -295,6 +301,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
         (!isDriverOnly && hasAuth) ? api.admin.getUsers() : Promise.resolve({ success: true, data: [] } as any),
         (!isDriverOnly && hasAuth) ? api.admin.getAllRoles() : Promise.resolve({ success: true, data: [] } as any),
         hasAuth ? api.facilities.getAll() : api.facilities.getPublic(),
+        hasAuth ? api.activities.getAll(currentFacilityId) : Promise.resolve({ success: true, data: [] } as any),
       ]);
 
       dispatch({
@@ -310,6 +317,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
           rawRoles: resRoles.data || [],
           rawFacilities: resFacs.data || [],
           rawSettings: resSettings.data || [],
+          rawActivities: resActivities?.data || [],
         }
       });
     } catch (error) {
@@ -478,6 +486,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
   );
   const roles = useMemo(() => state.rawRoles, [state.rawRoles]);
   const allUsers = useMemo(() => state.rawUsers, [state.rawUsers]);
+  const activities = useMemo(() => state.rawActivities, [state.rawActivities]);
 
   const metrics = useMemo(() => {
     let statsAppointments = appointments;
@@ -638,6 +647,30 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
   // CRUD Implementations
   const refreshData = async () => fetchData();
 
+  const logActivity = useCallback(async (action: string, details?: string, refs?: { appointmentId?: string, trailerId?: string, carrierName?: string, driverName?: string, locationName?: string }) => {
+    if (!userProfile) return;
+
+    const activity: Partial<Activity> = {
+      action,
+      details,
+      timestamp: new Date().toISOString(),
+      userEmail: userProfile.email,
+      userName: userProfile.displayName,
+      userRole: userProfile.role,
+      userId: userProfile.uid,
+      facilityId: currentFacilityId || userProfile.facilityId,
+      ...refs
+    };
+
+    await api.activities.log(activity);
+    // Don't wait for refetching activities unless critical, keep it async
+    api.activities.getAll(currentFacilityId).then(res => {
+      if (res.success && res.data) {
+        dispatch({ type: 'UPDATE_ENTITY', entity: 'rawActivities', data: res.data });
+      }
+    });
+  }, [userProfile, currentFacilityId]);
+
   const addAppointment = async (appt: Partial<Appointment>) => {
     setActionLoading(true);
     setActionLoadingMessage('Creating appointment...');
@@ -646,6 +679,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     console.log('[DataContext] Create appointment response:', response);
     if (response.success) {
       await fetchData();
+      logActivity('Create Appointment', `New appointment created for trailer ${appt.trailerNumber}`, { appointmentId: response.data?.id, trailerId: appt.trailerNumber });
     } else {
       console.error('[DataContext] Create appointment failed:', response.error);
     }
@@ -664,6 +698,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     console.log('[DataContext] Update appointment response:', response);
     if (response.success) {
       await fetchData();
+      logActivity('Update Appointment', `Updated appointment ${id}`, { appointmentId: id });
     } else {
       console.error('[DataContext] Update appointment failed:', response.error);
     }
@@ -692,7 +727,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     setActionLoading(true);
     setActionLoadingMessage('Cancelling appointment...');
     const response = await api.appointments.cancel(id);
-    if (response.success) await fetchData();
+    if (response.success) {
+      await fetchData();
+      logActivity('Cancel Appointment', `Cancelled appointment ${id}`, { appointmentId: id });
+    }
     setActionLoading(false);
     setActionLoadingMessage('');
   };
@@ -701,7 +739,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     setActionLoading(true);
     setActionLoadingMessage('Deleting appointment...');
     const response = await api.appointments.delete(id);
-    if (response.success) await fetchData();
+    if (response.success) {
+      await fetchData();
+      logActivity('Delete Appointment', `Deleted appointment ${id}`, { appointmentId: id });
+    }
     setActionLoading(false);
     setActionLoadingMessage('');
   };
@@ -714,7 +755,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     setActionLoading(true);
     setActionLoadingMessage('Checking in...');
     const response = await api.appointments.checkIn(id, actualTime, dockId);
-    if (response.success) await fetchData();
+    if (response.success) {
+      await fetchData();
+      logActivity('Check In', `Checked in appointment ${id} to dock ${dockId}`, { appointmentId: id, locationName: dockId });
+    }
     setActionLoading(false);
     setActionLoadingMessage('');
   };
@@ -723,7 +767,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     setActionLoading(true);
     setActionLoadingMessage('Checking out...');
     const response = await api.appointments.checkOut(id, dockId);
-    if (response.success) await fetchData();
+    if (response.success) {
+      await fetchData();
+      logActivity('Check Out', `Checked out appointment ${id} from dock ${dockId}`, { appointmentId: id, locationName: dockId });
+    }
     setActionLoading(false);
     setActionLoadingMessage('');
   };
@@ -736,6 +783,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     console.log('[DataContext] Add trailer response:', response);
     if (response.success) {
       await fetchData();
+      logActivity('Add Trailer', `Added trailer ${trailer.number}`, { trailerId: trailer.number });
     } else {
       console.error('[DataContext] Add trailer failed:', response.error);
     }
@@ -750,6 +798,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
       const response = await api.trailers.update(id, updates);
       if (response.success) {
         await fetchData();
+        logActivity('Update Trailer', `Updated trailer ${id}`, { trailerId: id });
       } else {
         throw new Error(response.error?.message || 'Failed to update trailer');
       }
@@ -763,7 +812,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     setActionLoading(true);
     setActionLoadingMessage('Deleting trailer...');
     const response = await api.trailers.delete(id);
-    if (response.success) await fetchData();
+    if (response.success) {
+      await fetchData();
+      logActivity('Delete Trailer', `Deleted trailer ${id}`, { trailerId: id });
+    }
     setActionLoading(false);
     setActionLoadingMessage('');
   };
@@ -772,7 +824,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     setActionLoading(true);
     setActionLoadingMessage('Processing gate out...');
     const response = await api.trailers.gateOut(id, weight, doc);
-    if (response.success) await fetchData();
+    if (response.success) {
+      await fetchData();
+      logActivity('Gate Out', `Gated out trailer ${id}`, { trailerId: id });
+    }
     setActionLoading(false);
     setActionLoadingMessage('');
   };
@@ -788,6 +843,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
       const response = await api.trailers.moveToYard(trailerId, slotId, apptId);
       if (response.success) {
         await fetchData();
+        logActivity('Move to Yard', `Moved trailer ${trailerId} to slot ${slotId}`, { trailerId: trailerId, locationName: slotId, appointmentId: apptId });
       } else {
         throw new Error(response.error?.message || 'Failed to move trailer');
       }
@@ -801,7 +857,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     setActionLoading(true);
     setActionLoadingMessage('Adding driver...');
     const response = await api.drivers.create(driver);
-    if (response.success) await fetchData();
+    if (response.success) {
+      await fetchData();
+      logActivity('Add Driver', `Added driver ${driver.name}`, { driverName: driver.name });
+    }
     setActionLoading(false);
     setActionLoadingMessage('');
     return response.data?.id || "";
@@ -811,7 +870,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     setActionLoading(true);
     setActionLoadingMessage('Updating driver...');
     const response = await api.drivers.update(driver.id, driver);
-    if (response.success) await fetchData();
+    if (response.success) {
+      await fetchData();
+      logActivity('Update Driver', `Updated driver ${driver.name}`, { driverName: driver.name });
+    }
     setActionLoading(false);
     setActionLoadingMessage('');
   };
@@ -820,7 +882,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     setActionLoading(true);
     setActionLoadingMessage('Deleting driver...');
     const response = await api.drivers.delete(id);
-    if (response.success) await fetchData();
+    if (response.success) {
+      await fetchData();
+      logActivity('Delete Driver', `Deleted driver ${id}`);
+    }
     setActionLoading(false);
     setActionLoadingMessage('');
   };
@@ -829,7 +894,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     setActionLoading(true);
     setActionLoadingMessage('Adding resource...');
     const response = await api.resources.create(res);
-    if (response.success) await fetchData();
+    if (response.success) {
+      await fetchData();
+      logActivity('Add Resource', `Added resource ${res.name}`, { locationName: res.name });
+    }
     setActionLoading(false);
     setActionLoadingMessage('');
   };
@@ -840,7 +908,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     setActionLoadingMessage('Updating resource...');
     try {
       const response = await api.resources.update(res.id, res);
-      if (response.success) await fetchData();
+      if (response.success) {
+        await fetchData();
+        logActivity('Update Resource', `Updated resource ${res.name || res.id}`, { locationName: res.name || res.id });
+      }
     } finally {
       setActionLoading(false);
       setActionLoadingMessage('');
@@ -851,7 +922,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     setActionLoading(true);
     setActionLoadingMessage('Deleting resource...');
     const response = await api.resources.delete(id);
-    if (response.success) await fetchData();
+    if (response.success) {
+      await fetchData();
+      logActivity('Delete Resource', `Deleted resource ${id}`);
+    }
     setActionLoading(false);
     setActionLoadingMessage('');
   };
@@ -860,7 +934,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     setActionLoading(true);
     setActionLoadingMessage('Clearing resource...');
     const response = await api.resources.clear(id);
-    if (response.success) await fetchData();
+    if (response.success) {
+      await fetchData();
+      logActivity('Force Clear Resource', `Manually cleared resource ${id}`);
+    }
     setActionLoading(false);
     setActionLoadingMessage('');
   };
@@ -869,7 +946,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     setActionLoading(true);
     setActionLoadingMessage('Adding carrier...');
     const response = await api.carriers.create(carrier);
-    if (response.success) await fetchData();
+    if (response.success) {
+      await fetchData();
+      logActivity('Add Carrier', `Added carrier ${carrier.name}`, { carrierName: carrier.name });
+    }
     setActionLoading(false);
     setActionLoadingMessage('');
   };
@@ -878,7 +958,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     setActionLoading(true);
     setActionLoadingMessage('Updating carrier...');
     const response = await api.carriers.update(carrier.id, carrier);
-    if (response.success) await fetchData();
+    if (response.success) {
+      await fetchData();
+      logActivity('Update Carrier', `Updated carrier ${carrier.name}`, { carrierName: carrier.name });
+    }
     setActionLoading(false);
     setActionLoadingMessage('');
   };
@@ -887,7 +970,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     setActionLoading(true);
     setActionLoadingMessage('Deleting carrier...');
     const response = await api.carriers.delete(id);
-    if (response.success) await fetchData();
+    if (response.success) {
+      await fetchData();
+      logActivity('Delete Carrier', `Deleted carrier ${id}`);
+    }
     setActionLoading(false);
     setActionLoadingMessage('');
   };
@@ -931,6 +1017,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
       const response = await api.admin.createUser(user as any);
       if (response.success) {
         await fetchData();
+        logActivity('Add User', `Created user ${user.email} with role ${user.role}`);
       } else {
         throw new Error(response.error?.message || 'Failed to create user');
       }
@@ -947,6 +1034,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
       const response = await api.admin.updateUser(uid, updates);
       if (response.success) {
         await fetchData();
+        logActivity('Update User', `Updated user ${uid}`);
       } else {
         throw new Error(response.error?.message || 'Failed to update user');
       }
@@ -960,7 +1048,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     setActionLoading(true);
     setActionLoadingMessage('Deleting user...');
     const response = await api.admin.deleteUser(uid);
-    if (response.success) await fetchData();
+    if (response.success) {
+      await fetchData();
+      logActivity('Delete User', `Deleted user ${uid}`);
+    }
     setActionLoading(false);
     setActionLoadingMessage('');
   };
@@ -1029,6 +1120,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
       console.log('[Settings] Save response:', response);
       if (response.success) {
         await fetchData();
+        logActivity('Update Settings', `Updated system settings`);
         console.log('[Settings] Settings saved successfully');
         addToast('Settings Saved', 'Your changes have been saved.', 'success');
       } else {
@@ -1128,11 +1220,12 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     dataLoading,
     actionLoading,
     actionLoadingMessage,
+    activities,
   }), [
     appointments, state.rawAppointments, trailers, state.rawTrailers, drivers, docks, allDocks,
     yardSlots, allYardSlots, allResources, carriers, state.rawCarriers, trailerTypes, settings, theme, facilities,
     roles, allUsers, metrics, toasts, currentFacilityId, allowedFacilities,
-    dataLoading, actionLoading, actionLoadingMessage
+    dataLoading, actionLoading, actionLoadingMessage, activities
   ]);
 
   const actionsValue = useMemo(() => ({
@@ -1185,6 +1278,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     t,
     formatDate,
     formatDateTime,
+    logActivity,
   }), [
     toggleTheme, handleSetCurrentFacilityId, refreshData, canEdit, addAppointment,
     updateAppointment, bulkUpdateAppointments, cancelAppointment, deleteAppointment, checkInAppointment,
@@ -1194,7 +1288,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     deleteCarrier, addTrailerType, updateTrailerType, deleteTrailerType, addUser,
     updateUser, deleteUser, addRole, updateRole, deleteRole, addFacility,
     updateFacility, deleteFacility, updateSettings, performHousekeeping,
-    exportDatabase, importDatabase, addToast, removeToast, t, formatDate, formatDateTime, resetData, resetEfficiencyStats
+    exportDatabase, importDatabase, addToast, removeToast, t, formatDate, formatDateTime, resetData, resetEfficiencyStats,
+    logActivity
   ]);
 
   const combinedValue = useMemo(() => ({

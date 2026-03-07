@@ -22,6 +22,7 @@ import settingsRoutes from "./routes/settings";
 import webhookRoutes from "./routes/webhooks";
 import facilityRoutes from "./routes/facilities";
 import roleRoutes from "./routes/roles";
+import activitiesRoutes from "./routes/activities";
 import { setSocketIO } from "./services/socket";
 import { AuthenticatedRequest } from "./types";
 
@@ -141,6 +142,9 @@ app.use("/api/facilities", facilityRoutes);
 
 // Roles route (accessible to all authenticated users)
 app.use("/api/roles", roleRoutes);
+
+// Activities route (accessible to all authenticated users)
+app.use("/api/activities", activitiesRoutes);
 
 // Dashboard metrics endpoint
 app.get(

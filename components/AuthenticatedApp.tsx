@@ -33,6 +33,7 @@ const AdminFacilities = lazy(() => import('../pages/AdminFacilities').then(modul
 const HelpDocs = lazy(() => import('../pages/HelpDocs').then(module => ({ default: module.HelpDocs })));
 const Billing = lazy(() => import('../pages/Billing').then(module => ({ default: module.Billing })));
 const YardVisibility = lazy(() => import('../pages/YardVisibility').then(module => ({ default: module.YardVisibility })));
+const ActivityTracking = lazy(() => import('../pages/ActivityTracking').then(module => ({ default: module.ActivityTracking })));
 
 // High-level role-based apps
 const DriverView = lazy(() => import("../pages/DriverView").then(m => ({ default: m.DriverView })));
@@ -130,6 +131,8 @@ const YardStaffApp = () => {
                 return <Billing />;
             case "visibility":
                 return <YardVisibility />;
+            case "activities":
+                return <ActivityTracking />;
             default:
                 return isAdmin && !currentFacilityId ? (
                     <AdminUsers />

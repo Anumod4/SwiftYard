@@ -280,97 +280,117 @@ export const initializeSchema = async () => {
       );
     `);
 
-    // 8. Appointments
+    // 8. Activity Logs
     await turso.execute(`
-      CREATE TABLE IF NOT EXISTS appointments (
+      CREATE TABLE IF NOT EXISTS activity_logs (
         id TEXT PRIMARY KEY,
-        facilityId TEXT,
-        trailerNumber TEXT,
-        trailerType TEXT,
-        isBobtail INTEGER,
+        timestamp TEXT NOT NULL,
+        action TEXT NOT NULL,
+        userEmail TEXT,
+        userName TEXT,
+        userRole TEXT,
+        userId TEXT,
+        appointmentId TEXT,
+        trailerId TEXT,
+        carrierName TEXT,
         driverName TEXT,
-        carrierId TEXT,
-        poNumber TEXT,
-        asnNumber TEXT,
-        palletCount INTEGER,
-        loadStatus TEXT,
-        startTime TEXT,
-        durationMinutes INTEGER,
-        status TEXT,
-        assignedResourceId TEXT,
-        history TEXT,
-        acknowledgementStatus TEXT,
-        acknowledgementTime TEXT,
-        instructionTimestamp TEXT,
-        loadType TEXT,
-        appointmentType TEXT,
-        rejectionReason TEXT,
-        suggestedStartTime TEXT
+        locationName TEXT,
+        details TEXT,
+        facilityId TEXT
       );
     `);
+
+    // 8. Appointments
+    await turso.execute(`
+      CREATE TABLE IF NOT EXISTS appointments(
+  id TEXT PRIMARY KEY,
+  facilityId TEXT,
+  trailerNumber TEXT,
+  trailerType TEXT,
+  isBobtail INTEGER,
+  driverName TEXT,
+  carrierId TEXT,
+  poNumber TEXT,
+  asnNumber TEXT,
+  palletCount INTEGER,
+  loadStatus TEXT,
+  startTime TEXT,
+  durationMinutes INTEGER,
+  status TEXT,
+  assignedResourceId TEXT,
+  history TEXT,
+  acknowledgementStatus TEXT,
+  acknowledgementTime TEXT,
+  instructionTimestamp TEXT,
+  loadType TEXT,
+  appointmentType TEXT,
+  rejectionReason TEXT,
+  suggestedStartTime TEXT
+);
+`);
 
     // 9. Trailers
     await turso.execute(`
-      CREATE TABLE IF NOT EXISTS trailers (
-        id TEXT PRIMARY KEY,
-        facilityId TEXT,
-        number TEXT,
-        type TEXT,
-        owner TEXT,
-        carrierId TEXT,
-        currentDriverId TEXT,
-        currentAppointmentId TEXT,
-        status TEXT,
-        location TEXT,
-        targetResourceId TEXT,
-        history TEXT,
-        ewayBillNumber TEXT,
-        ewayBillExpiry TEXT,
-        checkInWeight REAL,
-        checkOutWeight REAL,
-        checkOutDocNumber TEXT,
-        photos TEXT,
-        documents TEXT,
-        instructionTimestamp TEXT
-      );
-    `);
+      CREATE TABLE IF NOT EXISTS trailers(
+  id TEXT PRIMARY KEY,
+  facilityId TEXT,
+  number TEXT,
+  type TEXT,
+  owner TEXT,
+  carrierId TEXT,
+  currentDriverId TEXT,
+  currentAppointmentId TEXT,
+  status TEXT,
+  location TEXT,
+  targetResourceId TEXT,
+  history TEXT,
+  ewayBillNumber TEXT,
+  ewayBillExpiry TEXT,
+  checkInWeight REAL,
+  checkOutWeight REAL,
+  checkOutDocNumber TEXT,
+  photos TEXT,
+  documents TEXT,
+  instructionTimestamp TEXT
+);
+`);
 
     // 10. Settings
     await turso.execute(`
-      CREATE TABLE IF NOT EXISTS settings (
-        id TEXT PRIMARY KEY,
-        data TEXT
-      );
-    `);
+      CREATE TABLE IF NOT EXISTS settings(
+  id TEXT PRIMARY KEY,
+  data TEXT
+);
+`);
 
     // 11. Webhooks
     await turso.execute(`
-      CREATE TABLE IF NOT EXISTS webhooks (
-        id TEXT PRIMARY KEY,
-        facilityId TEXT,
-        name TEXT NOT NULL,
-        url TEXT NOT NULL,
-        events TEXT NOT NULL,
-        secret TEXT,
-        isActive INTEGER DEFAULT 1,
-        createdAt TEXT,
-        updatedAt TEXT
-      );
-    `);
+      CREATE TABLE IF NOT EXISTS webhooks(
+  id TEXT PRIMARY KEY,
+  facilityId TEXT,
+  name TEXT NOT NULL,
+  url TEXT NOT NULL,
+  events TEXT NOT NULL,
+  secret TEXT,
+  isActive INTEGER DEFAULT 1,
+  createdAt TEXT,
+  updatedAt TEXT
+);
+`);
 
     // 12. Webhook Logs
     await turso.execute(`
-      CREATE TABLE IF NOT EXISTS webhook_logs (
-        id TEXT PRIMARY KEY,
-        webhookId TEXT,
-        event TEXT,
-        payload TEXT,
-        responseStatus INTEGER,
-        responseBody TEXT,
-        success INTEGER,
-        createdAt TEXT
-      );
-    `);
+      CREATE TABLE IF NOT EXISTS webhook_logs(
+  id TEXT PRIMARY KEY,
+  webhookId TEXT,
+  event TEXT,
+  payload TEXT,
+  responseStatus INTEGER,
+  responseBody TEXT,
+  success INTEGER,
+  createdAt TEXT
+);
+`);
 
     // Seed Settings
     await turso.execute({

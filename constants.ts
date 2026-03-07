@@ -42,6 +42,7 @@ export const VIEW_IDS = {
   HELP: 'help',
   BILLING: 'billing',
   VISIBILITY: 'visibility',
+  ACTIVITIES: 'activities',
   // Carrier Portal Specific Permissions
   CARRIER_DASHBOARD: 'carrier-dashboard',
   CARRIER_BOOKING: 'carrier-booking',
@@ -58,6 +59,7 @@ export const NAV_ITEMS = [
   { id: VIEW_IDS.GATEHOUSE, label: 'Check-in/Out', icon: 'ShieldCheck' },
   { id: VIEW_IDS.VISIBILITY, label: 'Yard Visibility', icon: 'Warehouse' },
   { id: VIEW_IDS.TRAILERS, label: 'Trailers', icon: 'Container' },
+  { id: VIEW_IDS.ACTIVITIES, label: 'Activity Tracking', icon: 'History' },
   { id: VIEW_IDS.RESOURCES, label: 'Resources', icon: 'Box' },
   { id: VIEW_IDS.CARRIERS, label: 'Carriers', icon: 'Briefcase' },
   { id: VIEW_IDS.BILLING, label: 'Billing & Ledgers', icon: 'FileText' },

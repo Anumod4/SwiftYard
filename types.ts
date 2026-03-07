@@ -217,6 +217,23 @@ export interface AppSettings {
   };
 }
 
+export interface Activity {
+  id: string;
+  timestamp: string;
+  action: string;
+  userEmail?: string;
+  userName?: string;
+  userRole?: string;
+  userId?: string;
+  appointmentId?: string;
+  trailerId?: string;
+  carrierName?: string;
+  driverName?: string;
+  locationName?: string;
+  details?: string;
+  facilityId?: string;
+}
+
 export interface ToastMessage {
   id: string;
   title: string;

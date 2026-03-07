@@ -17,6 +17,7 @@ import {
   UserProfileData,
   RoleDefinition,
   Facility,
+  Activity,
 } from "../types";
 
 // API Configuration
@@ -747,6 +748,23 @@ export const settingsApi = {
   },
 };
 
+// ==================== ACTIVITIES API ====================
+
+export const activitiesApi = {
+  getAll: async (facilityId?: string | null): Promise<ApiResponse<Activity[]>> => {
+    const params = new URLSearchParams();
+    if (facilityId) params.set("facilityId", facilityId);
+    return request(`/activities?${params.toString()}`);
+  },
+
+  log: async (data: Partial<Activity>): Promise<ApiResponse<Activity>> => {
+    return request("/activities/log", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+};
+
 // ==================== FACILITIES API ====================
 
 export const facilitiesApi = {
@@ -796,6 +814,7 @@ export const api = {
   settings: settingsApi,
   facilities: facilitiesApi,
   dashboard: dashboardApi,
+  activities: activitiesApi,
   setFacilityContext,
   getFacilityContext,
 };
