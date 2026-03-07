@@ -11,13 +11,19 @@ const getDwellColor = (trailer: Trailer, thresholds: { yard: number, dock: numbe
     const yardThresh = thresholds?.yard || 4;
     const dockThresh = thresholds?.dock || 2;
 
-    const arrivedEvent = trailer.history.find(h => h.status === 'GatedIn' || h.status === 'CheckedIn') || trailer.history[0];
+    // Determine if we are calculating dock dwell or yard dwell
+    const isAtDock = trailer.status === 'CheckedIn' || trailer.status === 'ReadyForCheckOut';
+
+    // If at dock, dwell starts when it was CheckedIn (arrived at dock). If in yard, starts when GatedIn.
+    const arrivedEvent = isAtDock
+        ? (trailer.history.find(h => h.status === 'CheckedIn') || trailer.history.find(h => h.status === 'GatedIn') || trailer.history[0])
+        : (trailer.history.find(h => h.status === 'GatedIn') || trailer.history[0]);
+
     if (!arrivedEvent) return 'bg-slate-500';
 
     const minutesDwell = differenceInMinutes(new Date(), new Date(arrivedEvent.timestamp));
     const hoursDwell = minutesDwell / 60;
 
-    const isAtDock = trailer.status === 'CheckedIn' || trailer.status === 'ReadyForCheckOut';
     const limit = isAtDock ? dockThresh : yardThresh;
 
     if (hoursDwell < limit * 0.75) return 'bg-emerald-500'; // Good
@@ -176,17 +182,22 @@ export const YardVisibility: React.FC = () => {
     const getTrailerDwellDetails = (trailer: Trailer) => {
         const yardThresh = settings?.dwellThresholds?.yard || 4;
         const dockThresh = settings?.dwellThresholds?.dock || 2;
-        const arrivedEvent = trailer.history.find(h => h.status === 'GatedIn' || h.status === 'CheckedIn') || trailer.history[0];
+
+        const isAtDock = trailer.status === 'CheckedIn' || trailer.status === 'ReadyForCheckOut';
+
+        const arrivedEvent = isAtDock
+            ? (trailer.history.find(h => h.status === 'CheckedIn') || trailer.history.find(h => h.status === 'GatedIn') || trailer.history[0])
+            : (trailer.history.find(h => h.status === 'GatedIn') || trailer.history[0]);
+
         if (!arrivedEvent) return null;
 
         const arrivedDate = new Date(arrivedEvent.timestamp);
-        const isAtDock = trailer.status === 'CheckedIn' || trailer.status === 'ReadyForCheckOut';
         const limit = isAtDock ? dockThresh : yardThresh;
 
         const warningDate = new Date(arrivedDate.getTime() + (limit * 0.75 * 60 * 60 * 1000));
         const criticalDate = new Date(arrivedDate.getTime() + (limit * 60 * 60 * 1000));
 
-        return { arrivedDate, warningDate, criticalDate, limit };
+        return { arrivedDate, warningDate, criticalDate, limit, isAtDock };
     };
 
     const matchSearchQuery = (text: string, query: string) => {
@@ -454,7 +465,7 @@ export const YardVisibility: React.FC = () => {
                             return (
                                 <div className="space-y-4">
                                     <div className="flex flex-col gap-1 p-3 bg-slate-50 dark:bg-black/20 rounded-xl">
-                                        <p className="text-[10px] text-slate-500 uppercase font-black tracking-wider">Arrival Time</p>
+                                        <p className="text-[10px] text-slate-500 uppercase font-black tracking-wider">{details.isAtDock ? 'Arrived at Dock' : 'Arrived at Facility'}</p>
                                         <p className="text-sm font-bold text-slate-800 dark:text-slate-200">{details.arrivedDate.toLocaleString()}</p>
                                     </div>
                                     <div className="flex flex-col gap-1 p-3 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
