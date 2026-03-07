@@ -58,10 +58,12 @@ export const Gatehouse: React.FC = () => {
     now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
     setCheckInTime(now.toISOString().slice(0, 16));
 
-    // Default location: existing assignment -> or none
-    // If existing assignment is a Yard Slot, we reset to empty to force Dock selection or Auto
-    const isAssignedToDock = docks.some(d => d.id === appt.assignedResourceId);
-    setAssignedLocationId(isAssignedToDock ? (appt.assignedResourceId || '') : '');
+    const trailer = trailers.find(t => t.number.toLowerCase() === appt.trailerNumber?.toLowerCase());
+
+    // Default location: use the trailer's actual current location in the yard, if present. 
+    // Otherwise, fall back to the appointment's assigned resource
+    const currentLocationId = trailer?.location || appt.assignedResourceId || '';
+    setAssignedLocationId(currentLocationId);
   };
 
   // 2. Confirm Modal
@@ -300,25 +302,14 @@ export const Gatehouse: React.FC = () => {
                 <label className="text-sm font-medium text-slate-500 dark:text-gray-400 block mb-2">
                   {t('gate.modalAssign')}
                 </label>
-                <div className="relative">
+                <div className="relative border border-slate-200 dark:border-white/10 rounded-xl bg-slate-50 dark:bg-black/30 overflow-hidden">
                   <Warehouse className="absolute left-3 top-3 w-5 h-5 text-slate-400 dark:text-gray-500" />
-                  <select
-                    value={assignedLocationId}
-                    onChange={(e) => setAssignedLocationId(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-black/30 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-3 text-slate-900 dark:text-white focus:border-[#0a84ff] outline-none appearance-none"
-                  >
-                    <option value="">{t('gate.autoAssign')}</option>
-                    <optgroup label="Dock Doors">
-                      {docks.map(d => (
-                        <option key={d.id} value={d.id}>
-                          {d.name} {d.status !== 'Available' ? `(${d.status})` : ''}
-                        </option>
-                      ))}
-                    </optgroup>
-                  </select>
+                  <div className="pl-10 pr-4 py-3 text-slate-900 dark:text-white font-medium select-none cursor-not-allowed">
+                    {getLocationName(assignedLocationId) || 'Unassigned (Auto)'}
+                  </div>
                 </div>
                 <p className="text-xs text-slate-500 dark:text-gray-500 mt-2">
-                  {t('gate.modalAssignHint')}
+                  System detects trailer is physically placed here.
                 </p>
               </div>
             </div>
