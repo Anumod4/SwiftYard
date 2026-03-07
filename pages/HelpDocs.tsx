@@ -1,446 +1,481 @@
-
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { GlassCard } from '../components/ui/GlassCard';
-import { FileText, Code, Printer, Shield, Database, Cpu, Workflow, Users, Truck, Settings, MonitorPlay, List, Info } from 'lucide-react';
+import { FileText, Code, Printer, Search, Workflow, Users, Truck, Database, Server, Settings, List, Info, AlertCircle, MonitorPlay, Shield } from 'lucide-react';
+
+const HELP_DOCS = [
+    {
+        id: 'workflow',
+        title: 'End-to-End Workflow: Life of an Appointment',
+        tab: 'functional',
+        tags: ['Gate', 'Appointment', 'Driver Mobile', 'Check-in', 'Check-out', 'Lifecycle', 'Workflow', 'Journey'],
+        icon: Workflow,
+        content: () => (
+            <div className="space-y-4">
+                <p className="text-sm text-slate-600 dark:text-gray-400">The lifecycle of an appointment spans across the Carrier App, Yard Management App, and Driver Mobile App.</p>
+                <div className="bg-slate-100 dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 font-mono text-xs overflow-x-auto">
+                    <pre className="text-slate-800 dark:text-slate-300">
+                        {`1. Carrier App -> Yard App: Booking (Status: PendingApproval)
+2. Yard App -> Carrier App: Approval (Status: Scheduled)
+   [Driver Assigned to Appointment]
+3. Driver Mobile -> Yard App: Arrives at Gate
+4. Yard App -> Driver Mobile: Gate-In Processed (Status: GatedIn)
+5. Yard App: Assigns Dock or Yard Slot
+6. Driver Mobile -> Yard App: Driver Acknowledges Move (Status: MovingToDock or MovingToYard)
+7. Driver Mobile -> Yard App: Driver Completes Move (Status: ReadyForCheckIn or InYard)
+8. Yard App (Dock): Staff Checks-In (Status: CheckedIn)
+9. Yard App (Dock): Loading/Unloading Complete (Status: ReadyForCheckOut)
+10. Yard App (Dock): Check-out processed (Status: CheckedOut)
+11. Driver Mobile -> Yard App: Driver moves to Gate (Status: Departing)
+12. Yard App (Gatehouse) -> Carrier App: Gate-Out Processed (Status: Completed)
+`}
+                    </pre>
+                </div>
+            </div>
+        )
+    },
+    {
+        id: 'status-appointments',
+        title: 'Entity State Machines: Appointment Statuses',
+        tab: 'functional',
+        tags: ['Status', 'Appointment', 'State Machine', 'Definitions'],
+        icon: List,
+        content: () => (
+            <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left border border-slate-200 dark:border-slate-700 rounded-lg">
+                    <thead className="bg-slate-100 dark:bg-slate-800 font-bold">
+                        <tr>
+                            <th className="p-2 border-b border-r border-slate-200 dark:border-slate-700 w-40">Status</th>
+                            <th className="p-2 border-b border-r border-slate-200 dark:border-slate-700">Description</th>
+                            <th className="p-2 border-b border-slate-200 dark:border-slate-700 w-40">Triggered By</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                        <tr><td className="p-2 border-r border-slate-200 dark:border-slate-700 font-mono text-xs text-slate-800 dark:text-slate-300">Draft</td><td className="p-2 border-r border-slate-200 dark:border-slate-700 text-slate-600 dark:text-gray-400">Initial creation state before submission.</td><td className="p-2 text-xs text-slate-500 dark:text-gray-500">Carrier App</td></tr>
+                        <tr><td className="p-2 border-r border-slate-200 dark:border-slate-700 font-mono text-xs text-slate-800 dark:text-slate-300">PendingApproval</td><td className="p-2 border-r border-slate-200 dark:border-slate-700 text-slate-600 dark:text-gray-400">Booking submitted, awaiting staff review.</td><td className="p-2 text-xs text-slate-500 dark:text-gray-500">Carrier App</td></tr>
+                        <tr><td className="p-2 border-r border-slate-200 dark:border-slate-700 font-mono text-xs text-slate-800 dark:text-slate-300">Scheduled</td><td className="p-2 border-r border-slate-200 dark:border-slate-700 text-slate-600 dark:text-gray-400">Approved and locked into the calendar.</td><td className="p-2 text-xs text-slate-500 dark:text-gray-500">Yard App</td></tr>
+                        <tr><td className="p-2 border-r border-slate-200 dark:border-slate-700 font-mono text-xs text-slate-800 dark:text-slate-300">GatedIn</td><td className="p-2 border-r border-slate-200 dark:border-slate-700 text-slate-600 dark:text-gray-400">Vehicle has crossed the guard gate.</td><td className="p-2 text-xs text-slate-500 dark:text-gray-500">Yard App (Gatehouse)</td></tr>
+                        <tr><td className="p-2 border-r border-slate-200 dark:border-slate-700 font-mono text-xs text-slate-800 dark:text-slate-300">MovingToDock</td><td className="p-2 border-r border-slate-200 dark:border-slate-700 text-slate-600 dark:text-gray-400">Driver instructed to move to assigned dock.</td><td className="p-2 text-xs text-slate-500 dark:text-gray-500">Yard App</td></tr>
+                        <tr><td className="p-2 border-r border-slate-200 dark:border-slate-700 font-mono text-xs text-slate-800 dark:text-slate-300">ReadyForCheckIn</td><td className="p-2 border-r border-slate-200 dark:border-slate-700 text-slate-600 dark:text-gray-400">Driver arrived at dock, waiting for dock staff.</td><td className="p-2 text-xs text-slate-500 dark:text-gray-500">Driver App</td></tr>
+                        <tr><td className="p-2 border-r border-slate-200 dark:border-slate-700 font-mono text-xs text-slate-800 dark:text-slate-300">CheckedIn</td><td className="p-2 border-r border-slate-200 dark:border-slate-700 text-slate-600 dark:text-gray-400">Trailer locked at dock, loading/unloading has begun.</td><td className="p-2 text-xs text-slate-500 dark:text-gray-500">Yard App (Dock)</td></tr>
+                        <tr><td className="p-2 border-r border-slate-200 dark:border-slate-700 font-mono text-xs text-slate-800 dark:text-slate-300">ReadyForCheckOut</td><td className="p-2 border-r border-slate-200 dark:border-slate-700 text-slate-600 dark:text-gray-400">Service complete, awaiting dock release.</td><td className="p-2 text-xs text-slate-500 dark:text-gray-500">Yard App (Dock)</td></tr>
+                        <tr><td className="p-2 border-r border-slate-200 dark:border-slate-700 font-mono text-xs text-slate-800 dark:text-slate-300">CheckedOut</td><td className="p-2 border-r border-slate-200 dark:border-slate-700 text-slate-600 dark:text-gray-400">Released from dock.</td><td className="p-2 text-xs text-slate-500 dark:text-gray-500">Yard App (Dock)</td></tr>
+                        <tr><td className="p-2 border-r border-slate-200 dark:border-slate-700 font-mono text-xs text-slate-800 dark:text-slate-300">MovingToYard</td><td className="p-2 border-r border-slate-200 dark:border-slate-700 text-slate-600 dark:text-gray-400">Instructed to move to a yard parking slot.</td><td className="p-2 text-xs text-slate-500 dark:text-gray-500">Yard App</td></tr>
+                        <tr><td className="p-2 border-r border-slate-200 dark:border-slate-700 font-mono text-xs text-slate-800 dark:text-slate-300">InYard</td><td className="p-2 border-r border-slate-200 dark:border-slate-700 text-slate-600 dark:text-gray-400">Trailer is parked in a yard slot.</td><td className="p-2 text-xs text-slate-500 dark:text-gray-500">Driver/Yard App</td></tr>
+                        <tr><td className="p-2 border-r border-slate-200 dark:border-slate-700 font-mono text-xs text-slate-800 dark:text-slate-300">Completed</td><td className="p-2 border-r border-slate-200 dark:border-slate-700 text-slate-600 dark:text-gray-400">Final state after successful Gate-Out.</td><td className="p-2 text-xs text-slate-500 dark:text-gray-500">Yard App (Gate)</td></tr>
+                        <tr><td className="p-2 border-r border-slate-200 dark:border-slate-700 font-mono text-xs text-slate-800 dark:text-slate-300">Cancelled</td><td className="p-2 border-r border-slate-200 dark:border-slate-700 text-slate-600 dark:text-gray-400">Terminated before gate-in.</td><td className="p-2 text-xs text-slate-500 dark:text-gray-500">Carrier/Yard App</td></tr>
+                        <tr><td className="p-2 border-r border-slate-200 dark:border-slate-700 font-mono text-xs text-slate-800 dark:text-slate-300">Rejected</td><td className="p-2 border-r border-slate-200 dark:border-slate-700 text-slate-600 dark:text-gray-400">Carrier booking request denied.</td><td className="p-2 text-xs text-slate-500 dark:text-gray-500">Yard App</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        )
+    },
+    {
+        id: 'status-trailers',
+        title: 'Entity State Machines: Trailer Statuses',
+        tab: 'functional',
+        tags: ['Status', 'Trailer', 'State Machine', 'Definitions'],
+        icon: List,
+        content: () => (
+            <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left border border-slate-200 dark:border-slate-700 rounded-lg">
+                    <thead className="bg-slate-100 dark:bg-slate-800 font-bold">
+                        <tr>
+                            <th className="p-2 border-b border-r border-slate-200 dark:border-slate-700 w-40">Status</th>
+                            <th className="p-2 border-b border-slate-200 dark:border-slate-700">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                        <tr><td className="p-2 border-r border-slate-200 dark:border-slate-700 font-mono text-xs text-slate-800 dark:text-slate-300">Scheduled</td><td className="p-2 text-slate-600 dark:text-gray-400">Expected to arrive based on an upcoming appointment.</td></tr>
+                        <tr><td className="p-2 border-r border-slate-200 dark:border-slate-700 font-mono text-xs text-slate-800 dark:text-slate-300">GatedIn</td><td className="p-2 text-slate-600 dark:text-gray-400">On-premises but not yet assigned to a location or moving.</td></tr>
+                        <tr><td className="p-2 border-r border-slate-200 dark:border-slate-700 font-mono text-xs text-slate-800 dark:text-slate-300">MovingToDock</td><td className="p-2 text-slate-600 dark:text-gray-400">In transit to an assigned dock door.</td></tr>
+                        <tr><td className="p-2 border-r border-slate-200 dark:border-slate-700 font-mono text-xs text-slate-800 dark:text-slate-300">ReadyForCheckIn</td><td className="p-2 text-slate-600 dark:text-gray-400">Waiting at the dock door for staff.</td></tr>
+                        <tr><td className="p-2 border-r border-slate-200 dark:border-slate-700 font-mono text-xs text-slate-800 dark:text-slate-300">CheckedIn</td><td className="p-2 text-slate-600 dark:text-gray-400">Actively being serviced at a dock.</td></tr>
+                        <tr><td className="p-2 border-r border-slate-200 dark:border-slate-700 font-mono text-xs text-slate-800 dark:text-slate-300">ReadyForCheckOut</td><td className="p-2 text-slate-600 dark:text-gray-400">Service finished, waiting to leave dock.</td></tr>
+                        <tr><td className="p-2 border-r border-slate-200 dark:border-slate-700 font-mono text-xs text-slate-800 dark:text-slate-300">CheckedOut</td><td className="p-2 text-slate-600 dark:text-gray-400">Undocked and ready to move.</td></tr>
+                        <tr><td className="p-2 border-r border-slate-200 dark:border-slate-700 font-mono text-xs text-slate-800 dark:text-slate-300">MovingToYard</td><td className="p-2 text-slate-600 dark:text-gray-400">In transit to a yard slot.</td></tr>
+                        <tr><td className="p-2 border-r border-slate-200 dark:border-slate-700 font-mono text-xs text-slate-800 dark:text-slate-300">InYard</td><td className="p-2 text-slate-600 dark:text-gray-400">Parked in a yard slot.</td></tr>
+                        <tr><td className="p-2 border-r border-slate-200 dark:border-slate-700 font-mono text-xs text-slate-800 dark:text-slate-300">GatedOut</td><td className="p-2 text-slate-600 dark:text-gray-400">Has left the facility.</td></tr>
+                        <tr><td className="p-2 border-r border-slate-200 dark:border-slate-700 font-mono text-xs text-slate-800 dark:text-slate-300">Unknown</td><td className="p-2 text-slate-600 dark:text-gray-400">Tracked entity lost context.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        )
+    },
+    {
+        id: 'status-drivers',
+        title: 'Entity State Machines: Driver & Resource Statuses',
+        tab: 'functional',
+        tags: ['Status', 'Driver', 'Resource', 'Definitions'],
+        icon: Users,
+        content: () => (
+            <div className="space-y-6">
+                <div>
+                    <h4 className="font-bold text-slate-800 dark:text-gray-200 mb-2">Driver Statuses</h4>
+                    <table className="w-full text-sm text-left border border-slate-200 dark:border-slate-700 rounded-lg">
+                        <thead className="bg-slate-100 dark:bg-slate-800 font-bold">
+                            <tr>
+                                <th className="p-2 border-b border-r border-slate-200 dark:border-slate-700 w-40">Status</th>
+                                <th className="p-2 border-b border-slate-200 dark:border-slate-700">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                            <tr><td className="p-2 border-r border-slate-200 dark:border-slate-700 font-mono text-xs text-slate-800 dark:text-slate-300">Away</td><td className="p-2 text-slate-600 dark:text-gray-400">Not currently active or on-site.</td></tr>
+                            <tr><td className="p-2 border-r border-slate-200 dark:border-slate-700 font-mono text-xs text-slate-800 dark:text-slate-300">On Site</td><td className="p-2 text-slate-600 dark:text-gray-400">Checked in through the guard gate, actively handling a trailer.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div>
+                    <h4 className="font-bold text-slate-800 dark:text-gray-200 mb-2 mt-4">Resource Statuses (Docks & Yard Slots)</h4>
+                    <table className="w-full text-sm text-left border border-slate-200 dark:border-slate-700 rounded-lg">
+                        <thead className="bg-slate-100 dark:bg-slate-800 font-bold">
+                            <tr>
+                                <th className="p-2 border-b border-r border-slate-200 dark:border-slate-700 w-40">Status</th>
+                                <th className="p-2 border-b border-slate-200 dark:border-slate-700">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                            <tr><td className="p-2 border-r border-slate-200 dark:border-slate-700 font-mono text-xs text-emerald-600 dark:text-emerald-400 font-bold">Available</td><td className="p-2 text-slate-600 dark:text-gray-400">Empty and ready to receive a trailer.</td></tr>
+                            <tr><td className="p-2 border-r border-slate-200 dark:border-slate-700 font-mono text-xs text-blue-600 dark:text-blue-400 font-bold">Occupied</td><td className="p-2 text-slate-600 dark:text-gray-400">Currently holding a checking-in or parked trailer.</td></tr>
+                            <tr><td className="p-2 border-r border-slate-200 dark:border-slate-700 font-mono text-xs text-orange-600 dark:text-orange-400 font-bold">Unavailable</td><td className="p-2 text-slate-600 dark:text-gray-400">Under maintenance or blocked for operations.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        )
+    },
+    {
+        id: 'config-logic',
+        title: 'Configuration Logic',
+        tab: 'functional',
+        tags: ['Settings', 'Gate', 'Auto-Assign', 'Billing / Dwell', 'Carriers', 'Configuration'],
+        icon: Settings,
+        content: () => (
+            <div className="space-y-4">
+                <p className="text-sm text-slate-600 dark:text-gray-400">SwiftYard's workflow is heavily influenced by Global System Settings and Entity configurations:</p>
+                <ul className="list-disc pl-5 text-sm text-slate-700 dark:text-gray-300 space-y-2">
+                    <li><strong>Carriers:</strong> Carriers can be assigned default privileges, specific operational hours, and designated access to certain facilities. Billing rules and grace periods (Yard/Dock free hours) are inherited from the carrier profile unless globally overridden.</li>
+                    <li><strong>Resources (Docks/Slots):</strong> Docks and slots can be restricted to specific <code>Trailer Types</code> (e.g., Refrigerated docks) or <code>Carriers</code> (e.g., dedicated carrier docks). Auto-assignment logic queries these properties before dispatching a driver.</li>
+                    <li><strong>Global Layout Settings:</strong> The <code>Gate-In Flow</code> configuration dictates the default action upon arrival:
+                        <ul className="list-disc pl-5 mt-1">
+                            <li><strong>YardDefault:</strong> All incoming trailers are directed to a parking yard slot first, delaying dock assignment until ready.</li>
+                            <li><strong>DockDirect:</strong> System uniquely attempts to immediately assign an available dock; falling back to a yard slot only if full.</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        )
+    },
+    {
+        id: 'sys-interactions',
+        title: 'System Interactions (API & Webhooks)',
+        tab: 'technical',
+        tags: ['API', 'Webhooks', 'Socket', 'Driver Mobile', 'Carrier', 'Yard', 'Gate', 'Sync'],
+        icon: Server,
+        content: () => (
+            <div className="space-y-4">
+                <p className="text-sm text-slate-600 dark:text-gray-400">The ecosystem uses an API-first approach with RESTful services and real-time Socket.IO events for cross-platform synchronization between Carrier, Yard, and Driver components.</p>
+                <ul className="list-disc pl-5 text-sm text-slate-700 dark:text-gray-300 space-y-2">
+                    <li><strong>Carrier App -&gt; API:</strong> Submits appointments and queries availability (<code>POST /api/appointments</code>).</li>
+                    <li><strong>Yard App &lt;-&gt; API &lt;-&gt; Socket.IO:</strong> The Yard application consumes API endpoints to modify states (e.g., <code>PUT /api/appointments/:id/check-in</code>). Upon success, the backend emits <code>Socket.IO</code> broadcast events (<code>appointment-updated</code> or <code>trailer-updated</code>) to instantly refresh all connected clients.</li>
+                    <li><strong>API -&gt; Webhooks:</strong> Important lifecycle events (e.g., <code>Trailer.GatedIn</code>) trigger asynchronous webhook execution (<code>POST /api/webhooks/trigger</code>) to configured external URLs, allowing seamless integration with external ERP/WMS systems.</li>
+                </ul>
+            </div>
+        )
+    },
+    {
+        id: 'data-integrity',
+        title: 'Data Integrity & Synchronization',
+        tab: 'technical',
+        tags: ['Database', 'Sync', 'Driver Mobile', 'Concurrency', 'Validation', 'Race Conditions'],
+        icon: Database,
+        content: () => (
+            <div className="space-y-4">
+                <p className="text-sm text-slate-600 dark:text-gray-400">Synchronization and integrity, especially for mid-transit driver updates, are handled through pessimistic state validation and unified DTOs:</p>
+                <ul className="list-disc pl-5 text-sm text-slate-700 dark:text-gray-300 space-y-3">
+                    <li>
+                        <strong className="text-slate-800 dark:text-gray-200">State Transition Validation:</strong> The backend API strictly enforces logical state transitions. A Driver App cannot transition an appointment to <code>ReadyForCheckIn</code> if the appointment is not currently <code>MovingToDock</code>.
+                    </li>
+                    <li>
+                        <strong className="text-slate-800 dark:text-gray-200">Atomic Updates (Turso/libSQL):</strong> Core updates to Trailer location and Appointment status are executed as atomic transactions. If a conflicting request occurs, it receives a <code>409 Conflict</code> (or invalid state) error, and the UI resyncs.
+                    </li>
+                    <li>
+                        <strong className="text-slate-800 dark:text-gray-200">Instruction Timestamps:</strong> Every instruction sent to a driver creates an <code>instructionTimestamp</code>. Responses from the mobile app compare this timestamp server-side to ensure the driver is reacting to the most recent command sequence.
+                    </li>
+                </ul>
+            </div>
+        )
+    },
+    {
+        id: 'logical-components',
+        title: 'Logical Service Components',
+        tab: 'technical',
+        tags: ['Architecture', 'Layers', 'Auth', 'Context', 'Scheduling', 'Inventory', 'Audit', 'Logging'],
+        icon: Code,
+        content: () => (
+            <div className="space-y-4">
+                <ol className="list-decimal pl-5 text-sm text-slate-700 dark:text-gray-300 space-y-3">
+                    <li>
+                        <strong className="text-slate-800 dark:text-gray-200">Auth & Context Layer:</strong> Validates and rejects unauthorized API calls. Resolves the user's role and <code>facilityId</code>, invisibly scoping database queries so users only process data within their designated yard.
+                    </li>
+                    <li>
+                        <strong className="text-slate-800 dark:text-gray-200">Scheduling & Validation Engine:</strong> Calculates appointment overlaps, validates against facility operational hours, and checks cross-carrier resource availability calendars.
+                    </li>
+                    <li>
+                        <strong className="text-slate-800 dark:text-gray-200">Inventory/Resource Engine:</strong> Tracks real-time states of Docks and Yard Slots, ensuring strict inventory matching constraints (1 physical resource = 1 trailer limit).
+                    </li>
+                    <li>
+                        <strong className="text-slate-800 dark:text-gray-200">Notification & Audit Layer (Activity Logger):</strong> Intercepts critical mutations via the abstracted <code>logActivity</code> system context, writing deep operational traces to <code>activity_logs</code>.
+                    </li>
+                </ol>
+            </div>
+        )
+    },
+    {
+        id: 'user-roles',
+        title: 'User Roles & Permissions',
+        tab: 'functional',
+        tags: ['Admin', 'Gatekeeper', 'Driver', 'Roles', 'Permissions'],
+        icon: Shield,
+        content: () => (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <strong className="block text-slate-900 dark:text-white mb-2">Administrator</strong>
+                    <ul className="list-disc pl-4 text-sm text-slate-600 dark:text-gray-400 space-y-1">
+                        <li>Global System Configuration</li>
+                        <li>User & Role Management</li>
+                        <li>Facility Creation & Assignment</li>
+                        <li>Master Data (Carriers, Types)</li>
+                    </ul>
+                </div>
+                <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <strong className="block text-slate-900 dark:text-white mb-2">Gatekeeper / Staff</strong>
+                    <ul className="list-disc pl-4 text-sm text-slate-600 dark:text-gray-400 space-y-1">
+                        <li>Check-in / Check-out Operations</li>
+                        <li>Guard Gate Entry Processing</li>
+                        <li>Appointment Scheduling</li>
+                        <li>Yard Slot Allocation</li>
+                    </ul>
+                </div>
+                <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <strong className="block text-slate-900 dark:text-white mb-2">Driver</strong>
+                    <ul className="list-disc pl-4 text-sm text-slate-600 dark:text-gray-400 space-y-1">
+                        <li>Mobile-only Interface</li>
+                        <li>Real-time Job View (Move commands)</li>
+                        <li>Dock Confirmation</li>
+                        <li>No Menu Access</li>
+                    </ul>
+                </div>
+            </div>
+        )
+    },
+    {
+        id: 'core-modules',
+        title: 'Core Operational Modules',
+        tab: 'functional',
+        tags: ['Appointments', 'Cancelling', 'Smart Scheduling', 'Guard Gate', 'Check-in Weight', 'Dashboard', 'Congestion'],
+        icon: Truck,
+        content: () => (
+            <div className="space-y-6">
+                <div>
+                    <h3 className="font-bold text-slate-800 dark:text-gray-200">Appointment Management</h3>
+                    <p className="text-sm text-slate-600 dark:text-gray-400 mt-1">
+                        The <strong>Appointments</strong> module is the central planning tool.
+                    </p>
+                    <ul className="list-disc pl-5 text-sm text-slate-700 dark:text-gray-300 mt-2">
+                        <li><strong>Cancelling:</strong> Only appointments in <em>Scheduled</em> status can be cancelled.</li>
+                        <li><strong>Editing:</strong> Active appointments can be edited. Completed or Departed appointments are locked.</li>
+                        <li><strong>Smart Scheduling:</strong> System scores available resources based on allowed constraints.</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 className="font-bold text-slate-800 dark:text-gray-200">Guard Gate (Inbound/Outbound)</h3>
+                    <div className="bg-slate-100 dark:bg-slate-800/50 p-4 rounded-lg border border-slate-200 dark:border-slate-700 mb-2 mt-2 text-sm text-slate-700 dark:text-gray-300">
+                        <strong>Auto-Fill Logic:</strong> When entering a Trailer Number, the system checks for a scheduled appointment today. If none, it searches registry history.
+                    </div>
+                </div>
+                <div>
+                    <h3 className="font-bold text-slate-800 dark:text-gray-200">Dashboard & Congestion Watch</h3>
+                    <ul className="list-disc pl-5 text-sm text-slate-700 dark:text-gray-300 mt-2">
+                        <li><strong>KPIs:</strong> Tracks Gate-to-Dock, Dock Dwell, and Yard Dwell.</li>
+                        <li><strong>Congestion Logic:</strong> Flags trailers if Time in Yard &gt; 4 hours or Time at Dock &gt; 2 hours.</li>
+                    </ul>
+                </div>
+            </div>
+        )
+    },
+    {
+        id: 'live-board',
+        title: 'Live Board & Dispatch Operations',
+        tab: 'functional',
+        tags: ['Live Board', 'Dispatcher', 'Mobile App', 'Timer', 'Overdue'],
+        icon: MonitorPlay,
+        content: () => (
+            <div className="space-y-4">
+                <p className="text-sm text-slate-600 dark:text-gray-400">
+                    The system features a real-time communication loop between the Dispatcher (Trailers UI), the Driver (Mobile App), and the Yard Monitor (Live Board). This eliminates the need for phone calls or walkie-talkies for routine moves.
+                </p>
+                <div className="my-4 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
+                    <table className="w-full text-sm">
+                        <thead className="bg-slate-100 dark:bg-slate-800">
+                            <tr>
+                                <th className="p-3 text-left">Actor / UI</th>
+                                <th className="p-3 text-left">Action & Result</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-200 dark:divide-slate-700 text-slate-700 dark:text-gray-300">
+                            <tr>
+                                <td className="p-3">Dispatcher <span className="text-xs text-slate-500 block">Trailers UI</span></td>
+                                <td className="p-3">Assigns destination. <em>Status changes to 'MovingToDock'. Instruction Timer starts.</em></td>
+                            </tr>
+                            <tr>
+                                <td className="p-3">Driver <span className="text-xs text-slate-500 block">Mobile App</span></td>
+                                <td className="p-3">Starts navigation view. <em>Timer shows countdown (if enabled in settings).</em></td>
+                            </tr>
+                            <tr>
+                                <td className="p-3">Yard Staff <span className="text-xs text-slate-500 block">Live Board</span></td>
+                                <td className="p-3">Card appears on big screen. <em>If driver takes too long, card turns RED (Overdue).</em></td>
+                            </tr>
+                            <tr>
+                                <td className="p-3">Driver <span className="text-xs text-slate-500 block">Mobile App</span></td>
+                                <td className="p-3">Driver arrives at dock and taps Confirm. <em>Status updates to 'ReadyForCheckIn'.</em></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        )
+    }
+];
 
 export const HelpDocs: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'functional' | 'technical'>('functional');
+    const [activeTab, setActiveTab] = useState<'functional' | 'technical'>('functional');
+    const [searchTerm, setSearchTerm] = useState('');
 
-  const handlePrint = () => {
-    window.print();
-  };
+    const handlePrint = () => {
+        window.print();
+    };
 
-  return (
-    <div className="p-8 h-full flex flex-col animate-in fade-in duration-500 max-w-7xl mx-auto">
-      {/* Header - Hidden in Print Mode */}
-      <div className="flex justify-between items-center mb-8 print:hidden">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Help & Documentation</h1>
-          <p className="text-slate-500 dark:text-gray-400">Standard Operating Procedures (SOP) and System Architecture.</p>
-        </div>
-        <div className="flex gap-4">
-            <div className="bg-slate-200 dark:bg-white/10 p-1 rounded-xl flex gap-1">
-                <button 
-                    onClick={() => setActiveTab('functional')}
-                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'functional' ? 'bg-white dark:bg-[#121212] text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white'}`}
-                >
-                    <FileText className="w-4 h-4" /> Functional Guide
-                </button>
-                <button 
-                    onClick={() => setActiveTab('technical')}
-                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'technical' ? 'bg-white dark:bg-[#121212] text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white'}`}
-                >
-                    <Code className="w-4 h-4" /> Technical Specs
-                </button>
-            </div>
-            <button 
-                onClick={handlePrint}
-                className="bg-[#0a84ff] hover:bg-blue-600 text-white px-6 py-2 rounded-xl font-bold shadow-lg shadow-blue-500/30 active:scale-95 transition-all flex items-center gap-2"
-            >
-                <Printer className="w-4 h-4" /> Print PDF
-            </button>
-        </div>
-      </div>
+    const filteredDocs = useMemo(() => {
+        const lowerSearch = searchTerm.toLowerCase();
+        let docsToFilter = HELP_DOCS;
 
-      {/* Document Content - Optimized for Print */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar print:overflow-visible">
-        <GlassCard className="p-10 min-h-full print:border-none print:shadow-none print:p-0 bg-white dark:bg-[#1e1e1e] print:text-black">
-            
-            {/* ---------------- FUNCTIONAL DOCUMENTATION ---------------- */}
-            <div className={activeTab === 'functional' ? 'block' : 'hidden print:hidden'}>
-                <div className="prose dark:prose-invert max-w-none">
-                    <div className="flex items-center gap-4 mb-6 border-b border-slate-200 dark:border-white/10 pb-6">
-                        <div className="p-3 bg-blue-500/10 rounded-xl">
-                            <Workflow className="w-8 h-8 text-blue-600 dark:text-blue-400" />
-                        </div>
-                        <div>
-                            <h1 className="text-3xl font-black text-slate-900 dark:text-white print:text-black m-0">Functional Reference Manual</h1>
-                            <p className="text-slate-500 dark:text-gray-400 m-0">SwiftYard Logistics Management System v3.2</p>
-                        </div>
-                    </div>
+        // If there is no search term, filter by the active tab
+        if (!searchTerm) {
+            docsToFilter = HELP_DOCS.filter(d => d.tab === activeTab);
+        }
 
-                    <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                        <Users className="w-5 h-5 text-blue-500" /> 1. User Roles & Permissions
-                    </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 not-prose">
-                        <div className="p-4 bg-slate-50 dark:bg-white/5 rounded-xl border border-slate-200 dark:border-white/5">
-                            <strong className="block text-slate-900 dark:text-white mb-2">Administrator</strong>
-                            <ul className="list-disc pl-4 text-sm text-slate-600 dark:text-gray-400 space-y-1">
-                                <li>Global System Configuration</li>
-                                <li>User & Role Management</li>
-                                <li>Facility Creation & Assignment</li>
-                                <li>Master Data (Carriers, Types)</li>
-                            </ul>
-                        </div>
-                        <div className="p-4 bg-slate-50 dark:bg-white/5 rounded-xl border border-slate-200 dark:border-white/5">
-                            <strong className="block text-slate-900 dark:text-white mb-2">Gatekeeper / Staff</strong>
-                            <ul className="list-disc pl-4 text-sm text-slate-600 dark:text-gray-400 space-y-1">
-                                <li>Check-in / Check-out Operations</li>
-                                <li>Guard Gate Entry Processing</li>
-                                <li>Appointment Scheduling</li>
-                                <li>Yard Slot Allocation</li>
-                            </ul>
-                        </div>
-                        <div className="p-4 bg-slate-50 dark:bg-white/5 rounded-xl border border-slate-200 dark:border-white/5">
-                            <strong className="block text-slate-900 dark:text-white mb-2">Driver</strong>
-                            <ul className="list-disc pl-4 text-sm text-slate-600 dark:text-gray-400 space-y-1">
-                                <li>Mobile-only Interface</li>
-                                <li>Real-time Job View (Move commands)</li>
-                                <li>Dock Confirmation</li>
-                                <li>No Menu Access</li>
-                            </ul>
-                        </div>
-                    </div>
+        if (!searchTerm) return docsToFilter;
 
-                    <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                        <Truck className="w-5 h-5 text-emerald-500" /> 2. Core Operational Modules
-                    </h2>
+        // If there is a search term, search across ALL documentation regardless of tab
+        return HELP_DOCS.filter(doc => {
+            const matchesTitle = doc.title.toLowerCase().includes(lowerSearch);
+            const matchesTags = doc.tags.some(tag => tag.toLowerCase().includes(lowerSearch));
+            return matchesTitle || matchesTags;
+        });
+    }, [activeTab, searchTerm]);
 
-                    <h3 className="text-lg font-bold mt-4 text-slate-800 dark:text-gray-200">2.1 Appointment Management</h3>
-                    <p className="text-sm text-slate-600 dark:text-gray-400">
-                        The <strong>Appointments</strong> module is the central planning tool. Appointments track the lifecycle of a visit from scheduling to departure.
-                    </p>
-                    <ul className="list-disc pl-5 text-sm text-slate-700 dark:text-gray-300">
-                        <li><strong>Cancelling:</strong> Only appointments in <em>Scheduled</em> status can be cancelled. This action automatically frees up the assigned Dock Resource and delinks any associated Trailer record.</li>
-                        <li><strong>Editing:</strong> Active appointments can be edited. Completed or Departed appointments are locked to preserve audit history.</li>
-                        <li><strong>Smart Scheduling:</strong> When assigning a dock, the system scores available resources based on <em>Allowed Carrier</em> and <em>Trailer Type</em> constraints defined in Resource Management.</li>
-                    </ul>
-
-                    <h3 className="text-lg font-bold mt-4 text-slate-800 dark:text-gray-200">2.2 Guard Gate (Inbound/Outbound)</h3>
-                    <div className="bg-slate-100 dark:bg-white/5 p-4 rounded-lg border border-slate-200 dark:border-white/10 mb-4 text-sm">
-                        <strong>Auto-Fill Logic:</strong> When a Security Officer enters a Trailer Number:
-                        <ol className="list-decimal pl-5 mt-1">
-                            <li>System checks for a <strong>Scheduled Appointment</strong> for today. If found, it pulls Driver, Carrier, and Type data.</li>
-                            <li>If no appointment, it searches the <strong>Trailer Registry</strong> history for matching vehicle details to speed up entry.</li>
-                        </ol>
-                    </div>
-                    <ul className="list-disc pl-5 text-sm text-slate-700 dark:text-gray-300">
-                        <li><strong>Check-in Weight:</strong> Captured at entry. Used for net weight calculation upon exit.</li>
-                        <li><strong>Media Capture:</strong> Supports capturing photos (Vehicle condition) and documents (E-Way Bill) via camera or file upload.</li>
-                    </ul>
-
-                    <h3 className="text-lg font-bold mt-4 text-slate-800 dark:text-gray-200">2.3 Dashboard & Congestion Watch</h3>
-                    <ul className="list-disc pl-5 text-sm text-slate-700 dark:text-gray-300">
-                        <li><strong>KPIs:</strong> Tracks <em>Gate-to-Dock</em>, <em>Dock Dwell</em>, and <em>Yard Dwell</em> averages. These stats can be filtered by date range in Settings.</li>
-                        <li><strong>Congestion Logic:</strong> Trailers are flagged in the "Congestion Watchlist" if:
-                            <ul className="list-disc pl-5 mt-1">
-                                <li>Time in Yard &gt; <strong>4 hours</strong> (Configurable in Settings).</li>
-                                <li>Time at Dock &gt; <strong>2 hours</strong> (Configurable in Settings).</li>
-                            </ul>
-                        </li>
-                    </ul>
-
-                    <h3 className="text-lg font-bold mt-4 text-slate-800 dark:text-gray-200 flex items-center gap-2">
-                        <MonitorPlay className="w-5 h-5 text-blue-500" /> 2.4 Live Board & Driver App Integration
-                    </h3>
-                    <p className="text-sm text-slate-600 dark:text-gray-400">
-                        The system features a real-time communication loop between the Dispatcher (Trailers UI), the Driver (Mobile App), and the Yard Monitor (Live Board). This eliminates the need for phone calls or walkie-talkies for routine moves.
-                    </p>
-
-                    <div className="my-4 border border-slate-200 dark:border-white/10 rounded-xl overflow-hidden">
-                        <table className="w-full text-sm">
-                            <thead className="bg-slate-100 dark:bg-white/5">
-                                <tr>
-                                    <th className="p-3 text-left">Step</th>
-                                    <th className="p-3 text-left">Actor / UI</th>
-                                    <th className="p-3 text-left">Action & Result</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-200 dark:divide-white/5">
-                                <tr>
-                                    <td className="p-3 font-bold">1</td>
-                                    <td className="p-3">Dispatcher <br/><span className="text-xs text-slate-500">Trailers UI</span></td>
-                                    <td className="p-3">
-                                        Locates a trailer in the list and clicks <strong>Direct</strong>. Selects an action (e.g., "Assign to Dock 5").
-                                        <br/><em>Result: Trailer status updates to 'MovingToDock'. Instruction Timer starts.</em>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td className="p-3 font-bold">2</td>
-                                    <td className="p-3">Driver <br/><span className="text-xs text-slate-500">Mobile App</span></td>
-                                    <td className="p-3">
-                                        Screen instantly changes to a large "MOVE TO DOCK" view. Shows destination (Dock 5).
-                                        <br/><em>Timer shows countdown (if enabled).</em>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td className="p-3 font-bold">3</td>
-                                    <td className="p-3">Yard Staff <br/><span className="text-xs text-slate-500">Live Board</span></td>
-                                    <td className="p-3">
-                                        Trailer card appears on the big screen with instruction "MOVE TO DOCK". 
-                                        <br/><em>If driver takes too long, card turns <strong>RED (Overdue)</strong>.</em>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td className="p-3 font-bold">4</td>
-                                    <td className="p-3">Driver <br/><span className="text-xs text-slate-500">Mobile App</span></td>
-                                    <td className="p-3">
-                                        Driver parks at dock and taps <strong>"I Have Arrived"</strong> button.
-                                        <br/><em>Result: Status updates to 'ReadyForCheckIn'. Timer stops.</em>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <p className="text-sm text-slate-600 dark:text-gray-400 italic bg-blue-50 dark:bg-blue-900/10 p-3 rounded-lg border border-blue-100 dark:border-blue-900/20">
-                        <Info className="w-3 h-3 inline mr-1"/> <strong>Note:</strong> The Countdown Timer display can be toggled On/Off in <em>Settings &gt; Instruction Timers</em>. If disabled, drivers only see an alert when the task becomes Overdue.
-                    </p>
-
-                    <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2 mt-8">
-                        <List className="w-5 h-5 text-purple-500" /> 3. Status Reference Glossary
-                    </h2>
-                    <p className="text-sm text-slate-600 dark:text-gray-400 mb-4">
-                        Definitions for all system statuses used across the application.
-                    </p>
-
-                    <h4 className="font-bold text-slate-900 dark:text-white mt-4 mb-2">A. Appointment Statuses</h4>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm text-left border border-slate-200 dark:border-white/10 rounded-lg">
-                            <thead className="bg-slate-100 dark:bg-white/5 font-bold">
-                                <tr>
-                                    <th className="p-2 border-b border-r dark:border-white/10 w-40">Status</th>
-                                    <th className="p-2 border-b dark:border-white/10">Definition & Trigger</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-200 dark:divide-white/5">
-                                <tr><td className="p-2 border-r font-mono text-xs">Scheduled</td><td className="p-2">Initial state. Appointment created but vehicle has not arrived.</td></tr>
-                                <tr><td className="p-2 border-r font-mono text-xs">GatedIn</td><td className="p-2">Vehicle has passed the Guard Gate but hasn't been assigned a specific dock/slot yet.</td></tr>
-                                <tr><td className="p-2 border-r font-mono text-xs">MovingToDock</td><td className="p-2">Driver instructed to move to assigned dock. Transit phase.</td></tr>
-                                <tr><td className="p-2 border-r font-mono text-xs">ReadyForCheckIn</td><td className="p-2">Driver has parked at the dock and is waiting for warehouse staff to begin operations.</td></tr>
-                                <tr><td className="p-2 border-r font-mono text-xs">CheckedIn</td><td className="p-2">Operation Active. Staff has confirmed vehicle is at dock and loading/unloading has started.</td></tr>
-                                <tr><td className="p-2 border-r font-mono text-xs">ReadyForCheckOut</td><td className="p-2">Operations complete. Driver instructed to leave the dock to free it up.</td></tr>
-                                <tr><td className="p-2 border-r font-mono text-xs">Completed</td><td className="p-2">Vehicle has left the dock door (Dock is now free). Vehicle usually moves to Yard or Exit.</td></tr>
-                                <tr><td className="p-2 border-r font-mono text-xs">Departed</td><td className="p-2">Vehicle has physically left the facility via Guard Gate.</td></tr>
-                                <tr><td className="p-2 border-r font-mono text-xs">Cancelled</td><td className="p-2">Appointment voided before completion.</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <h4 className="font-bold text-slate-900 dark:text-white mt-6 mb-2">B. Trailer Statuses</h4>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm text-left border border-slate-200 dark:border-white/10 rounded-lg">
-                            <thead className="bg-slate-100 dark:bg-white/5 font-bold">
-                                <tr>
-                                    <th className="p-2 border-b border-r dark:border-white/10 w-40">Status</th>
-                                    <th className="p-2 border-b dark:border-white/10">Definition & Trigger</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-200 dark:divide-white/5">
-                                <tr><td className="p-2 border-r font-mono text-xs">Scheduled</td><td className="p-2">Pre-registered trailer expected to arrive today.</td></tr>
-                                <tr><td className="p-2 border-r font-mono text-xs">GatedIn</td><td className="p-2">Physically inside the facility. Located at holding area or gate buffer.</td></tr>
-                                <tr><td className="p-2 border-r font-mono text-xs">MovingToYard</td><td className="p-2">Driver instructed to drop trailer in a specific Yard Slot.</td></tr>
-                                <tr><td className="p-2 border-r font-mono text-xs">InYard</td><td className="p-2">Trailer is parked in a Yard Slot (Storage/Staging).</td></tr>
-                                <tr><td className="p-2 border-r font-mono text-xs">MovingToDock</td><td className="p-2">Moving from Gate or Yard to a Dock Door.</td></tr>
-                                <tr><td className="p-2 border-r font-mono text-xs">CheckedIn</td><td className="p-2">Parked at Dock Door. Operations in progress.</td></tr>
-                                <tr><td className="p-2 border-r font-mono text-xs">ReadyForCheckOut</td><td className="p-2">Operations finished. Driver told to pull away.</td></tr>
-                                <tr><td className="p-2 border-r font-mono text-xs">CheckedOut</td><td className="p-2">Pulled away from dock. Waiting to exit or move to yard.</td></tr>
-                                <tr><td className="p-2 border-r font-mono text-xs">GatedOut</td><td className="p-2">Physically left the facility. Historical record only.</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <h4 className="font-bold text-slate-900 dark:text-white mt-6 mb-2">C. Resource Statuses (Docks/Slots)</h4>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm text-left border border-slate-200 dark:border-white/10 rounded-lg">
-                            <thead className="bg-slate-100 dark:bg-white/5 font-bold">
-                                <tr>
-                                    <th className="p-2 border-b border-r dark:border-white/10 w-40">Status</th>
-                                    <th className="p-2 border-b dark:border-white/10">Definition & Trigger</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-200 dark:divide-white/5">
-                                <tr><td className="p-2 border-r font-mono text-xs text-emerald-600 font-bold">Available</td><td className="p-2">Resource is empty and ready for assignment.</td></tr>
-                                <tr><td className="p-2 border-r font-mono text-xs text-blue-600 font-bold">Occupied</td><td className="p-2">A trailer is physically present (Status: CheckedIn).</td></tr>
-                                <tr><td className="p-2 border-r font-mono text-xs text-orange-600 font-bold">Unavailable</td><td className="p-2">Resource is down for maintenance or manually blocked.</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-
+    return (
+        <div className="p-8 h-full flex flex-col animate-in fade-in duration-500 max-w-7xl mx-auto">
+            {/* Header - Hidden in Print Mode */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 print:hidden gap-4">
+                <div>
+                    <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Help & Documentation</h1>
+                    <p className="text-slate-500 dark:text-gray-400">Standard Operating Procedures, Searchable Workflows, & Architecture.</p>
+                </div>
+                <div className="flex gap-4">
+                    <button
+                        onClick={handlePrint}
+                        className="bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-white px-6 py-2 rounded-xl font-bold shadow-sm border border-slate-200 dark:border-slate-700 transition-all flex items-center gap-2"
+                    >
+                        <Printer className="w-4 h-4" /> Print
+                    </button>
                 </div>
             </div>
 
-            {/* ---------------- TECHNICAL DOCUMENTATION ---------------- */}
-            <div className={activeTab === 'technical' ? 'block' : 'hidden print:hidden'}>
-                <div className="prose dark:prose-invert max-w-none">
-                    <div className="flex items-center gap-4 mb-6 border-b border-slate-200 dark:border-white/10 pb-6">
-                        <div className="p-3 bg-purple-500/10 rounded-xl">
-                            <Cpu className="w-8 h-8 text-purple-600 dark:text-purple-400" />
-                        </div>
-                        <div>
-                            <h1 className="text-3xl font-black text-slate-900 dark:text-white print:text-black m-0">Technical Specification</h1>
-                            <p className="text-slate-500 dark:text-gray-400 m-0">Architecture, Database Schema & Integration</p>
-                        </div>
-                    </div>
-
-                    <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                        <Database className="w-5 h-5 text-purple-500" /> 1. Data Architecture (Turso / SQLite)
-                    </h2>
-                    <p className="text-sm text-slate-600 dark:text-gray-400 mb-4">
-                        The system utilizes <strong>Turso</strong>, an edge-hosted distributed database based on libSQL (a fork of SQLite).
-                        Data is structured in relational tables. Multi-tenancy is implemented logically using <code>facilityId</code> columns on all operational tables, allowing a single database instance to serve multiple facilities while maintaining data isolation in the UI.
-                    </p>
-
-                    <h3 className="text-lg font-bold mt-4 text-slate-800 dark:text-gray-200">1.1 Core Tables</h3>
-                    
-                    <div className="space-y-4 mb-8 not-prose">
-                        
-                        {/* System Tables */}
-                        <div className="bg-slate-900 p-4 rounded-xl text-xs font-mono overflow-x-auto border border-slate-700">
-                            <p className="text-purple-400 font-bold mb-2">// IDENTITY & CONFIGURATION</p>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <p className="text-slate-400 mb-1">TABLE users</p>
-                                    <ul className="text-emerald-300 space-y-0.5">
-                                        <li>uid <span className="text-slate-500">TEXT PK</span></li>
-                                        <li>email <span className="text-slate-500">TEXT</span></li>
-                                        <li>password <span className="text-slate-500">TEXT (Hashed)</span></li>
-                                        <li>role <span className="text-slate-500">TEXT</span></li>
-                                        <li>assignedFacilities <span className="text-slate-500">TEXT (JSON Array)</span></li>
-                                    </ul>
-                                </div>
-                                <div>
-                                    <p className="text-slate-400 mb-1">TABLE facilities</p>
-                                    <ul className="text-emerald-300 space-y-0.5">
-                                        <li>id <span className="text-slate-500">TEXT PK</span></li>
-                                        <li>name <span className="text-slate-500">TEXT</span></li>
-                                        <li>code <span className="text-slate-500">TEXT</span></li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Operational Tables */}
-                        <div className="bg-slate-900 p-4 rounded-xl text-xs font-mono overflow-x-auto border border-slate-700">
-                            <p className="text-blue-400 font-bold mb-2">// OPERATIONS (Tenant Scoped via facilityId)</p>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                
-                                <div>
-                                    <p className="text-slate-400 mb-1">TABLE appointments</p>
-                                    <ul className="text-blue-300 space-y-0.5">
-                                        <li>id <span className="text-slate-500">TEXT PK</span></li>
-                                        <li>facilityId <span className="text-slate-500">TEXT FK</span></li>
-                                        <li>trailerNumber <span className="text-slate-500">TEXT</span></li>
-                                        <li>status <span className="text-slate-500">TEXT</span></li>
-                                        <li>startTime <span className="text-slate-500">TEXT (ISO)</span></li>
-                                        <li>assignedResourceId <span className="text-slate-500">TEXT FK</span></li>
-                                        <li>history <span className="text-slate-500">TEXT (JSON)</span></li>
-                                    </ul>
-                                </div>
-
-                                <div>
-                                    <p className="text-slate-400 mb-1">TABLE trailers</p>
-                                    <ul className="text-blue-300 space-y-0.5">
-                                        <li>id <span className="text-slate-500">TEXT PK</span></li>
-                                        <li>facilityId <span className="text-slate-500">TEXT FK</span></li>
-                                        <li>number <span className="text-slate-500">TEXT</span></li>
-                                        <li>status <span className="text-slate-500">TEXT</span></li>
-                                        <li>location <span className="text-slate-500">TEXT FK</span></li>
-                                        <li>currentDriverId <span className="text-slate-500">TEXT FK</span></li>
-                                        <li>checkInWeight <span className="text-slate-500">REAL</span></li>
-                                    </ul>
-                                </div>
-
-                                <div>
-                                    <p className="text-slate-400 mb-1">TABLE resources</p>
-                                    <ul className="text-blue-300 space-y-0.5">
-                                        <li>id <span className="text-slate-500">TEXT PK</span></li>
-                                        <li>facilityId <span className="text-slate-500">TEXT FK</span></li>
-                                        <li>type <span className="text-slate-500">TEXT ('Dock'|'YardSlot')</span></li>
-                                        <li>status <span className="text-slate-500">TEXT</span></li>
-                                        <li>capacity <span className="text-slate-500">INTEGER</span></li>
-                                        <li>operationMode <span className="text-slate-500">TEXT</span></li>
-                                    </ul>
-                                </div>
-
-                                <div>
-                                    <p className="text-slate-400 mb-1">TABLE drivers</p>
-                                    <ul className="text-blue-300 space-y-0.5">
-                                        <li>id <span className="text-slate-500">TEXT PK</span></li>
-                                        <li>facilityId <span className="text-slate-500">TEXT FK</span></li>
-                                        <li>name <span className="text-slate-500">TEXT</span></li>
-                                        <li>licenseNumber <span className="text-slate-500">TEXT</span></li>
-                                        <li>carrierId <span className="text-slate-500">TEXT FK</span></li>
-                                    </ul>
-                                </div>
-
-                                <div>
-                                    <p className="text-slate-400 mb-1">TABLE carriers</p>
-                                    <ul className="text-blue-300 space-y-0.5">
-                                        <li>id <span className="text-slate-500">TEXT PK</span></li>
-                                        <li>facilityId <span className="text-slate-500">TEXT FK</span></li>
-                                        <li>name <span className="text-slate-500">TEXT</span></li>
-                                        <li>contactEmail <span className="text-slate-500">TEXT</span></li>
-                                    </ul>
-                                </div>
-
-                                 <div>
-                                    <p className="text-slate-400 mb-1">TABLE settings</p>
-                                    <ul className="text-orange-300 space-y-0.5">
-                                        <li>id <span className="text-slate-500">TEXT PK ('global'|facilityId)</span></li>
-                                        <li>data <span className="text-slate-500">TEXT (JSON)</span></li>
-                                    </ul>
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
-
-                    <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                        <Shield className="w-5 h-5 text-emerald-500" /> 2. Security & Context
-                    </h2>
-                    <h3 className="text-lg font-bold mt-4 text-slate-800 dark:text-gray-200">2.1 Facility Isolation</h3>
-                    <p className="text-sm text-slate-600 dark:text-gray-400">
-                        The <code>DataContext</code> implements a global filter based on the currently selected <code>currentFacilityId</code>.
-                        Standard users are assigned an array of <code>assignedFacilities</code> in their User Profile.
-                        Admin users can context-switch between any facility or view the "Admin Console".
-                    </p>
-                    <div className="bg-slate-100 dark:bg-white/5 p-3 rounded border-l-4 border-emerald-500 text-xs font-mono mt-2">
-                        const appointments = allAppointments.filter(a =&gt; !currentFacilityId || a.facilityId === currentFacilityId);
-                    </div>
-
-                    <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2 mt-8">
-                        <Settings className="w-5 h-5 text-blue-500" /> 3. Algorithms & Logic
-                    </h2>
-                    
-                    <h3 className="text-lg font-bold mt-4 text-slate-800 dark:text-gray-200">3.1 Smart Dock Allocation</h3>
-                    <p className="text-sm text-slate-600 dark:text-gray-400">
-                        The <code>findBestLocation()</code> function (in DataContext) ranks docks based on:
-                    </p>
-                    <ul className="list-disc pl-5 text-sm text-slate-700 dark:text-gray-300">
-                        <li><strong>Hard Constraint:</strong> Status must be 'Available'.</li>
-                        <li><strong>Hard Constraint:</strong> Must be 'Dock' type (Appointments cannot be scheduled to Yard Slots).</li>
-                        <li><strong>Soft Score:</strong> +10 points if Dock explicitly allows the Carrier.</li>
-                        <li><strong>Soft Score:</strong> +5 points if Dock explicitly allows the Trailer Type.</li>
-                    </ul>
-
-                    <h3 className="text-lg font-bold mt-4 text-slate-800 dark:text-gray-200">3.2 Metrics Calculation</h3>
-                    <p className="text-sm text-slate-600 dark:text-gray-400">
-                        Efficiency metrics are calculated client-side to allow instant filtering by date range.
-                        The logic iterates through appointment <code>history</code> arrays to calculate time diffs between:
-                        <br/>
-                        <code>GateIn -&gt; CheckedIn</code> (Gate to Dock)
-                        <br/>
-                        <code>CheckedIn -&gt; Completed</code> (Dock Dwell)
-                    </p>
-
-                    <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2 mt-8">
-                        <Workflow className="w-5 h-5 text-orange-500" /> 4. Integration Points
-                    </h2>
-                    <ul className="list-disc pl-5 text-sm text-slate-700 dark:text-gray-300">
-                        <li><strong>Authentication:</strong> Custom implementation using the <code>users</code> table in Turso. Supports standard email/password login and "Super Admin" bypass for system bootstrapping.</li>
-                        <li><strong>Browser APIs:</strong>
-                            <ul className="list-disc pl-5 mt-1">
-                                <li><code>navigator.mediaDevices</code> for Camera access in Guard Gate.</li>
-                                <li><code>localStorage</code> for persisting Driver Login sessions (key: <code>swiftyard_driver</code>) and User Sessions (key: <code>swiftyard_user_uid</code>).</li>
-                            </ul>
-                        </li>
-                        <li><strong>WhatsApp API:</strong> Configured in Settings. Hooks into status changes (e.g., "Alerts" toggle) to send template messages via Meta Cloud API.</li>
-                    </ul>
+            {/* Global Search and Navigation */}
+            <div className="mb-6 flex flex-col md:flex-row gap-4 print:hidden">
+                <div className="relative flex-1 max-w-xl group">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                    <input
+                        type="text"
+                        placeholder="Search documentation (e.g., 'Gate', 'Driver Mobile', 'Billing')..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full bg-white dark:bg-[#1e1e1e] border-2 border-transparent hover:border-slate-200 dark:hover:border-slate-800 focus:border-blue-500 dark:focus:border-blue-500 rounded-xl pl-12 pr-4 py-3 text-slate-900 dark:text-white outline-none shadow-sm transition-all"
+                    />
                 </div>
+                {!searchTerm && (
+                    <div className="bg-slate-200 dark:bg-white/10 p-1.5 rounded-xl flex gap-1">
+                        <button
+                            onClick={() => setActiveTab('functional')}
+                            className={`px-5 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'functional' ? 'bg-white dark:bg-[#121212] text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white'}`}
+                        >
+                            <FileText className="w-4 h-4" /> Functional Reference
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('technical')}
+                            className={`px-5 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'technical' ? 'bg-white dark:bg-[#121212] text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white'}`}
+                        >
+                            <Code className="w-4 h-4" /> Technical Architecture
+                        </button>
+                    </div>
+                )}
             </div>
 
-        </GlassCard>
-      </div>
-    </div>
-  );
+            {/* Document Content */}
+            <div className="flex-1 overflow-y-auto custom-scrollbar print:overflow-visible pb-12">
+                {filteredDocs.length === 0 ? (
+                    <div className="text-center p-16 bg-white dark:bg-[#1e1e1e] rounded-3xl border border-slate-200 dark:border-slate-800">
+                        <AlertCircle className="w-16 h-16 text-slate-300 dark:text-slate-700 mx-auto mb-6" />
+                        <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">No comprehensive results found</h3>
+                        <p className="text-slate-500 dark:text-gray-400 max-w-md mx-auto">Try adjusting your search terms or keywords. Keywords like "Gate", "Mobile", or "Status" yield the best results.</p>
+                        <button
+                            onClick={() => setSearchTerm('')}
+                            className="mt-6 text-blue-500 font-bold hover:underline"
+                        >
+                            Clear Search
+                        </button>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 gap-6">
+                        {filteredDocs.map(doc => {
+                            const Icon = doc.icon;
+                            return (
+                                <GlassCard key={doc.id} className="p-8 bg-white dark:bg-[#1e1e1e] border border-slate-200 dark:border-slate-800 print:shadow-none print:border-none print:p-0 print:mb-12 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                                    <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6 pb-6 border-b border-slate-100 dark:border-slate-800/80 print:border-b-2 print:border-black">
+                                        <div className="flex items-center gap-4">
+                                            <div className={`p-3.5 rounded-2xl shrink-0 ${doc.tab === 'functional' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-800' : 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 border border-purple-100 dark:border-purple-800'}`}>
+                                                <Icon className="w-7 h-7" />
+                                            </div>
+                                            <div>
+                                                <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight print:text-black">{doc.title}</h2>
+                                                <p className="text-sm font-semibold mt-1 uppercase tracking-widest text-slate-400 dark:text-slate-500 print:hidden">{doc.tab} Module</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="prose dark:prose-invert max-w-none text-slate-700 dark:text-gray-300 text-[15px] leading-relaxed">
+                                        {doc.content()}
+                                    </div>
+
+                                    <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 flex flex-wrap gap-2 print:hidden items-center">
+                                        <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mr-2">Tags:</span>
+                                        {doc.tags.map(tag => (
+                                            <button
+                                                key={tag}
+                                                onClick={() => setSearchTerm(tag)}
+                                                className="px-2.5 py-1 bg-slate-100 hover:bg-blue-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 text-xs rounded-md font-medium transition-colors"
+                                            >
+                                                #{tag}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </GlassCard>
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
 };
