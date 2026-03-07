@@ -36,7 +36,7 @@ const CarrierFacilities = lazy(() => import('./carrier/CarrierFacilities').then(
 
 export const CarrierPortal: React.FC = () => {
     const { userProfile, signOut, currentCarrier } = useAuth();
-    const { facilities, appointments, addAppointment, trailerTypes, addToast, refreshData, canEdit, theme, actionLoading, actionLoadingMessage, drivers, addDriver, carriers, settings, addTrailerType } = useData();
+    const { facilities, appointments, addAppointment, trailerTypes, addToast, refreshData, canEdit, theme, actionLoading, actionLoadingMessage, drivers, addDriver, carriers, settings, addTrailerType, allTrailers } = useData();
     const [currentView, setCurrentView] = useState(VIEW_IDS.CARRIER_DASHBOARD);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -225,6 +225,16 @@ export const CarrierPortal: React.FC = () => {
 
         if (!isWithinOperationalHours) {
             addToast('Outside Operational Hours', operationalHint || 'Selected time is outside facility operational hours.', 'error');
+            return;
+        }
+
+        const isTrailerActiveElsewhere = allTrailers.some(t =>
+            t.number.toLowerCase() === bookingTrailer.toLowerCase() &&
+            t.status !== 'GatedOut' && t.status !== 'Unknown' && t.status !== 'Cancelled'
+        );
+
+        if (isTrailerActiveElsewhere) {
+            addToast('Trailer Busy', `Trailer ${bookingTrailer} is already active at a facility. It must depart before it can be booked again.`, 'error');
             return;
         }
 

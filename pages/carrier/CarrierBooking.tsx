@@ -73,10 +73,17 @@ export const CarrierBooking: React.FC<CarrierBookingProps> = ({
     const [isDriverDropdownOpen, setIsDriverDropdownOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
+    const [trailerTypeSearch, setTrailerTypeSearch] = useState('');
+    const [isTrailerTypeDropdownOpen, setIsTrailerTypeDropdownOpen] = useState(false);
+    const trailerDropdownRef = useRef<HTMLDivElement>(null);
+
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
                 setIsDriverDropdownOpen(false);
+            }
+            if (trailerDropdownRef.current && !trailerDropdownRef.current.contains(event.target as Node)) {
+                setIsTrailerTypeDropdownOpen(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
@@ -88,6 +95,11 @@ export const CarrierBooking: React.FC<CarrierBookingProps> = ({
         return availableDrivers.filter(d => d.name.toLowerCase().includes(driverSearch.toLowerCase()) || d.licenseNumber.toLowerCase().includes(driverSearch.toLowerCase()));
     }, [availableDrivers, driverSearch]);
 
+    const filteredTrailerTypes = useMemo(() => {
+        if (!trailerTypeSearch) return trailerTypes;
+        return trailerTypes.filter(t => t.name.toLowerCase().includes(trailerTypeSearch.toLowerCase()));
+    }, [trailerTypes, trailerTypeSearch]);
+
     useEffect(() => {
         if (bookingDriverId) {
             const driver = availableDrivers.find(d => d.id === bookingDriverId);
@@ -96,6 +108,14 @@ export const CarrierBooking: React.FC<CarrierBookingProps> = ({
             setDriverSearch('');
         }
     }, [bookingDriverId, availableDrivers]);
+
+    useEffect(() => {
+        if (bookingType) {
+            setTrailerTypeSearch(bookingType);
+        } else {
+            setTrailerTypeSearch('');
+        }
+    }, [bookingType]);
 
 
     return (
@@ -207,23 +227,75 @@ export const CarrierBooking: React.FC<CarrierBookingProps> = ({
                                 </div>
                                 <div className="space-y-2">
                                     <label className="block text-[10px] font-black text-slate-400 dark:text-gray-500 uppercase tracking-widest ml-1">Trailer Type</label>
-                                    <select
-                                        required
-                                        value={bookingType}
-                                        onChange={e => {
-                                            if (e.target.value === '__new__') {
-                                                setIsNewTrailerTypeModalOpen(true);
-                                                setBookingType('');
-                                            } else {
-                                                setBookingType(e.target.value);
-                                            }
-                                        }}
-                                        className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-2xl p-4 text-slate-900 dark:text-white font-bold focus:border-blue-500 outline-none transition-all cursor-pointer appearance-none"
-                                    >
-                                        <option value="">Select Equipment...</option>
-                                        {trailerTypes.map(t => <option key={t.id} value={t.name}>{t.name}</option>)}
-                                        <option value="__new__" className="text-blue-500 font-bold">+ Add New Trailer Type</option>
-                                    </select>
+                                    <div className="relative" ref={trailerDropdownRef}>
+                                        <div className="relative flex items-center">
+                                            <Search className="absolute left-4 w-4 h-4 text-slate-400" />
+                                            <input
+                                                type="text"
+                                                value={trailerTypeSearch}
+                                                onChange={(e) => {
+                                                    setTrailerTypeSearch(e.target.value);
+                                                    setBookingType('');
+                                                    setIsTrailerTypeDropdownOpen(true);
+                                                }}
+                                                onFocus={() => setIsTrailerTypeDropdownOpen(true)}
+                                                placeholder="Search Equipment Type..."
+                                                className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-2xl pl-10 pr-10 py-4 text-slate-900 dark:text-white font-bold focus:border-blue-500 outline-none transition-all"
+                                            />
+                                            {trailerTypeSearch && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setTrailerTypeSearch('');
+                                                        setBookingType('');
+                                                    }}
+                                                    className="absolute right-4 p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full"
+                                                >
+                                                    <X className="w-4 h-4 text-slate-400" />
+                                                </button>
+                                            )}
+                                        </div>
+
+                                        {/* Dropdown Options */}
+                                        {isTrailerTypeDropdownOpen && (
+                                            <div className="absolute z-[100] w-full mt-2 bg-white dark:bg-[#1e1e1e] border border-slate-200 dark:border-white/10 rounded-2xl shadow-xl max-h-60 overflow-y-auto custom-scrollbar overflow-hidden">
+                                                <div className="p-2 space-y-1">
+                                                    {filteredTrailerTypes.map(t => (
+                                                        <button
+                                                            key={t.id}
+                                                            type="button"
+                                                            onClick={() => {
+                                                                setBookingType(t.name);
+                                                                setIsTrailerTypeDropdownOpen(false);
+                                                            }}
+                                                            className="w-full text-left px-4 py-3 hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition-colors flex items-center justify-between group"
+                                                        >
+                                                            <span className="font-bold text-slate-900 dark:text-white">{t.name}</span>
+                                                        </button>
+                                                    ))}
+                                                    {filteredTrailerTypes.length === 0 && trailerTypes.length > 0 && (
+                                                        <div className="p-4 text-center text-sm text-slate-500">No equipment matches '{trailerTypeSearch}'</div>
+                                                    )}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setIsNewTrailerTypeModalOpen(true);
+                                                            setIsTrailerTypeDropdownOpen(false);
+                                                        }}
+                                                        className="w-full text-left px-4 py-3 bg-blue-50/50 hover:bg-blue-50 dark:bg-blue-500/10 dark:hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-xl transition-colors font-bold text-sm flex items-center gap-2"
+                                                    >
+                                                        <Truck className="w-4 h-4" /> + Add New Trailer Type
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {!bookingType && !isTrailerTypeDropdownOpen && (
+                                            <p className="text-xs text-red-500 mt-2 font-medium flex items-center gap-1">
+                                                <AlertCircle className="w-3 h-3" /> Please select a trailer type.
+                                            </p>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
 
