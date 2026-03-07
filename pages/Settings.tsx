@@ -817,7 +817,7 @@ export const Settings: React.FC = () => {
                                             value={localYardRatePerDay}
                                             onChange={e => setLocalYardRatePerDay(e.target.value)}
                                             onBlur={handleBillingBlur}
-                                            className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg pl-7 p-3 text-slate-900 dark:text-white focus:border-green-500 outline-none transition-all"
+                                            className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg pl-14 p-3 text-slate-900 dark:text-white focus:border-green-500 outline-none transition-all"
                                         />
                                     </div>
                                 </div>
@@ -844,7 +844,7 @@ export const Settings: React.FC = () => {
                                             value={localDockRatePerHour}
                                             onChange={e => setLocalDockRatePerHour(e.target.value)}
                                             onBlur={handleBillingBlur}
-                                            className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg pl-7 p-3 text-slate-900 dark:text-white focus:border-green-500 outline-none transition-all"
+                                            className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg pl-14 p-3 text-slate-900 dark:text-white focus:border-green-500 outline-none transition-all"
                                         />
                                     </div>
                                 </div>
