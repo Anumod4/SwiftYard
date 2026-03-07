@@ -214,17 +214,18 @@ export const CarrierBooking: React.FC<CarrierBookingProps> = ({
                         </div>
 
                         <div className="space-y-6">
+                            <div className="space-y-2">
+                                <label className="block text-[10px] font-black text-slate-400 dark:text-gray-500 uppercase tracking-widest ml-1">Trailer Number</label>
+                                <input
+                                    required
+                                    value={bookingTrailer}
+                                    onChange={e => setBookingTrailer(e.target.value)}
+                                    placeholder="EX: TRL-9012"
+                                    className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-2xl p-4 text-slate-900 dark:text-white font-bold placeholder:text-slate-300 dark:placeholder:text-gray-700 focus:border-blue-500 outline-none transition-all"
+                                />
+                            </div>
+
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-2">
-                                    <label className="block text-[10px] font-black text-slate-400 dark:text-gray-500 uppercase tracking-widest ml-1">Trailer Number</label>
-                                    <input
-                                        required
-                                        value={bookingTrailer}
-                                        onChange={e => setBookingTrailer(e.target.value)}
-                                        placeholder="EX: TRL-9012"
-                                        className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-2xl p-4 text-slate-900 dark:text-white font-bold placeholder:text-slate-300 dark:placeholder:text-gray-700 focus:border-blue-500 outline-none transition-all"
-                                    />
-                                </div>
                                 <div className="space-y-2">
                                     <label className="block text-[10px] font-black text-slate-400 dark:text-gray-500 uppercase tracking-widest ml-1">Trailer Type</label>
                                     <div className="relative" ref={trailerDropdownRef}>
@@ -297,89 +298,89 @@ export const CarrierBooking: React.FC<CarrierBookingProps> = ({
                                         )}
                                     </div>
                                 </div>
-                            </div>
 
-                            <div className="space-y-2">
-                                <label className="block text-[10px] font-black text-slate-400 dark:text-gray-500 uppercase tracking-widest ml-1">Assigned Driver</label>
-                                {!bookingFacilityId ? (
-                                    <div className="flex items-center gap-2 text-xs font-bold text-slate-400 bg-slate-50 dark:bg-black/20 p-4 rounded-2xl border border-slate-200 dark:border-white/10">
-                                        <AlertCircle className="w-4 h-4" /> Please select a facility to load available drivers.
-                                    </div>
-                                ) : (
-                                    <div className="relative" ref={dropdownRef}>
-                                        <div className="relative flex items-center">
-                                            <Search className="absolute left-4 w-4 h-4 text-slate-400" />
-                                            <input
-                                                type="text"
-                                                value={driverSearch}
-                                                onChange={(e) => {
-                                                    setDriverSearch(e.target.value);
-                                                    setBookingDriverId('');
-                                                    setBookingDriverName('');
-                                                    setIsDriverDropdownOpen(true);
-                                                }}
-                                                onFocus={() => setIsDriverDropdownOpen(true)}
-                                                placeholder="Search by Name or License..."
-                                                className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-2xl pl-10 pr-10 py-4 text-slate-900 dark:text-white font-bold focus:border-blue-500 outline-none transition-all"
-                                            />
-                                            {driverSearch && (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        setDriverSearch('');
+                                <div className="space-y-2">
+                                    <label className="block text-[10px] font-black text-slate-400 dark:text-gray-500 uppercase tracking-widest ml-1">Assigned Driver</label>
+                                    {!bookingFacilityId ? (
+                                        <div className="flex items-center gap-2 text-xs font-bold text-slate-400 bg-slate-50 dark:bg-black/20 p-4 rounded-2xl border border-slate-200 dark:border-white/10">
+                                            <AlertCircle className="w-4 h-4" /> Please select a facility to load available drivers.
+                                        </div>
+                                    ) : (
+                                        <div className="relative" ref={dropdownRef}>
+                                            <div className="relative flex items-center">
+                                                <Search className="absolute left-4 w-4 h-4 text-slate-400" />
+                                                <input
+                                                    type="text"
+                                                    value={driverSearch}
+                                                    onChange={(e) => {
+                                                        setDriverSearch(e.target.value);
                                                         setBookingDriverId('');
                                                         setBookingDriverName('');
+                                                        setIsDriverDropdownOpen(true);
                                                     }}
-                                                    className="absolute right-4 p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full"
-                                                >
-                                                    <X className="w-4 h-4 text-slate-400" />
-                                                </button>
-                                            )}
-                                        </div>
-
-                                        {/* Dropdown Options */}
-                                        {isDriverDropdownOpen && (
-                                            <div className="absolute z-[100] w-full mt-2 bg-white dark:bg-[#1e1e1e] border border-slate-200 dark:border-white/10 rounded-2xl shadow-xl max-h-60 overflow-y-auto custom-scrollbar overflow-hidden">
-                                                <div className="p-2 space-y-1">
-                                                    {filteredDrivers.map(d => (
-                                                        <button
-                                                            key={d.id}
-                                                            type="button"
-                                                            onClick={() => {
-                                                                setBookingDriverId(d.id);
-                                                                setBookingDriverName(d.name);
-                                                                setIsDriverDropdownOpen(false);
-                                                            }}
-                                                            className="w-full text-left px-4 py-3 hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition-colors flex items-center justify-between group"
-                                                        >
-                                                            <span className="font-bold text-slate-900 dark:text-white">{d.name}</span>
-                                                            <span className="text-xs font-mono text-slate-500 dark:text-gray-400 bg-slate-100 dark:bg-black/30 px-2 py-1 rounded-md">{d.licenseNumber}</span>
-                                                        </button>
-                                                    ))}
-                                                    {filteredDrivers.length === 0 && availableDrivers.length > 0 && (
-                                                        <div className="p-4 text-center text-sm text-slate-500">No driver matches '{driverSearch}'</div>
-                                                    )}
+                                                    onFocus={() => setIsDriverDropdownOpen(true)}
+                                                    placeholder="Search by Name or License..."
+                                                    className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-2xl pl-10 pr-10 py-4 text-slate-900 dark:text-white font-bold focus:border-blue-500 outline-none transition-all"
+                                                />
+                                                {driverSearch && (
                                                     <button
                                                         type="button"
                                                         onClick={() => {
-                                                            setIsNewDriverModalOpen(true);
-                                                            setIsDriverDropdownOpen(false);
+                                                            setDriverSearch('');
+                                                            setBookingDriverId('');
+                                                            setBookingDriverName('');
                                                         }}
-                                                        className="w-full text-left px-4 py-3 bg-blue-50/50 hover:bg-blue-50 dark:bg-blue-500/10 dark:hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-xl transition-colors font-bold text-sm flex items-center gap-2"
+                                                        className="absolute right-4 p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full"
                                                     >
-                                                        <User className="w-4 h-4" /> + Onboard New Driver
+                                                        <X className="w-4 h-4 text-slate-400" />
                                                     </button>
-                                                </div>
+                                                )}
                                             </div>
-                                        )}
 
-                                        {!bookingDriverId && !isDriverDropdownOpen && (
-                                            <p className="text-xs text-red-500 mt-2 font-medium flex items-center gap-1">
-                                                <AlertCircle className="w-3 h-3" /> Please select a verified driver from the list.
-                                            </p>
-                                        )}
-                                    </div>
-                                )}
+                                            {/* Dropdown Options */}
+                                            {isDriverDropdownOpen && (
+                                                <div className="absolute z-[100] w-full mt-2 bg-white dark:bg-[#1e1e1e] border border-slate-200 dark:border-white/10 rounded-2xl shadow-xl max-h-60 overflow-y-auto custom-scrollbar overflow-hidden">
+                                                    <div className="p-2 space-y-1">
+                                                        {filteredDrivers.map(d => (
+                                                            <button
+                                                                key={d.id}
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    setBookingDriverId(d.id);
+                                                                    setBookingDriverName(d.name);
+                                                                    setIsDriverDropdownOpen(false);
+                                                                }}
+                                                                className="w-full text-left px-4 py-3 hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition-colors flex items-center justify-between group"
+                                                            >
+                                                                <span className="font-bold text-slate-900 dark:text-white">{d.name}</span>
+                                                                <span className="text-xs font-mono text-slate-500 dark:text-gray-400 bg-slate-100 dark:bg-black/30 px-2 py-1 rounded-md">{d.licenseNumber}</span>
+                                                            </button>
+                                                        ))}
+                                                        {filteredDrivers.length === 0 && availableDrivers.length > 0 && (
+                                                            <div className="p-4 text-center text-sm text-slate-500">No driver matches '{driverSearch}'</div>
+                                                        )}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                setIsNewDriverModalOpen(true);
+                                                                setIsDriverDropdownOpen(false);
+                                                            }}
+                                                            className="w-full text-left px-4 py-3 bg-blue-50/50 hover:bg-blue-50 dark:bg-blue-500/10 dark:hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-xl transition-colors font-bold text-sm flex items-center gap-2"
+                                                        >
+                                                            <User className="w-4 h-4" /> + Onboard New Driver
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {!bookingDriverId && !isDriverDropdownOpen && (
+                                                <p className="text-xs text-red-500 mt-2 font-medium flex items-center gap-1">
+                                                    <AlertCircle className="w-3 h-3" /> Please select a verified driver from the list.
+                                                </p>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </section>
