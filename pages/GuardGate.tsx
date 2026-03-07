@@ -5,13 +5,13 @@ import { GlassCard } from '../components/ui/GlassCard';
 import { Truck, LogIn, LogOut, Search, User, FileText, Camera, Plus, Scale, X, CheckCircle2, Calendar } from 'lucide-react';
 import { QuickAddDriverModal } from '../components/QuickAddDriverModal';
 import { ModalPortal } from '../components/ui/ModalPortal';
-import { TrailerStatus } from '../types';
+import { TrailerStatus, Resource } from '../types';
 
 export const GuardGate: React.FC = () => {
     const {
         appointments, trailers, drivers, carriers, trailerTypes, docks,
         addTrailer, updateTrailer, updateAppointment, gateOutTrailer: triggerGateOut, addAppointment,
-        t, addToast, settings
+        t, addToast, settings, yardSlots
     } = useData();
 
     const [activeTab, setActiveTab] = useState<'in' | 'out'>('in');
@@ -253,29 +253,81 @@ export const GuardGate: React.FC = () => {
             const existingAppt = appointments.find(a => a.trailerNumber?.toLowerCase() === trailerNum.toLowerCase() && a.status === 'Scheduled');
             console.log('[GuardGate] Found appointment:', existingAppt);
 
-            if (settings.gateInFlow === 'YardDefault' && settings.defaultYardSlotId) {
-                // Option 1: Move to Default Yard
-                initialStatus = 'MovingToYard';
-                targetResId = settings.defaultYardSlotId;
-                instructionTime = new Date().toISOString();
-                // Note: We don't automatically update appointment status to MovingToYard, it stays Scheduled/GatedIn usually until dock
-                // but effectively it's GatedIn from an appointment perspective.
-                apptStatus = existingAppt ? 'GatedIn' : undefined;
+            // Helper to check if resource matches trailer (type and carrier)
+            const resourceMatches = (res: Resource) => {
+                const matchesType = !res.allowedTrailerTypes || res.allowedTrailerTypes.length === 0 || res.allowedTrailerTypes.includes(trailerType);
 
-            } else if (settings.gateInFlow === 'DockDirect' && existingAppt && existingAppt.assignedResourceId) {
-                // Option 2: Move to Dock (If assigned and available)
-                const assignedDock = docks.find(d => d.id === existingAppt.assignedResourceId);
-                if (assignedDock && assignedDock.status === 'Available') {
-                    initialStatus = 'MovingToDock';
-                    instructionTime = new Date().toISOString();
-                    apptStatus = 'MovingToDock';
-                } else {
-                    // Fallback if dock occupied or invalid
-                    initialStatus = 'GatedIn';
-                    apptStatus = 'GatedIn';
+                const currentCarrierToMatch = carrierName || carrierId || '';
+                const matchingCarrier = carriers.find(c => c.name.toLowerCase() === currentCarrierToMatch.toLowerCase());
+                const matchesCarrier = !res.allowedCarrierIds || res.allowedCarrierIds.length === 0 || (matchingCarrier && res.allowedCarrierIds.includes(matchingCarrier.id));
+
+                return matchesType && matchesCarrier;
+            };
+
+            let foundAutomation = false;
+
+            if (settings.gateInFlow === 'DockDirect') {
+                // Option 2 Logic: Dock Direct Priority
+
+                // 1. Assigned dock door if the dock door is available
+                if (existingAppt && existingAppt.assignedResourceId) {
+                    const assignedDock = docks.find(d => d.id === existingAppt.assignedResourceId);
+                    if (assignedDock && assignedDock.status === 'Available') {
+                        initialStatus = 'MovingToDock';
+                        targetResId = assignedDock.id;
+                        instructionTime = new Date().toISOString();
+                        apptStatus = 'MovingToDock';
+                        foundAutomation = true;
+                    }
                 }
-            } else {
-                // Standard GatedIn (Ad-hoc or no automation configured)
+
+                // 2. Any AVAILABLE dock door based on carrier and trailer type matching
+                if (!foundAutomation) {
+                    const availableDock = docks.find(d => d.status === 'Available' && d.type === 'Dock' && resourceMatches(d));
+                    if (availableDock) {
+                        initialStatus = 'MovingToDock';
+                        targetResId = availableDock.id;
+                        instructionTime = new Date().toISOString();
+                        apptStatus = 'MovingToDock';
+                        foundAutomation = true;
+                    }
+                }
+            }
+
+            // Fallback for DockDirect failure or if YardDefault is configured
+            if (!foundAutomation) {
+                // Option 1 Logic: Move to Yard
+
+                // 1. Default yard slot (existing config in settings ui)
+                if (settings.defaultYardSlotId) {
+                    const defaultSlot = yardSlots.find(s => s.id === settings.defaultYardSlotId);
+                    if (defaultSlot && defaultSlot.status === 'Available') {
+                        initialStatus = 'MovingToYard';
+                        targetResId = defaultSlot.id;
+                        instructionTime = new Date().toISOString();
+                        apptStatus = existingAppt ? 'GatedIn' : undefined;
+                        foundAutomation = true;
+                    }
+                }
+
+                // 2. Next available yard slot sorted by location name
+                if (!foundAutomation) {
+                    const availableSlot = [...yardSlots]
+                        .filter(s => s.status === 'Available')
+                        .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }))[0];
+
+                    if (availableSlot) {
+                        initialStatus = 'MovingToYard';
+                        targetResId = availableSlot.id;
+                        instructionTime = new Date().toISOString();
+                        apptStatus = existingAppt ? 'GatedIn' : undefined;
+                        foundAutomation = true;
+                    }
+                }
+            }
+
+            // If still no automation found (no docks, no slots, or ad-hoc with no defaults)
+            if (!foundAutomation) {
                 initialStatus = 'GatedIn';
                 apptStatus = existingAppt ? 'GatedIn' : undefined;
             }
