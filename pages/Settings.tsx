@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useData } from '../contexts/DataContext';
 import { GlassCard } from '../components/ui/GlassCard';
 import { Settings as SettingsIcon, Moon, Database, Trash2, AlertTriangle, Download, Upload, HardDrive, Clock, Plus, X, Calendar, Languages, Timer, MessageSquare, Briefcase, Phone, Key, ShieldCheck, Activity, RefreshCw, Navigation, Eye, EyeOff, Workflow, Container, Bot, Sparkles } from 'lucide-react';
@@ -166,6 +165,15 @@ export const Settings: React.FC = () => {
     const [localFreeDockHours, setLocalFreeDockHours] = useState(String(settings.defaultBillingRules?.freeDockHours || 2));
     const [localYardRatePerDay, setLocalYardRatePerDay] = useState(String(settings.defaultBillingRules?.yardRatePerDay || 50));
     const [localDockRatePerHour, setLocalDockRatePerHour] = useState(String(settings.defaultBillingRules?.dockRatePerHour || 100));
+
+    const currencySymbol = useMemo(() => {
+        try {
+            return new Intl.NumberFormat(settings.country || 'en-US', { style: 'currency', currency: settings.currency || 'USD' })
+                .formatToParts(0).find(x => x.type === 'currency')?.value || '$';
+        } catch {
+            return '$';
+        }
+    }, [settings.currency, settings.country]);
 
     // Instruction Timers state
     const [localTimersEnabled, setLocalTimersEnabled] = useState(settings.enableInstructionTimers !== false);
@@ -801,7 +809,7 @@ export const Settings: React.FC = () => {
                                     <label className="block text-xs font-bold uppercase text-slate-500 dark:text-gray-400 mb-2">Yard Rate (Per Day)</label>
                                     <div className="relative">
                                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <span className="text-slate-500 sm:text-sm">$</span>
+                                            <span className="text-slate-500 sm:text-sm">{currencySymbol}</span>
                                         </div>
                                         <input
                                             type="number"
@@ -828,7 +836,7 @@ export const Settings: React.FC = () => {
                                     <label className="block text-xs font-bold uppercase text-slate-500 dark:text-gray-400 mb-2">Dock Rate (Per Hour)</label>
                                     <div className="relative">
                                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <span className="text-slate-500 sm:text-sm">$</span>
+                                            <span className="text-slate-500 sm:text-sm">{currencySymbol}</span>
                                         </div>
                                         <input
                                             type="number"

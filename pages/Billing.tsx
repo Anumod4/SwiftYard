@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useData } from '../contexts/DataContext';
 import { GlassCard } from '../components/ui/GlassCard';
-import { FileText, Download, Filter, Search, Clock, DollarSign, ArrowUpRight, CheckCircle2 } from 'lucide-react';
+import { FileText, Download, Filter, Search, Clock, ArrowUpRight, CheckCircle2 } from 'lucide-react';
 import { Trailer, Carrier } from '../types';
 import { format, differenceInMinutes } from 'date-fns';
 import jsPDF from 'jspdf';
@@ -194,7 +194,7 @@ export const Billing: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <GlassCard className="p-6 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 p-4 opacity-10"><DollarSign className="w-24 h-24" /></div>
+
                     <h3 className="text-sm font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-2">Total Accrued Penalties</h3>
                     <div className="text-4xl font-black text-slate-900 dark:text-white">{formatCurrency(totalPenalties)}</div>
                     <div className="text-xs text-red-500 mt-2 flex items-center"><ArrowUpRight className="w-3 h-3 mr-1" /> Active Overage Risk</div>
