@@ -31,6 +31,7 @@ export const Carriers: React.FC = () => {
   const [freeDockHours, setFreeDockHours] = useState('');
   const [yardRatePerDay, setYardRatePerDay] = useState('');
   const [dockRatePerHour, setDockRatePerHour] = useState('');
+  const [bufferTime, setBufferTime] = useState('');
 
   const [isBulkOpen, setIsBulkOpen] = useState(false);
 
@@ -49,6 +50,7 @@ export const Carriers: React.FC = () => {
       setFreeDockHours(c.billingOverrides?.freeDockHours?.toString() || '');
       setYardRatePerDay(c.billingOverrides?.yardRatePerDay?.toString() || '');
       setDockRatePerHour(c.billingOverrides?.dockRatePerHour?.toString() || '');
+      setBufferTime(c.bufferTimeMinutes?.toString() || '');
     } else {
       setEditingCarrier(null);
       setName('');
@@ -58,6 +60,7 @@ export const Carriers: React.FC = () => {
       setFreeDockHours('');
       setYardRatePerDay('');
       setDockRatePerHour('');
+      setBufferTime('');
     }
     setIsModalOpen(true);
   };
@@ -76,7 +79,8 @@ export const Carriers: React.FC = () => {
       name,
       contactEmail: email || undefined,
       contactPhone: phone || undefined,
-      billingOverrides: Object.keys(overrides).length > 0 ? overrides : undefined
+      billingOverrides: Object.keys(overrides).length > 0 ? overrides : undefined,
+      bufferTimeMinutes: bufferTime !== '' ? Number(bufferTime) : undefined
     };
 
     if (editingCarrier) {
@@ -135,7 +139,8 @@ export const Carriers: React.FC = () => {
   const bulkColumns: BulkColumn[] = [
     { key: 'name', label: 'Carrier Name', type: 'text', required: true },
     { key: 'contactEmail', label: 'Email', type: 'text' },
-    { key: 'contactPhone', label: 'Phone', type: 'text' }
+    { key: 'contactPhone', label: 'Phone', type: 'text' },
+    { key: 'bufferTimeMinutes', label: 'Buffer Time (Mins)', type: 'number' }
   ];
 
   return (
@@ -216,6 +221,10 @@ export const Carriers: React.FC = () => {
                 <div>
                   <label className="block text-sm font-medium text-slate-500 dark:text-gray-400 mb-1">{t('car.phone')}</label>
                   <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-3 text-slate-900 dark:text-white focus:border-blue-500 focus:outline-none" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-500 dark:text-gray-400 mb-1">Buffer Time (Minutes)</label>
+                  <input type="number" min="0" value={bufferTime} onChange={e => setBufferTime(e.target.value)} placeholder="Minutes before/after" className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-3 text-slate-900 dark:text-white focus:border-blue-500 focus:outline-none" />
                 </div>
 
                 <div className="pt-4 border-t border-slate-200 dark:border-white/10">
@@ -310,6 +319,14 @@ const CarrierCard = React.memo<{
       )}
       {!carrier.contactEmail && !carrier.contactPhone && (
         <div className="text-xs text-slate-400 dark:text-gray-600 italic px-1">{t('car.noContact')}</div>
+      )}
+      {(carrier.bufferTimeMinutes !== undefined) && (
+        <div className="mt-2 pt-2 border-t border-slate-100 dark:border-white/5">
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-slate-500 dark:text-gray-400 font-medium">Buffer Time</span>
+            <span className="text-xs font-bold text-blue-600 dark:text-blue-400">{carrier.bufferTimeMinutes} mins</span>
+          </div>
+        </div>
       )}
     </div>
   </GlassCard>

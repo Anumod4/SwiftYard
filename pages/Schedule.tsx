@@ -437,7 +437,13 @@ export const Schedule: React.FC = () => {
                                                 </div>
                                             </td>
                                             <td className="p-5 text-sm text-slate-600 dark:text-gray-300">
-                                                {getCarrierName(appt.carrierId)}
+                                                <div>{getCarrierName(appt.carrierId)}</div>
+                                                {appt.carrierId && carriers.find(c => c.id === appt.carrierId)?.bufferTimeMinutes !== undefined && (
+                                                    <div className="text-[10px] text-blue-500 dark:text-blue-400 font-bold flex items-center gap-1 mt-1">
+                                                        <Clock className="w-3 h-3" />
+                                                        Buffer: {carriers.find(c => c.id === appt.carrierId)?.bufferTimeMinutes}m
+                                                    </div>
+                                                )}
                                             </td>
                                             <td className="p-5">
                                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border

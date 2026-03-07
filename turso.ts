@@ -166,6 +166,10 @@ export const runMigrations = async () => {
   try {
     await turso.execute("ALTER TABLE drivers ADD COLUMN status TEXT DEFAULT 'Away'");
   } catch (e: any) { /* Ignore */ }
+
+  try {
+    await turso.execute("ALTER TABLE carriers ADD COLUMN bufferTimeMinutes INTEGER");
+  } catch (e: any) { /* Ignore */ }
 };
 
 export const initializeSchema = async () => {
@@ -238,7 +242,8 @@ export const initializeSchema = async () => {
         facilityId TEXT,
         name TEXT,
         contactEmail TEXT,
-        contactPhone TEXT
+        contactPhone TEXT,
+        bufferTimeMinutes INTEGER
       );
     `);
 

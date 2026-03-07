@@ -90,7 +90,7 @@ export interface CreateDriverDTO {
   carrierId?: string;
 }
 
-export interface UpdateDriverDTO extends Partial<CreateDriverDTO> {}
+export interface UpdateDriverDTO extends Partial<CreateDriverDTO> { }
 
 export interface CreateResourceDTO {
   name: string;
@@ -114,9 +114,10 @@ export interface CreateCarrierDTO {
   contactEmail?: string;
   contactPhone?: string;
   facilityIds?: string[];
+  bufferTimeMinutes?: number;
 }
 
-export interface UpdateCarrierDTO extends Partial<CreateCarrierDTO> {}
+export interface UpdateCarrierDTO extends Partial<CreateCarrierDTO> { }
 
 export interface CreateTrailerTypeDTO {
   name: string;
@@ -124,7 +125,7 @@ export interface CreateTrailerTypeDTO {
   processTimePerPallet?: number;
 }
 
-export interface UpdateTrailerTypeDTO extends Partial<CreateTrailerTypeDTO> {}
+export interface UpdateTrailerTypeDTO extends Partial<CreateTrailerTypeDTO> { }
 
 export interface CreateUserDTO {
   email: string;
@@ -148,7 +149,7 @@ export interface CreateRoleDTO {
   accessLevels?: Record<string, 'view' | 'edit'>;
 }
 
-export interface UpdateRoleDTO extends Partial<CreateRoleDTO> {}
+export interface UpdateRoleDTO extends Partial<CreateRoleDTO> { }
 
 export interface CreateFacilityDTO {
   name: string;
@@ -156,7 +157,7 @@ export interface CreateFacilityDTO {
   code?: string;
 }
 
-export interface UpdateFacilityDTO extends Partial<CreateFacilityDTO> {}
+export interface UpdateFacilityDTO extends Partial<CreateFacilityDTO> { }
 
 export interface LoginDTO {
   identifier: string;

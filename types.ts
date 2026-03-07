@@ -116,6 +116,7 @@ export interface Carrier {
     yardRatePerDay?: number;
     dockRatePerHour?: number;
   };
+  bufferTimeMinutes?: number;
 }
 
 export interface Appointment {
