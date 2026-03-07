@@ -222,10 +222,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
   const thresholdDock = settings.dwellThresholds?.dock || 2;
 
   const stuckTrailers = trailers.filter(t => {
+    if (['Scheduled', 'GatedOut', 'Cancelled', 'Unknown'].includes(t.status)) return false;
     const history = t.history || []; // Safe default
-    const gatedIn = history.find(h => h.status === 'GatedIn');
-    if (t.status !== 'GatedOut' && gatedIn) {
-      const totalHours = (now.getTime() - new Date(gatedIn.timestamp).getTime()) / (1000 * 60 * 60);
+    const arrival = history.find(h => h.status !== 'Scheduled');
+    if (arrival) {
+      const totalHours = (now.getTime() - new Date(arrival.timestamp).getTime()) / (1000 * 60 * 60);
 
       // Rule 1: Yard Dwell
       if (totalHours > thresholdYard) return true;
@@ -244,8 +245,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
     // Sort by longest stay
     const aHist = a.history || [];
     const bHist = b.history || [];
-    const aIn = aHist.find(h => h.status === 'GatedIn')?.timestamp || '';
-    const bIn = bHist.find(h => h.status === 'GatedIn')?.timestamp || '';
+    const aIn = aHist.find(h => h.status !== 'Scheduled')?.timestamp || '';
+    const bIn = bHist.find(h => h.status !== 'Scheduled')?.timestamp || '';
     return new Date(aIn).getTime() - new Date(bIn).getTime();
   });
 
@@ -483,8 +484,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                 <div className="divide-y divide-slate-200 dark:divide-white/5 overflow-y-auto custom-scrollbar">
                   {paginatedStuck.map(t => {
                     const history = t.history || [];
-                    const gatedIn = history.find(h => h.status === 'GatedIn')?.timestamp;
-                    const hours = gatedIn ? Math.floor((now.getTime() - new Date(gatedIn).getTime()) / (1000 * 60 * 60)) : 0;
+                    const arrival = history.find(h => h.status !== 'Scheduled')?.timestamp;
+                    const hours = arrival ? Math.floor((now.getTime() - new Date(arrival).getTime()) / (1000 * 60 * 60)) : 0;
 
                     // Find location if checked in
                     let locationName = 'Yard';
