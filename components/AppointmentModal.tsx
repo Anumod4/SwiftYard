@@ -365,48 +365,26 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onCl
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Load Status</label>
+                                    <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Traffic Direction</label>
                                     <div className="flex bg-slate-100 dark:bg-black/20 rounded-xl p-1 border border-slate-200 dark:border-white/10">
                                         <button
                                             type="button"
-                                            onClick={() => setLoadStatus('Loaded')}
-                                            className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${loadStatus === 'Loaded' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-500 dark:text-gray-400'}`}
+                                            onClick={() => setLoadType('Inbound')}
+                                            className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${loadType === 'Inbound' ? 'bg-[#0a84ff] text-white shadow-sm' : 'text-slate-500 dark:text-gray-400'}`}
                                         >
-                                            Loaded
+                                            Inbound
                                         </button>
                                         <button
                                             type="button"
-                                            onClick={() => setLoadStatus('Empty')}
-                                            className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${loadStatus === 'Empty' ? 'bg-slate-500 text-white shadow-sm' : 'text-slate-500 dark:text-gray-400'}`}
+                                            onClick={() => setLoadType('Outbound')}
+                                            className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${loadType === 'Outbound' ? 'bg-[#0a84ff] text-white shadow-sm' : 'text-slate-500 dark:text-gray-400'}`}
                                         >
-                                            Empty
+                                            Outbound
                                         </button>
                                     </div>
                                 </div>
                             </div>
                         )}
-
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Traffic Direction</label>
-                                <div className="flex bg-slate-100 dark:bg-black/20 rounded-xl p-1 border border-slate-200 dark:border-white/10">
-                                    <button
-                                        type="button"
-                                        onClick={() => setLoadType('Inbound')}
-                                        className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${loadType === 'Inbound' ? 'bg-[#0a84ff] text-white shadow-sm' : 'text-slate-500 dark:text-gray-400'}`}
-                                    >
-                                        Inbound
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setLoadType('Outbound')}
-                                        className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${loadType === 'Outbound' ? 'bg-[#0a84ff] text-white shadow-sm' : 'text-slate-500 dark:text-gray-400'}`}
-                                    >
-                                        Outbound
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
 
                         <div className="grid grid-cols-2 gap-4">
                             <div>
