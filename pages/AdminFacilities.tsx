@@ -85,9 +85,21 @@ export const AdminFacilities: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {paginatedFacilities.map(fac => (
           <GlassCard key={fac.id} className="p-6 group relative">
-            <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button onClick={() => handleOpenModal(fac)} className="p-2 bg-slate-100 dark:bg-white/10 hover:bg-blue-500 hover:text-white rounded-lg transition-colors"><Edit2 className="w-4 h-4" /></button>
-              <button onClick={() => handleDeleteClick(fac.id)} className="p-2 bg-slate-100 dark:bg-white/10 hover:bg-red-500 hover:text-white rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
+            <div className="absolute top-4 right-4 flex items-center gap-2 z-10 transition-all duration-300 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto translate-x-2 group-hover:translate-x-0">
+              <button
+                onClick={() => handleOpenModal(fac)}
+                className="w-8 h-8 flex items-center justify-center bg-muted/10 hover:bg-primary hover:text-white rounded-lg transition-colors text-muted"
+                title="Edit"
+              >
+                <Edit2 className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => handleDeleteClick(fac.id)}
+                className="w-8 h-8 flex items-center justify-center bg-red-500/10 hover:bg-red-500 hover:text-white rounded-lg transition-colors text-red-600 dark:text-red-500"
+                title="Delete"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
             </div>
 
             <div className="flex items-center gap-4 mb-4">

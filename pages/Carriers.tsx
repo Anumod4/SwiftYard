@@ -288,9 +288,21 @@ const CarrierCard = React.memo<{
 }>(({ carrier, canEdit, onEdit, onDelete, t }) => (
   <GlassCard className="p-6 flex flex-col group relative h-full">
     {canEdit && (
-      <div className="absolute top-4 right-4 flex gap-2 z-10 transition-opacity opacity-0 group-hover:opacity-100">
-        <button onClick={() => onEdit(carrier)} className="p-2 bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 rounded-xl text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white transition-all"><Edit2 className="w-4 h-4" /></button>
-        <button onClick={() => onDelete(carrier.id)} className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-500 rounded-xl transition-all"><Trash2 className="w-4 h-4" /></button>
+      <div className="absolute top-4 right-4 flex items-center gap-2 z-10 transition-all duration-300 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto translate-x-2 group-hover:translate-x-0">
+        <button
+          onClick={() => onEdit(carrier)}
+          className="w-8 h-8 flex items-center justify-center bg-muted/10 hover:bg-muted/20 rounded-lg text-muted hover:text-foreground transition-colors"
+          title="Edit"
+        >
+          <Edit2 className="w-4 h-4" />
+        </button>
+        <button
+          onClick={() => onDelete(carrier.id)}
+          className="w-8 h-8 flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-500 rounded-lg transition-colors"
+          title="Delete"
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
       </div>
     )}
 
