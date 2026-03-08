@@ -344,6 +344,204 @@ const HELP_DOCS = [
                 </div>
             </div>
         )
+    },
+    {
+        id: 'system-overview',
+        title: 'System Overview & Quick Start',
+        tab: 'technical',
+        tags: ['Setup', 'Installation', 'Features', 'Overview', 'Deployment'],
+        icon: Settings,
+        content: () => (
+            <div className="space-y-6">
+                <div>
+                    <h3 className="font-bold text-slate-800 dark:text-gray-200">Tech Stack</h3>
+                    <ul className="list-disc pl-5 text-sm text-slate-700 dark:text-gray-300 mt-2">
+                        <li><strong>Frontend:</strong> React 18, TypeScript, TailwindCSS, Vite.</li>
+                        <li><strong>Backend:</strong> Express.js API Server.</li>
+                        <li><strong>Database:</strong> Turso (libSQL) cloud database.</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 className="font-bold text-slate-800 dark:text-gray-200">Installation & Setup</h3>
+                    <div className="bg-slate-100 dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 font-mono text-xs overflow-x-auto mt-2 text-slate-800 dark:text-slate-300">
+                        <pre>
+                            {`# Install dependencies
+npm install
+
+# Setup environment variables configuration
+cp .env.example .env.local
+
+# Run Development Server (Both Frontend & API)
+npm run dev
+
+# Run Production Build
+npm run build && npm run server`}
+                        </pre>
+                    </div>
+                </div>
+            </div>
+        )
+    },
+    {
+        id: 'api-architecture',
+        title: 'API Architecture & Auth Flow',
+        tab: 'technical',
+        tags: ['Architecture', 'Auth', 'Facility', 'Server', 'JWT'],
+        icon: Server,
+        content: () => (
+            <div className="space-y-6">
+                <div>
+                    <h3 className="font-bold text-slate-800 dark:text-gray-200">Client-Server Architecture</h3>
+                    <p className="text-sm text-slate-600 dark:text-gray-400 mt-1 mb-3">
+                        SwiftYard uses a decoupled REST API architecture bridging the React SPA and the SQLite database.
+                    </p>
+                    <div className="bg-slate-100 dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 font-mono text-xs overflow-x-auto text-slate-800 dark:text-slate-300">
+                        <pre>
+                            {`React SPA -> API Client (services/api.ts) -> Express.js API (Middleware/Auth) -> Turso libSQL DB`}
+                        </pre>
+                    </div>
+                </div>
+                <div>
+                    <h3 className="font-bold text-slate-800 dark:text-gray-200">Authentication & Facility Context</h3>
+                    <ul className="list-decimal pl-5 text-sm text-slate-700 dark:text-gray-300 mt-2 space-y-2">
+                        <li>User authenticates via <code>/api/auth/login</code> and receives a JWT Token.</li>
+                        <li>Token is attached to all subsequent API calls via the <code>Authorization: Bearer &lt;token&gt;</code> header.</li>
+                        <li>To scope data down to a specific yard, the client must include the <code>X-Facility-ID</code> header (e.g., <code>X-Facility-ID: FAC-001</code>).</li>
+                        <li>Tokens are validated server-side, enforcing Role-Based Access Control (RBAC).</li>
+                    </ul>
+                </div>
+            </div>
+        )
+    },
+    {
+        id: 'api-reference',
+        title: 'API Documentation Reference',
+        tab: 'technical',
+        tags: ['API', 'Endpoints', 'REST', 'Responses', 'Status Codes'],
+        icon: Code,
+        content: () => (
+            <div className="space-y-6">
+                <div>
+                    <h3 className="font-bold text-slate-800 dark:text-gray-200">Standardizing Responses</h3>
+                    <div className="bg-slate-100 dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 font-mono text-xs overflow-x-auto mt-2 text-slate-800 dark:text-slate-300">
+                        <pre>
+                            {`// Success Response
+{
+  "success": true,
+  "data": { ... },
+  "message": "Optional success message"
+}
+
+// Error Response
+{
+  "success": false,
+  "error": {
+    "message": "Error description",
+    "code": "ERROR_CODE"
+  }
+}`}
+                        </pre>
+                    </div>
+                </div>
+                <div>
+                    <h3 className="font-bold text-slate-800 dark:text-gray-200">Core REST Endpoints</h3>
+                    <div className="overflow-x-auto mt-2">
+                        <table className="w-full text-sm text-left border border-slate-200 dark:border-slate-700 rounded-lg">
+                            <thead className="bg-slate-100 dark:bg-slate-800 font-bold">
+                                <tr>
+                                    <th className="p-2 border-b border-r border-slate-200 dark:border-slate-700 w-24">Method</th>
+                                    <th className="p-2 border-b border-r border-slate-200 dark:border-slate-700 w-48">Endpoint</th>
+                                    <th className="p-2 border-b border-slate-200 dark:border-slate-700">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                                <tr><td className="p-2 border-r border-slate-200 dark:border-slate-700 font-mono text-xs text-blue-600 dark:text-blue-400 font-bold">POST</td><td className="p-2 border-r border-slate-200 dark:border-slate-700 font-mono text-xs text-slate-800 dark:text-slate-300">/api/auth/login</td><td className="p-2 text-slate-600 dark:text-gray-400 text-xs">Returns JWT session token</td></tr>
+                                <tr><td className="p-2 border-r border-slate-200 dark:border-slate-700 font-mono text-xs text-green-600 dark:text-green-400 font-bold">GET</td><td className="p-2 border-r border-slate-200 dark:border-slate-700 font-mono text-xs text-slate-800 dark:text-slate-300">/api/appointments</td><td className="p-2 text-slate-600 dark:text-gray-400 text-xs">List facility appointments</td></tr>
+                                <tr><td className="p-2 border-r border-slate-200 dark:border-slate-700 font-mono text-xs text-blue-600 dark:text-blue-400 font-bold">POST</td><td className="p-2 border-r border-slate-200 dark:border-slate-700 font-mono text-xs text-slate-800 dark:text-slate-300">/api/appointments/:id/checkin</td><td className="p-2 text-slate-600 dark:text-gray-400 text-xs">Dock arrival check-in</td></tr>
+                                <tr><td className="p-2 border-r border-slate-200 dark:border-slate-700 font-mono text-xs text-blue-600 dark:text-blue-400 font-bold">POST</td><td className="p-2 border-r border-slate-200 dark:border-slate-700 font-mono text-xs text-slate-800 dark:text-slate-300">/api/trailers/:id/move-to-yard</td><td className="p-2 text-slate-600 dark:text-gray-400 text-xs">Initiate yard move</td></tr>
+                                <tr><td className="p-2 border-r border-slate-200 dark:border-slate-700 font-mono text-xs text-blue-600 dark:text-blue-400 font-bold">POST</td><td className="p-2 border-r border-slate-200 dark:border-slate-700 font-mono text-xs text-slate-800 dark:text-slate-300">/api/trailers/:id/gateout</td><td className="p-2 text-slate-600 dark:text-gray-400 text-xs">Process exit departure</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        )
+    },
+    {
+        id: 'external-integrations',
+        title: 'External Integrations & ERP',
+        tab: 'technical',
+        tags: ['Integration', 'ERP', 'CRM', 'Webhooks', 'TMS'],
+        icon: Workflow,
+        content: () => (
+            <div className="space-y-6">
+                <div>
+                    <h3 className="font-bold text-slate-800 dark:text-gray-200">Integration Capabilities</h3>
+                    <p className="text-sm text-slate-600 dark:text-gray-400 mt-1 mb-3">
+                        SwiftYard is built to operate headlessly. You can ingest PO data directly from your Transportation Management System (TMS) or ERP.
+                    </p>
+                    <div className="bg-slate-100 dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 font-mono text-xs overflow-x-auto text-slate-800 dark:text-slate-300">
+                        <pre>
+                            {`// Example API Request: Creating Appointment via ERP
+await fetch('http://localhost:4000/api/appointments', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': \`Bearer \${API_TOKEN}\`,
+    'X-Facility-ID': 'FAC-001'
+  },
+  body: JSON.stringify({
+    trailerNumber: 'TRL-001',
+    trailerType: '40 FT Container',
+    driverName: 'John Doe',
+    poNumber: 'PO-99432',
+    startTime: '2026-03-15T10:00:00Z',
+    durationMinutes: 60,
+    loadType: 'Inbound'
+  })
+});`}
+                        </pre>
+                    </div>
+                </div>
+                <div>
+                    <h3 className="font-bold text-slate-800 dark:text-gray-200">Outbound Webhooks</h3>
+                    <p className="text-sm text-slate-600 dark:text-gray-400 mt-1">
+                        Use webhooks to push real-time gate and dock events back into your CRM automatically. Available triggers include: <code>appointment.created</code>, <code>appointment.scheduled</code>, <code>trailer.gate_in</code>, and <code>trailer.gate_out</code>.
+                    </p>
+                </div>
+            </div>
+        )
+    },
+    {
+        id: 'database-deployment',
+        title: 'Database Schema & Deployment',
+        tab: 'technical',
+        tags: ['Database', 'Turso', 'Deployment', 'Security', 'Schema', 'libSQL'],
+        icon: Database,
+        content: () => (
+            <div className="space-y-6">
+                <div>
+                    <h3 className="font-bold text-slate-800 dark:text-gray-200">Underlying Database (Turso libSQL)</h3>
+                    <p className="text-sm text-slate-600 dark:text-gray-400 mt-1">
+                        The platform's highly resilient storage engine spans across distinct operational entities logically grouped by Facility Context.
+                    </p>
+                    <ul className="list-disc pl-5 text-sm text-slate-700 dark:text-gray-300 mt-2">
+                        <li><strong>Auth/Org Layer:</strong> <code>users</code>, <code>roles</code>, <code>facilities</code>, <code>carriers</code></li>
+                        <li><strong>Ops/Lifecycle Layer:</strong>  <code>appointments</code>, <code>trailers</code>, <code>drivers</code></li>
+                        <li><strong>Physical Abstraction Layer:</strong> <code>resources</code> (docks/slots), <code>trailer_types</code></li>
+                        <li><strong>Config Layer:</strong> <code>settings</code>, <code>webhooks</code></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 className="font-bold text-slate-800 dark:text-gray-200">Production Deployment Security</h3>
+                    <ul className="list-decimal pl-5 text-sm text-slate-700 dark:text-gray-300 mt-2 space-y-1">
+                        <li>Strictly isolate <code>JWT_SECRET</code> values away from client-side builds.</li>
+                        <li>Configure Cross-Origin Resource Sharing (CORS) explicitly for domains requesting the <code>/api</code> boundaries.</li>
+                        <li>Enforce password hashing with bcrypt on user ingest (handled inside <code>server/routes/auth</code>).</li>
+                    </ul>
+                </div>
+            </div>
+        )
     }
 ];
 
