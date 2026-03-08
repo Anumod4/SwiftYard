@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useData } from '../contexts/DataContext';
 import { GlassCard } from '../components/ui/GlassCard';
 import { Resource, UnavailabilityPeriod } from '../types';
-import { Plus, Edit2, Trash2, Warehouse, Container, Clock, AlertTriangle, X, RefreshCcw, Settings2, ShieldCheck, ShieldAlert, Check, Briefcase, Truck, ListPlus, ArrowRightFromLine, ArrowLeftToLine, ArrowRightLeft, Users, Search, ChevronDown } from 'lucide-react';
+import { Plus, Edit2, Trash2, Warehouse, Container, Clock, AlertTriangle, X, RefreshCcw, Settings2, ShieldCheck, ShieldAlert, Check, Briefcase, Truck, ListPlus, ArrowRightFromLine, ArrowLeftToLine, ArrowRightLeft, Users, Search, ChevronDown, Filter } from 'lucide-react';
 import { ModalPortal } from '../components/ui/ModalPortal';
 import { Pagination } from '../components/ui/Pagination';
 import { BulkCreatorModal, BulkColumn } from '../components/BulkCreatorModal';
@@ -38,7 +38,14 @@ export const Resources: React.FC = () => {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
   const [currentPage, setCurrentPage] = useState(1);
+  const [showFilters, setShowFilters] = useState(false);
   const pageSize = 10;
+
+  const clearFilters = () => {
+    setSearchTerm('');
+    setSortBy('name');
+    setSortOrder('asc');
+  };
 
   const canEditResources = canEdit(VIEW_IDS.RESOURCES);
 
@@ -227,13 +234,21 @@ export const Resources: React.FC = () => {
           <h1 className="text-3xl font-bold text-foreground mb-2 tracking-tighter">{t('res.title')}</h1>
           <p className="text-muted text-lg opacity-70 font-medium">{t('res.subtitle')}</p>
         </div>
-        <div className="flex gap-4 items-end">
+        <div className="flex gap-4">
+          <button
+            type="button"
+            onClick={() => setShowFilters(!showFilters)}
+            className={`px-8 py-4 rounded-2xl flex items-center gap-3 font-black uppercase tracking-widest text-xs transition-all border-2 ${showFilters ? 'bg-primary border-primary text-white shadow-xl shadow-primary/20' : 'bg-surface border-border text-muted hover:bg-muted/5'}`}
+          >
+            <Filter className="w-5 h-5" />
+            {showFilters ? 'Hide Filters' : 'Advanced Filters'}
+          </button>
           {canEditResources && (
             <div className="flex gap-4">
               <button
                 type="button"
                 onClick={handleManagementToggle}
-                className={`px-6 py-4 rounded-[1.25rem] flex items-center gap-3 font-black uppercase tracking-widest text-[10px] transition-all border-2 ${isManageMode
+                className={`px-6 py-4 rounded-2xl flex items-center gap-3 font-black uppercase tracking-widest text-[10px] transition-all border-2 ${isManageMode
                   ? 'bg-red-500 border-red-500 text-white shadow-xl shadow-red-500/30'
                   : 'bg-surface border-border text-muted hover:bg-muted/5'
                   }`}
@@ -245,16 +260,16 @@ export const Resources: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsBulkOpen(true)}
-                className="bg-surface border border-border hover:bg-muted/5 text-foreground px-6 py-4 rounded-[1.25rem] flex items-center shadow-lg transition-all active:scale-95 font-bold"
+                className="bg-surface border border-border hover:bg-muted/5 text-foreground px-6 py-4 rounded-2xl flex items-center shadow-lg transition-all active:scale-95 font-bold"
                 title="Bulk Create"
               >
-                <ListPlus className="w-5 h-5 mr-1 text-primary" />
+                <ListPlus className="w-5 h-5 text-primary" />
               </button>
 
               <button
                 type="button"
                 onClick={() => handleOpenModal()}
-                className="bg-primary hover:bg-blue-600 text-white px-8 py-4 rounded-[1.25rem] flex items-center shadow-xl shadow-primary/20 transition-all active:scale-95 font-black uppercase tracking-widest text-xs whitespace-nowrap"
+                className="bg-primary hover:bg-blue-600 text-white px-8 py-4 rounded-2xl flex items-center shadow-2xl shadow-primary/30 transition-all active:scale-95 font-black uppercase tracking-widest text-xs whitespace-nowrap"
               >
                 <Plus className="w-5 h-5 mr-2" />
                 {activeTab === 'Dock' ? t('res.addDock') : t('res.addSlot')}
@@ -262,6 +277,60 @@ export const Resources: React.FC = () => {
             </div>
           )}
         </div>
+      </div>
+
+      {showFilters && (
+        <GlassCard className="mb-8 p-10 animate-in slide-in-from-top duration-500 rounded-[2.5rem] border-none shadow-2xl !overflow-visible z-50">
+          <div className="flex justify-between items-center mb-10">
+            <h2 className="text-2xl font-black text-foreground tracking-tighter uppercase">Query Filters</h2>
+            <button onClick={clearFilters} className="text-[10px] font-black text-primary hover:text-blue-600 uppercase tracking-[0.2em] transition-colors bg-primary/5 px-4 py-2 rounded-xl">Clear All Logic</button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-3 px-1">Sort Attribute</label>
+              <div className="relative group">
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as any)}
+                  className="w-full bg-muted/5 border border-border rounded-[1.25rem] px-5 py-4 text-sm font-bold text-foreground focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all appearance-none cursor-pointer pr-12"
+                >
+                  <option value="name">Name</option>
+                  <option value="status">Status</option>
+                  <option value="capacity">Capacity</option>
+                </select>
+                <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted pointer-events-none" />
+              </div>
+            </div>
+            <div>
+              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-3 px-1">Display Order</label>
+              <div className="flex bg-muted/5 p-1 rounded-2xl border border-border">
+                <button
+                  onClick={() => setSortOrder('asc')}
+                  className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase transition-all ${sortOrder === 'asc' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-muted hover:text-foreground'}`}
+                >
+                  Ascending
+                </button>
+                <button
+                  onClick={() => setSortOrder('desc')}
+                  className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase transition-all ${sortOrder === 'desc' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-muted hover:text-foreground'}`}
+                >
+                  Descending
+                </button>
+              </div>
+            </div>
+          </div>
+        </GlassCard>
+      )}
+
+      <div className="relative mb-8 group">
+        <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-muted w-6 h-6 transition-colors group-focus-within:text-primary" />
+        <input
+          type="text"
+          placeholder="Quick search by mission ID, trailer, or facility..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full bg-surface border-2 border-border/50 rounded-[1.5rem] pl-16 pr-6 py-5 font-bold text-foreground outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-xl placeholder:text-muted/40"
+        />
       </div>
 
       <div className="flex bg-muted/5 p-1.5 rounded-[1.5rem] mb-10 max-w-2xl">
@@ -281,43 +350,6 @@ export const Resources: React.FC = () => {
         </button>
       </div>
 
-      <GlassCard className="mb-8 p-6 !overflow-visible z-50 rounded-[2.5rem] border-none shadow-xl">
-        <div className="flex flex-col md:flex-row gap-6">
-          <div className="relative flex-1 group">
-            <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted transition-colors group-focus-within:text-primary" />
-            <input
-              type="text"
-              placeholder="Search by resource name..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-muted/5 border border-border rounded-[1.25rem] pl-14 pr-6 py-4 text-sm text-foreground focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all font-bold"
-            />
-          </div>
-
-          <div className="flex items-center gap-4">
-            <div className="relative group">
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
-                className="bg-muted/5 border border-border rounded-[1.25rem] px-6 py-4 text-sm text-foreground focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none cursor-pointer font-bold transition-all appearance-none pr-12"
-              >
-                <option value="name">Sort by Name</option>
-                <option value="status">Sort by Status</option>
-                {activeTab === 'YardSlot' && <option value="capacity">Sort by Capacity</option>}
-              </select>
-              <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted pointer-events-none" />
-            </div>
-
-            <button
-              onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
-              className="p-4 bg-muted/5 hover:bg-muted/10 border border-border rounded-[1.25rem] text-muted transition-all active:scale-90"
-              title={`Sort ${sortOrder === 'asc' ? 'Descending' : 'Ascending'}`}
-            >
-              <ArrowRightFromLine className={`w-5 h-5 transition-transform duration-300 ${sortOrder === 'desc' ? 'rotate-90 text-primary' : '-rotate-90 text-primary'}`} />
-            </button>
-          </div>
-        </div>
-      </GlassCard>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-10">
         {paginatedResources.map(item => (

@@ -96,6 +96,15 @@ export const Trailers: React.FC = () => {
 
     // Sorting State
     const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
+    const [showFilters, setShowFilters] = useState(false);
+
+    const clearFilters = () => {
+        setSearchTerm('');
+        setStatusFilter('All');
+        setCarrierFilterIds([]);
+        setTypeFilterNames([]);
+        setLocationSearch('');
+    };
 
     // Pagination State
     const [currentPage, setCurrentPage] = useState(1);
@@ -389,96 +398,118 @@ export const Trailers: React.FC = () => {
                     <h1 className="text-3xl font-bold text-foreground mb-2 tracking-tighter leading-tight">Equipment Log</h1>
                     <p className="text-muted text-lg font-medium opacity-70">Monitor live asset status and localized positioning.</p>
                 </div>
-                {canEditTrailers && (
-                    <div className="flex gap-4">
-                        <button
-                            onClick={() => setIsBulkOpen(true)}
-                            className="bg-surface border border-border hover:bg-muted/5 text-foreground px-6 py-4 rounded-2xl flex items-center shadow-lg transition-all active:scale-95 font-bold"
-                            title="Bulk Create"
-                        >
-                            <ListPlus className="w-5 h-5 text-primary" />
-                        </button>
-                        <button
-                            onClick={() => handleOpenModal()}
-                            className="bg-primary hover:bg-blue-600 text-white px-8 py-4 rounded-2xl flex items-center shadow-2xl shadow-primary/30 transition-all active:scale-95 font-black uppercase tracking-widest text-xs"
-                        >
-                            <Plus className="w-5 h-5 mr-2" />
-                            {t('log.add')}
-                        </button>
-                    </div>
-                )}
+                <div className="flex gap-4">
+                    <button
+                        onClick={() => setShowFilters(!showFilters)}
+                        className={`px-8 py-4 rounded-2xl flex items-center gap-3 font-black uppercase tracking-widest text-xs transition-all border-2 ${showFilters ? 'bg-primary border-primary text-white shadow-xl shadow-primary/20' : 'bg-surface border-border text-muted hover:bg-muted/5'}`}
+                    >
+                        <Filter className="w-5 h-5" />
+                        {showFilters ? 'Hide Filters' : 'Advanced Filters'}
+                    </button>
+                    {canEditTrailers && (
+                        <div className="flex gap-4">
+                            <button
+                                onClick={() => setIsBulkOpen(true)}
+                                className="bg-surface border border-border hover:bg-muted/5 text-foreground px-6 py-4 rounded-2xl flex items-center shadow-lg transition-all active:scale-95 font-bold"
+                                title="Bulk Create"
+                            >
+                                <ListPlus className="w-5 h-5 text-primary" />
+                            </button>
+                            <button
+                                onClick={() => handleOpenModal()}
+                                className="bg-primary hover:bg-blue-600 text-white px-8 py-4 rounded-2xl flex items-center shadow-2xl shadow-primary/30 transition-all active:scale-95 font-black uppercase tracking-widest text-xs"
+                            >
+                                <Plus className="w-5 h-5 mr-2" />
+                                {t('log.add')}
+                            </button>
+                        </div>
+                    )}
+                </div>
             </div>
 
-            <GlassCard className="mb-8 p-6 !overflow-visible z-50 rounded-[2.5rem]">
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
-                    {/* General Search */}
-                    <div className="relative flex-1 group">
-                        <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted transition-colors group-focus-within:text-primary" />
-                        <input
-                            type="text"
-                            placeholder={t('log.searchPlaceholder')}
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full bg-muted/5 border border-border rounded-[1.25rem] pl-14 pr-6 py-4 text-sm text-foreground focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all font-bold"
-                        />
+            {showFilters && (
+                <GlassCard className="mb-8 p-10 animate-in slide-in-from-top duration-500 rounded-[2.5rem] border-none shadow-2xl !overflow-visible z-50">
+                    <div className="flex justify-between items-center mb-10">
+                        <h2 className="text-2xl font-black text-foreground tracking-tighter uppercase">Query Filters</h2>
+                        <button onClick={clearFilters} className="text-[10px] font-black text-primary hover:text-blue-600 uppercase tracking-[0.2em] transition-colors bg-primary/5 px-4 py-2 rounded-xl">Clear All Logic</button>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
+                        {/* Carrier Filter */}
+                        <div className="flex-1">
+                            <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-3 px-1">Carrier Network</label>
+                            <MultiSelectDropdown
+                                label="Carriers"
+                                options={carriers.map(c => ({ id: c.id, name: c.name }))}
+                                selectedIds={carrierFilterIds}
+                                onToggle={toggleCarrierFilter}
+                            />
+                        </div>
+
+                        {/* Trailer Type Filter */}
+                        <div className="flex-1">
+                            <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-3 px-1">Equipment Types</label>
+                            <MultiSelectDropdown
+                                label="Trailer Types"
+                                options={trailerTypes.map(t => ({ id: t.name, name: t.name }))}
+                                selectedIds={typeFilterNames}
+                                onToggle={toggleTypeFilter}
+                            />
+                        </div>
+
+                        {/* Location Wildcard Filter */}
+                        <div className="flex-1">
+                            <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-3 px-1">Position Link</label>
+                            <div className="relative group">
+                                <MapPin className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted transition-colors group-focus-within:text-primary" />
+                                <input
+                                    type="text"
+                                    placeholder="Location (e.g. Dock*)"
+                                    value={locationSearch}
+                                    onChange={(e) => setLocationSearch(e.target.value)}
+                                    className="w-full bg-muted/5 border border-border rounded-[1.25rem] pl-14 pr-12 py-4 text-sm text-foreground focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all font-bold"
+                                />
+                                {locationSearch && (
+                                    <button
+                                        onClick={() => setLocationSearch('')}
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 hover:bg-muted/10 rounded-full text-muted hover:text-foreground transition-all"
+                                    >
+                                        <X className="w-4 h-4" />
+                                    </button>
+                                )}
+                            </div>
+                        </div>
                     </div>
 
-                    {/* Carrier Filter */}
-                    <div className="flex-1">
-                        <MultiSelectDropdown
-                            label="Carriers"
-                            options={carriers.map(c => ({ id: c.id, name: c.name }))}
-                            selectedIds={carrierFilterIds}
-                            onToggle={toggleCarrierFilter}
-                        />
+                    <div className="space-y-4">
+                        <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted px-1">Logistics Status</label>
+                        <div className="flex gap-3 w-full overflow-x-auto pb-2 custom-scrollbar">
+                            {['All', 'Scheduled', 'GatedIn', 'InYard', 'CheckedIn', 'CheckedOut', 'GatedOut'].map(status => (
+                                <button
+                                    key={status}
+                                    onClick={() => setStatusFilter(status)}
+                                    className={`px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap border-2
+                                        ${statusFilter === status
+                                            ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20'
+                                            : 'bg-muted/5 text-muted border-transparent hover:border-border hover:bg-muted/10'}`}
+                                >
+                                    {status === 'All' ? t('log.statusAll') : status.replace(/([A-Z])/g, ' $1').trim()}
+                                </button>
+                            ))}
+                        </div>
                     </div>
+                </GlassCard>
+            )}
 
-                    {/* Trailer Type Filter */}
-                    <div className="flex-1">
-                        <MultiSelectDropdown
-                            label="Trailer Types"
-                            options={trailerTypes.map(t => ({ id: t.name, name: t.name }))}
-                            selectedIds={typeFilterNames}
-                            onToggle={toggleTypeFilter}
-                        />
-                    </div>
-
-                    {/* Location Wildcard Filter */}
-                    <div className="relative flex-1 group">
-                        <MapPin className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted transition-colors group-focus-within:text-primary" />
-                        <input
-                            type="text"
-                            placeholder="Location (e.g. Dock*)"
-                            value={locationSearch}
-                            onChange={(e) => setLocationSearch(e.target.value)}
-                            className="w-full bg-muted/5 border border-border rounded-[1.25rem] pl-14 pr-12 py-4 text-sm text-foreground focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all font-bold"
-                        />
-                        {locationSearch && (
-                            <button
-                                onClick={() => setLocationSearch('')}
-                                className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 hover:bg-muted/10 rounded-full text-muted hover:text-foreground transition-all"
-                            >
-                                <X className="w-4 h-4" />
-                            </button>
-                        )}
-                    </div>
-                </div>
-
-                <div className="flex gap-3 w-full overflow-x-auto pb-2 custom-scrollbar">
-                    {['All', 'Scheduled', 'GatedIn', 'InYard', 'CheckedIn', 'CheckedOut', 'GatedOut'].map(status => (
-                        <button
-                            key={status}
-                            onClick={() => setStatusFilter(status)}
-                            className={`px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap border-2
-                                ${statusFilter === status
-                                    ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20'
-                                    : 'bg-muted/5 text-muted border-transparent hover:border-border hover:bg-muted/10'}`}
-                        >
-                            {status === 'All' ? t('log.statusAll') : status.replace(/([A-Z])/g, ' $1').trim()}
-                        </button>
-                    ))}
-                </div>
-            </GlassCard>
+            <div className="relative mb-8 group">
+                <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-muted w-6 h-6 transition-colors group-focus-within:text-primary" />
+                <input
+                    type="text"
+                    placeholder={t('log.searchPlaceholder')}
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full bg-surface border-2 border-border/50 rounded-[1.5rem] pl-16 pr-6 py-5 font-bold text-foreground outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-xl placeholder:text-muted/40"
+                />
+            </div>
 
             <GlassCard className="flex-1 overflow-hidden flex flex-col rounded-[2.5rem] border-none shadow-2xl bg-surface/40">
                 <div className="flex-1 overflow-y-auto custom-scrollbar">

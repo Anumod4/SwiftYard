@@ -4,7 +4,7 @@ import { useDebounce } from '../hooks/useDebounce';
 import { useData } from '../contexts/DataContext';
 import { GlassCard } from '../components/ui/GlassCard';
 import { Carrier } from '../types';
-import { Plus, Edit2, Trash2, Briefcase, Mail, Phone, ListPlus, Search } from 'lucide-react';
+import { Plus, Edit2, Trash2, Briefcase, Mail, Phone, ListPlus, Search, Filter } from 'lucide-react';
 import { ModalPortal } from '../components/ui/ModalPortal';
 import { Pagination } from '../components/ui/Pagination';
 import { BulkCreatorModal, BulkColumn } from '../components/BulkCreatorModal';
@@ -20,6 +20,11 @@ export const Carriers: React.FC = () => {
 
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
+  const [showFilters, setShowFilters] = useState(false);
+
+  const clearFilters = () => {
+    setSearchTerm('');
+  };
 
   // Form
   const [name, setName] = useState('');
@@ -151,17 +156,14 @@ export const Carriers: React.FC = () => {
           <p className="text-muted text-lg font-medium opacity-70">{t('car.subtitle')}</p>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-          <div className="relative flex-1 sm:w-80 group">
-            <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted transition-colors group-focus-within:text-primary" />
-            <input
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              placeholder="Search carriers..."
-              className="w-full bg-muted/5 border border-border rounded-2xl pl-14 pr-6 py-4 text-sm text-foreground focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all font-bold"
-            />
-          </div>
-
+        <div className="flex gap-4">
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className={`px-8 py-4 rounded-2xl flex items-center gap-3 font-black uppercase tracking-widest text-xs transition-all border-2 ${showFilters ? 'bg-primary border-primary text-white shadow-xl shadow-primary/20' : 'bg-surface border-border text-muted hover:bg-muted/5'}`}
+          >
+            <Filter className="w-5 h-5" />
+            {showFilters ? 'Hide Filters' : 'Advanced Filters'}
+          </button>
           {canEditCarriers && (
             <div className="flex gap-4">
               <button
@@ -181,6 +183,27 @@ export const Carriers: React.FC = () => {
             </div>
           )}
         </div>
+      </div>
+
+      {showFilters && (
+        <GlassCard className="mb-8 p-10 animate-in slide-in-from-top duration-500 rounded-[2.5rem] border-none shadow-2xl !overflow-visible z-50">
+          <div className="flex justify-between items-center mb-10">
+            <h2 className="text-2xl font-black text-foreground tracking-tighter uppercase">Query Filters</h2>
+            <button onClick={clearFilters} className="text-[10px] font-black text-primary hover:text-blue-600 uppercase tracking-[0.2em] transition-colors bg-primary/5 px-4 py-2 rounded-xl">Clear All Logic</button>
+          </div>
+          <div className="text-center py-10 text-muted italic font-medium">No additional filters available for carriers. Use global search below.</div>
+        </GlassCard>
+      )}
+
+      <div className="relative mb-8 group">
+        <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-muted w-6 h-6 transition-colors group-focus-within:text-primary" />
+        <input
+          type="text"
+          placeholder="Quick search by name or contact info..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full bg-surface border-2 border-border/50 rounded-[1.5rem] pl-16 pr-6 py-5 font-bold text-foreground outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-xl placeholder:text-muted/40"
+        />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

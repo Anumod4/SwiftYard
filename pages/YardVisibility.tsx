@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useData } from '../contexts/DataContext';
 import { GlassCard } from '../components/ui/GlassCard';
-import { Warehouse, Container, Truck, Box, Navigation, Clock, AlertTriangle, ArrowDown, ArrowUp, Search, CheckCircle2 } from 'lucide-react';
+import { Warehouse, Container, Truck, Box, Navigation, Clock, AlertTriangle, ArrowDown, ArrowUp, Search, CheckCircle2, Filter } from 'lucide-react';
 import { DndContext, useDraggable, useDroppable, DragEndEvent, TouchSensor, MouseSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { Trailer, Resource } from '../types';
 import { differenceInMinutes } from 'date-fns';
@@ -172,9 +172,17 @@ export const YardVisibility: React.FC = () => {
     const { docks, yardSlots, trailers, updateTrailer, settings, addToast } = useData();
     const [locationFilter, setLocationFilter] = useState('');
     const [trailerFilter, setTrailerFilter] = useState('');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [showFilters, setShowFilters] = useState(false);
     const [selectedTrailer, setSelectedTrailer] = useState<Trailer | null>(null);
     const [activeDragTrailer, setActiveDragTrailer] = useState<Trailer | null>(null);
     const [capacityAlert, setCapacityAlert] = useState<{ open: boolean, message: string } | null>(null);
+
+    const clearFilters = () => {
+        setLocationFilter('');
+        setTrailerFilter('');
+        setSearchTerm('');
+    };
 
     // Provide setter globally for DroppableResource components to access
     (window as any)._setTrailerDetails = setSelectedTrailer;
@@ -220,28 +228,42 @@ export const YardVisibility: React.FC = () => {
     // Map trailers to their locations
     const activeTrailers = useMemo(() => {
         let list = trailers.filter(t => ['Scheduled', 'InTransit', 'GatedIn', 'MovingToDock', 'ReadyForCheckIn', 'CheckedIn', 'MovingToYard', 'InYard', 'ReadyForCheckOut', 'CheckedOut'].includes(t.status));
+
+        if (searchTerm.trim()) {
+            const s = searchTerm.toLowerCase();
+            list = list.filter(t => (t.number || t.id).toLowerCase().includes(s));
+        }
+
         if (trailerFilter) {
             list = list.filter(t => matchSearchQuery(t.number || t.id, trailerFilter));
         }
         return list;
-    }, [trailers, trailerFilter]);
+    }, [trailers, trailerFilter, searchTerm]);
 
     // Sort locations alphabetically
     const sortedDocks = useMemo(() => {
         let list = [...docks];
+        if (searchTerm.trim()) {
+            const s = searchTerm.toLowerCase();
+            list = list.filter(d => d.name.toLowerCase().includes(s));
+        }
         if (locationFilter) {
             list = list.filter(d => matchSearchQuery(d.name, locationFilter));
         }
         return list.sort((a, b) => a.name.localeCompare(b.name));
-    }, [docks, locationFilter]);
+    }, [docks, locationFilter, searchTerm]);
 
     const sortedSlots = useMemo(() => {
         let list = [...yardSlots];
+        if (searchTerm.trim()) {
+            const s = searchTerm.toLowerCase();
+            list = list.filter(item => item.name.toLowerCase().includes(s));
+        }
         if (locationFilter) {
             list = list.filter(s => matchSearchQuery(s.name, locationFilter));
         }
         return list.sort((a, b) => a.name.localeCompare(b.name));
-    }, [yardSlots, locationFilter]);
+    }, [yardSlots, locationFilter, searchTerm]);
 
     // We assume trailer current location matches its `targetResourceId` or `location` string
     const getTrailersForResource = (resId: string) => {
@@ -335,36 +357,64 @@ export const YardVisibility: React.FC = () => {
                     <p className="text-muted text-lg opacity-80 font-medium">Interactive Digital Twin. Drag trailers to instruct operators.</p>
                 </div>
 
-                <div className="hidden md:flex flex-col items-end gap-2">
-                    <div className="flex gap-6 text-[10px] font-black uppercase tracking-[0.2em] text-muted opacity-60">
-                        <div className="flex items-center gap-2.5"><div className="w-3 h-3 bg-emerald-500 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.5)]" /> Recent</div>
-                        <div className="flex items-center gap-2.5"><div className="w-3 h-3 bg-amber-400 rounded-full shadow-[0_0_8px_rgba(251,191,36,0.5)]" /> Warning</div>
-                        <div className="flex items-center gap-2.5"><div className="w-3 h-3 bg-red-500 animate-pulse rounded-full shadow-[0_0_10px_rgba(239,68,68,0.5)]" /> Critical</div>
+                <div className="flex gap-4">
+                    <button
+                        onClick={() => setShowFilters(!showFilters)}
+                        className={`px-8 py-4 rounded-2xl flex items-center gap-3 font-black uppercase tracking-widest text-xs transition-all border-2 ${showFilters ? 'bg-primary border-primary text-white shadow-xl shadow-primary/20' : 'bg-surface border-border text-muted hover:bg-muted/5'}`}
+                    >
+                        <Filter className="w-5 h-5" />
+                        {showFilters ? 'Hide Filters' : 'Advanced Filters'}
+                    </button>
+                    <div className="hidden md:flex flex-col items-end gap-2 justify-center">
+                        <div className="flex gap-6 text-[10px] font-black uppercase tracking-[0.2em] text-muted opacity-60">
+                            <div className="flex items-center gap-2.5"><div className="w-3 h-3 bg-emerald-500 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.5)]" /> Recent</div>
+                            <div className="flex items-center gap-2.5"><div className="w-3 h-3 bg-amber-400 rounded-full shadow-[0_0_8px_rgba(251,191,36,0.5)]" /> Warning</div>
+                            <div className="flex items-center gap-2.5"><div className="w-3 h-3 bg-red-500 animate-pulse rounded-full shadow-[0_0_10px_rgba(239,68,68,0.5)]" /> Critical</div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div className="flex flex-col md:flex-row gap-6 mb-10">
-                <div className="relative flex-1 group">
-                    <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted transition-colors group-focus-within:text-primary" />
-                    <input
-                        type="text"
-                        placeholder="Filter Locations (e.g. *DOCK*, ZONE-A)"
-                        value={locationFilter}
-                        onChange={(e) => setLocationFilter(e.target.value)}
-                        className="w-full pl-14 pr-6 py-4 border border-border rounded-2xl bg-surface text-foreground font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all shadow-lg"
-                    />
-                </div>
-                <div className="relative flex-1 group">
-                    <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted transition-colors group-focus-within:text-primary" />
-                    <input
-                        type="text"
-                        placeholder="Filter Trailers (e.g. TRL-001, *DFG*)"
-                        value={trailerFilter}
-                        onChange={(e) => setTrailerFilter(e.target.value)}
-                        className="w-full pl-14 pr-6 py-4 border border-border rounded-2xl bg-surface text-foreground font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all shadow-lg"
-                    />
-                </div>
+            {showFilters && (
+                <GlassCard className="mb-8 p-10 animate-in slide-in-from-top duration-500 rounded-[2.5rem] border-none shadow-2xl">
+                    <div className="flex justify-between items-center mb-10">
+                        <h2 className="text-2xl font-black text-foreground tracking-tighter uppercase">Visibility Pattern Filters</h2>
+                        <button onClick={clearFilters} className="text-[10px] font-black text-primary hover:text-blue-600 uppercase tracking-[0.2em] transition-colors bg-primary/5 px-4 py-2 rounded-xl">Rest Core State</button>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-3 px-1">Location Logic (* wildcards allowed)</label>
+                            <input
+                                type="text"
+                                placeholder="e.g. *DOCK*, ZONE-A"
+                                value={locationFilter}
+                                onChange={(e) => setLocationFilter(e.target.value)}
+                                className="w-full bg-muted/5 border border-border rounded-[1.25rem] px-5 py-4 text-sm font-bold text-foreground focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-3 px-1">Trailer Logic (* wildcards allowed)</label>
+                            <input
+                                type="text"
+                                placeholder="e.g. TRL-001, *DFG*"
+                                value={trailerFilter}
+                                onChange={(e) => setTrailerFilter(e.target.value)}
+                                className="w-full bg-muted/5 border border-border rounded-[1.25rem] px-5 py-4 text-sm font-bold text-foreground focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all"
+                            />
+                        </div>
+                    </div>
+                </GlassCard>
+            )}
+
+            <div className="relative mb-8 group">
+                <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-muted w-6 h-6 transition-colors group-focus-within:text-primary" />
+                <input
+                    type="text"
+                    placeholder="Quick search by mission ID, trailer, or facility..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full bg-surface border-2 border-border/50 rounded-[1.5rem] pl-16 pr-6 py-5 font-bold text-foreground outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-xl placeholder:text-muted/40"
+                />
             </div>
 
             <DndContext sensors={sensors} onDragStart={(e) => {

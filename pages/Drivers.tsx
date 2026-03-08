@@ -4,7 +4,7 @@ import { useDebounce } from '../hooks/useDebounce';
 import { useData } from '../contexts/DataContext';
 import { GlassCard } from '../components/ui/GlassCard';
 import { Driver } from '../types';
-import { Plus, Edit2, Trash2, User, CheckCircle2, XCircle, Briefcase, ListPlus, Search, Phone, ChevronDown } from 'lucide-react';
+import { Plus, Edit2, Trash2, User, CheckCircle2, XCircle, Briefcase, ListPlus, Search, Phone, ChevronDown, Filter } from 'lucide-react';
 import { ModalPortal } from '../components/ui/ModalPortal';
 import { Pagination } from '../components/ui/Pagination';
 import { BulkCreatorModal, BulkColumn } from '../components/BulkCreatorModal';
@@ -19,6 +19,13 @@ export const Drivers: React.FC = () => {
   const [editingDriver, setEditingDriver] = useState<Driver | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
+  const [showFilters, setShowFilters] = useState(false);
+  const [carrierFilterIds, setCarrierFilterIds] = useState<string[]>([]);
+
+  const clearFilters = () => {
+    setSearchTerm('');
+    setCarrierFilterIds([]);
+  };
 
   // Sorting
   const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
@@ -138,6 +145,16 @@ export const Drivers: React.FC = () => {
       );
     }
 
+    if (carrierFilterIds.length > 0) {
+      result = result.filter(d => {
+        if (!d.carrierId) return false;
+        return carrierFilterIds.some(cid => {
+          const c = carriers.find(car => car.id === cid);
+          return c && d.carrierId?.toLowerCase() === c.name.toLowerCase();
+        });
+      });
+    }
+
     if (sortConfig) {
       result = [...result].sort((a, b) => {
         let valA: any = a[sortConfig.key as keyof Driver] || '';
@@ -191,30 +208,26 @@ export const Drivers: React.FC = () => {
           <p className="text-muted text-lg opacity-70 font-medium">{t('drv.subtitle')}</p>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto items-end">
-          <div className="relative flex-1 sm:w-96 group">
-            <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted transition-colors group-focus-within:text-primary" />
-            <input
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              placeholder="Search by name, license or carrier..."
-              className="w-full bg-muted/5 border border-border rounded-[1.25rem] pl-14 pr-6 py-4 text-sm focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all font-bold text-foreground placeholder:text-muted/50"
-            />
-          </div>
-
+        <div className="flex gap-4">
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className={`px-8 py-4 rounded-2xl flex items-center gap-3 font-black uppercase tracking-widest text-xs transition-all border-2 ${showFilters ? 'bg-primary border-primary text-white shadow-xl shadow-primary/20' : 'bg-surface border-border text-muted hover:bg-muted/5'}`}
+          >
+            <Filter className="w-5 h-5" />
+            {showFilters ? 'Hide Filters' : 'Advanced Filters'}
+          </button>
           {canEditDrivers && (
             <div className="flex gap-4">
               <button
                 onClick={() => setIsBulkOpen(true)}
-                className="bg-surface border border-border hover:bg-muted/5 text-foreground px-6 py-4 rounded-[1.25rem] flex items-center shadow-lg transition-all active:scale-95 font-bold"
+                className="bg-surface border border-border hover:bg-muted/5 text-foreground px-6 py-4 rounded-2xl flex items-center shadow-lg transition-all active:scale-95 font-bold"
                 title="Bulk Create"
               >
-                <ListPlus className="w-5 h-5 mr-2 text-primary" />
-                Bulk Add
+                <ListPlus className="w-5 h-5 text-primary" />
               </button>
               <button
                 onClick={() => handleOpenModal()}
-                className="bg-primary hover:bg-blue-600 text-white px-8 py-4 rounded-[1.25rem] flex items-center shadow-xl shadow-primary/20 transition-all active:scale-95 font-black uppercase tracking-widest text-xs whitespace-nowrap"
+                className="bg-primary hover:bg-blue-600 text-white px-8 py-4 rounded-2xl flex items-center shadow-2xl shadow-primary/30 transition-all active:scale-95 font-black uppercase tracking-widest text-xs whitespace-nowrap"
               >
                 <Plus className="w-5 h-5 mr-1" />
                 {t('drv.add')}
@@ -222,6 +235,59 @@ export const Drivers: React.FC = () => {
             </div>
           )}
         </div>
+      </div>
+
+      {showFilters && (
+        <GlassCard className="mb-8 p-10 animate-in slide-in-from-top duration-500 rounded-[2.5rem] border-none shadow-2xl !overflow-visible z-50">
+          <div className="flex justify-between items-center mb-10">
+            <h2 className="text-2xl font-black text-foreground tracking-tighter uppercase">Query Filters</h2>
+            <button onClick={clearFilters} className="text-[10px] font-black text-primary hover:text-blue-600 uppercase tracking-[0.2em] transition-colors bg-primary/5 px-4 py-2 rounded-xl">Clear All Logic</button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div className="flex-1">
+              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-3 px-1">Carrier Network</label>
+              <div className="relative group">
+                <button
+                  onClick={() => {
+                    const dropdown = document.getElementById('carrier-dropdown');
+                    if (dropdown) dropdown.classList.toggle('hidden');
+                  }}
+                  className="w-full flex items-center justify-between bg-muted/5 border border-border rounded-[1.25rem] px-5 py-4 text-sm text-foreground font-bold"
+                >
+                  <span className="truncate flex items-center gap-2">
+                    {carrierFilterIds.length > 0 && <span className="w-5 h-5 flex items-center justify-center bg-primary text-white text-[10px] rounded-full">{carrierFilterIds.length}</span>}
+                    {t('common.carrier')}
+                  </span>
+                  <ChevronDown className="w-4 h-4 ml-2" />
+                </button>
+                <div id="carrier-dropdown" className="hidden absolute top-full left-0 mt-3 w-72 max-h-80 overflow-y-auto custom-scrollbar bg-surface border border-border rounded-[2rem] shadow-2xl z-[100] p-6">
+                  {carriers.map(c => (
+                    <label key={c.id} className="flex items-center gap-3 p-3 hover:bg-muted/5 rounded-2xl cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={carrierFilterIds.includes(c.id)}
+                        onChange={() => setCarrierFilterIds(prev => prev.includes(c.id) ? prev.filter(x => x !== c.id) : [...prev, c.id])}
+                        className="w-5 h-5 rounded-lg border-border text-primary"
+                      />
+                      <span className="text-sm font-bold">{c.name}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </GlassCard>
+      )}
+
+      <div className="relative mb-8 group">
+        <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-muted w-6 h-6 transition-colors group-focus-within:text-primary" />
+        <input
+          type="text"
+          placeholder="Quick search by name, license or carrier..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full bg-surface border-2 border-border/50 rounded-[1.5rem] pl-16 pr-6 py-5 font-bold text-foreground outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-xl placeholder:text-muted/40"
+        />
       </div>
 
       <GlassCard className="flex-1 overflow-hidden flex flex-col rounded-[2.5rem] border-none shadow-2xl">
