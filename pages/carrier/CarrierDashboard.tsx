@@ -89,7 +89,7 @@ export const CarrierDashboard: React.FC<CarrierDashboardProps> = ({
         <div className="space-y-8 animate-in fade-in duration-500 pb-12">
             <header className="flex justify-between items-center bg-white/40 dark:bg-white/5 p-6 rounded-[2rem] border border-slate-200 dark:border-white/10 backdrop-blur-md">
                 <div>
-                    <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Carrier Hub</h2>
+                    <h1 className="text-3xl font-bold text-foreground tracking-tight">Carrier Hub</h1>
                     <p className="text-slate-500 dark:text-gray-400 text-sm font-medium">Real-time load performance & analytics</p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -254,9 +254,9 @@ export const CarrierDashboard: React.FC<CarrierDashboardProps> = ({
                                     </div>
                                     <div className="flex flex-col items-end gap-3">
                                         <div className={`text-[10px] font-black px-4 py-1.5 rounded-2xl uppercase tracking-tighter shadow-sm ${appt.acknowledgementStatus === 'RescheduleSuggested' ? 'bg-[#3B82F6] text-white shadow-[#3B82F6]/20' :
-                                                appt.status === 'PendingApproval' ? 'bg-amber-500 text-white shadow-amber-500/20' :
-                                                    appt.status === 'CheckedIn' ? 'bg-[#3B82F6] text-white shadow-[#3B82F6]/20' :
-                                                        'bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-gray-400'
+                                            appt.status === 'PendingApproval' ? 'bg-amber-500 text-white shadow-amber-500/20' :
+                                                appt.status === 'CheckedIn' ? 'bg-[#3B82F6] text-white shadow-[#3B82F6]/20' :
+                                                    'bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-gray-400'
                                             }`}>
                                             {appt.acknowledgementStatus === 'RescheduleSuggested' ? 'Re-schedule Offered' : appt.status.replace(/([A-Z])/g, ' $1').trim()}
                                         </div>

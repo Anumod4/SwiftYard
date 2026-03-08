@@ -28,7 +28,7 @@ export const CarrierFacilities: React.FC<CarrierFacilitiesProps> = ({
     return (
         <div className="space-y-8 animate-in fade-in duration-500 pb-20">
             <div>
-                <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Assigned Facilities</h2>
+                <h1 className="text-3xl font-bold text-foreground tracking-tight">Assigned Facilities</h1>
                 <p className="text-slate-500 dark:text-gray-400 text-sm">Operational guidelines and contact data for your routes.</p>
             </div>
 

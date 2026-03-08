@@ -70,7 +70,7 @@ export const AdminFacilities: React.FC = () => {
     <div className="p-8 h-full flex flex-col animate-in fade-in duration-500">
       <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-12">
         <div>
-          <h1 className="text-5xl font-black text-foreground mb-3 tracking-tighter leading-tight">Asset Logistics</h1>
+          <h1 className="text-3xl font-bold text-foreground mb-2 tracking-tighter leading-tight">Asset Logistics</h1>
           <p className="text-muted text-lg opacity-70 font-medium">Configure operational facilities and regional nodes.</p>
         </div>
         <button

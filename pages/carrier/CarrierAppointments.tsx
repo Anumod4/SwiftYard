@@ -29,7 +29,7 @@ export const CarrierAppointments: React.FC<CarrierAppointmentsProps> = ({
         <div className="space-y-8 animate-in fade-in duration-500 pb-20">
             <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Mission History</h2>
+                    <h1 className="text-3xl font-bold text-foreground tracking-tight">Mission History</h1>
                     <p className="text-slate-500 dark:text-gray-400 font-medium">Archive of all past and planned operations.</p>
                 </div>
                 <div className="flex gap-2">
@@ -100,9 +100,9 @@ export const CarrierAppointments: React.FC<CarrierAppointmentsProps> = ({
                             <div className="flex items-center justify-between md:justify-end gap-6 border-t md:border-t-0 pt-4 md:pt-0 border-slate-100 dark:border-white/5">
                                 <div className="text-right flex flex-col items-end">
                                     <span className={`text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-tighter border ${appt.acknowledgementStatus === 'RescheduleSuggested' ? 'bg-[#3B82F6] text-white border-[#3B82F6]/20 shadow-lg shadow-[#3B82F6]/20' :
-                                            appt.status === 'Completed' || appt.status === 'Departed' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
-                                                appt.status === 'Cancelled' || appt.status === 'Rejected' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
-                                                    'bg-[#3B82F6]/10 text-[#3B82F6] border-[#3B82F6]/20'
+                                        appt.status === 'Completed' || appt.status === 'Departed' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
+                                            appt.status === 'Cancelled' || appt.status === 'Rejected' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
+                                                'bg-[#3B82F6]/10 text-[#3B82F6] border-[#3B82F6]/20'
                                         }`}>
                                         {appt.acknowledgementStatus === 'RescheduleSuggested' ? 'Re-schedule Offered' : appt.status.replace(/([A-Z])/g, ' $1').trim()}
                                     </span>

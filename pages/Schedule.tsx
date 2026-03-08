@@ -292,7 +292,7 @@ export const Schedule: React.FC = () => {
         <div className="p-8 h-full flex flex-col animate-in fade-in duration-700">
             <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-12">
                 <div>
-                    <h1 className="text-5xl font-black text-foreground mb-3 tracking-tighter leading-tight">Shipment Schedule</h1>
+                    <h1 className="text-3xl font-bold text-foreground mb-2 tracking-tighter leading-tight">Appointment Schedule</h1>
                     <p className="text-muted text-lg font-medium opacity-70">{t('schedule.subtitle')}</p>
                 </div>
                 <div className="flex gap-4">

@@ -134,7 +134,7 @@ export const AdminRoles: React.FC = () => {
         <div className="p-8 h-full flex flex-col animate-in fade-in duration-500">
             <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-12">
                 <div>
-                    <h1 className="text-5xl font-black text-foreground mb-3 tracking-tighter leading-tight">Access Protocol</h1>
+                    <h1 className="text-3xl font-bold text-foreground mb-2 tracking-tighter leading-tight">Access Protocol</h1>
                     <p className="text-muted text-lg opacity-70 font-medium">Define user roles and functional UI permissions.</p>
                 </div>
                 <button

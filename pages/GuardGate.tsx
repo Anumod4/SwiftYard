@@ -462,7 +462,7 @@ export const GuardGate: React.FC = () => {
         <div className="p-8 h-full flex flex-col animate-in fade-in duration-700">
             <div className="flex justify-between items-center mb-8">
                 <div>
-                    <h1 className="text-4xl font-black text-foreground tracking-tighter mb-2">{t('guard.title')}</h1>
+                    <h1 className="text-3xl font-bold text-foreground tracking-tighter mb-2">{t('guard.title')}</h1>
                     <p className="text-muted text-lg opacity-80">{t('guard.subtitle')}</p>
                 </div>
             </div>

@@ -235,7 +235,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
     <div className="p-4 md:p-10 space-y-10 md:space-y-12 animate-in fade-in duration-700">
       <header className="flex flex-col md:flex-row md:justify-between md:items-end gap-6 mb-12">
         <div>
-          <h1 className="text-5xl font-black text-foreground tracking-tighter mb-3 leading-tight">Operational Insight</h1>
+          <h1 className="text-3xl font-bold text-foreground tracking-tighter mb-2 leading-tight">Operational Insight</h1>
           <p className="text-muted text-lg font-medium opacity-80">{t('dash.subtitle')}</p>
         </div>
         <div className="self-start md:self-auto">

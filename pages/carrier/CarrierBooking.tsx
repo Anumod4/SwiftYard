@@ -124,7 +124,7 @@ export const CarrierBooking: React.FC<CarrierBookingProps> = ({
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#3B82F6]/10 text-[#3B82F6] rounded-full text-[10px] font-black uppercase tracking-widest mb-4 border border-[#3B82F6]/20 shadow-sm">
                     <Calendar className="w-3 h-3" /> New Appointment
                 </div>
-                <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter mb-2">Reserve Your Slot</h2>
+                <h1 className="text-3xl font-bold text-foreground tracking-tighter mb-2">Reserve Your Slot</h1>
                 <p className="text-slate-500 dark:text-gray-400 font-medium">Schedule your next Mission today.</p>
             </header>
 

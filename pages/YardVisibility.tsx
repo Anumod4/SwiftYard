@@ -328,7 +328,7 @@ export const YardVisibility: React.FC = () => {
         <div className="h-full flex flex-col p-8 animate-in fade-in duration-1000">
             <div className="mb-10 flex justify-between items-end">
                 <div>
-                    <h1 className="text-4xl font-black text-foreground mb-2 flex items-center tracking-tighter">
+                    <h1 className="text-3xl font-bold text-foreground mb-2 flex items-center tracking-tighter">
                         <Warehouse className="w-10 h-10 mr-4 text-primary" />
                         Yard Visibility
                     </h1>

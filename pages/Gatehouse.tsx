@@ -129,7 +129,7 @@ export const Gatehouse: React.FC = () => {
     <div className="p-8 h-full flex flex-col animate-in fade-in duration-700">
       <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-10">
         <div>
-          <h1 className="text-4xl font-black text-foreground mb-2 tracking-tighter">{t('gate.title')}</h1>
+          <h1 className="text-3xl font-bold text-foreground mb-2 tracking-tighter">{t('gate.title')}</h1>
           <p className="text-muted text-lg opacity-70 font-medium">{t('gate.subtitle')}</p>
         </div>
         <div className="relative w-80 group">

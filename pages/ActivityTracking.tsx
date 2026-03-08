@@ -109,7 +109,7 @@ export const ActivityTracking: React.FC = () => {
         <div className="p-8 h-full flex flex-col animate-in fade-in duration-700">
             <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-10">
                 <div>
-                    <h1 className="text-4xl font-black text-foreground mb-2 tracking-tighter flex items-center gap-4">
+                    <h1 className="text-3xl font-bold text-foreground mb-2 tracking-tighter flex items-center gap-4">
                         <History className="w-10 h-10 text-primary" />
                         Activity Tracking
                     </h1>
