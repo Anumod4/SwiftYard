@@ -334,10 +334,10 @@ export const YardVisibility: React.FC = () => {
                     </h1>
                     <p className="text-muted text-lg opacity-80 font-medium">Interactive Digital Twin. Drag trailers to instruct operators.</p>
                 </div>
- 
+
                 <div className="hidden md:flex flex-col items-end gap-2">
                     <div className="flex gap-6 text-[10px] font-black uppercase tracking-[0.2em] text-muted opacity-60">
-                        <div className="w-3 h-3 bg-emerald-500 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.5)]" /> Recent</div>
+                        <div className="flex items-center gap-2.5"><div className="w-3 h-3 bg-emerald-500 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.5)]" /> Recent</div>
                         <div className="flex items-center gap-2.5"><div className="w-3 h-3 bg-amber-400 rounded-full shadow-[0_0_8px_rgba(251,191,36,0.5)]" /> Warning</div>
                         <div className="flex items-center gap-2.5"><div className="w-3 h-3 bg-red-500 animate-pulse rounded-full shadow-[0_0_10px_rgba(239,68,68,0.5)]" /> Critical</div>
                     </div>
@@ -388,7 +388,7 @@ export const YardVisibility: React.FC = () => {
                             <p className="text-[10px] font-black uppercase tracking-widest text-muted mb-6 leading-relaxed opacity-60">
                                 Trailers in the yard without a specific location assignment or currently in transit.
                             </p>
- 
+
                             <div className="flex-1 overflow-y-auto pr-2 flex flex-col gap-3 custom-scrollbar p-3 bg-muted/5 rounded-3xl border border-dashed border-border/50 whitespace-normal break-words">
                                 {unassignedTrailers.map(t => (
                                     <DraggableTrailer key={t.id} trailer={t} thresholds={settings.dwellThresholds} onClick={setSelectedTrailer} />
@@ -407,9 +407,9 @@ export const YardVisibility: React.FC = () => {
                     <GlassCard className="flex-1 p-8 overflow-y-auto custom-scrollbar bg-muted/5 rounded-[3rem] border-2 border-dashed border-border relative">
                         {/* Background Grid Pattern */}
                         <div className="absolute inset-0 pointer-events-none opacity-[0.05] dark:opacity-[0.1]" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, var(--muted) 1px, transparent 0)', backgroundSize: '32px 32px' }} />
- 
+
                         <div className="relative z-10 flex flex-col gap-12">
- 
+
                             {/* Docks Section */}
                             <div>
                                 <h3 className="text-xs font-black text-muted uppercase tracking-[0.3em] mb-6 flex items-center opacity-70">
@@ -428,9 +428,9 @@ export const YardVisibility: React.FC = () => {
                                     {sortedDocks.length === 0 && <span className="text-muted italic text-[10px] font-black uppercase tracking-widest opacity-40">No docks configured.</span>}
                                 </div>
                             </div>
- 
+
                             <hr className="border-border/50" />
- 
+
                             {/* Yard Slots Section */}
                             <div>
                                 <h3 className="text-xs font-black text-muted uppercase tracking-[0.3em] mb-6 flex items-center opacity-70">
@@ -449,7 +449,7 @@ export const YardVisibility: React.FC = () => {
                                     {sortedSlots.length === 0 && <span className="text-muted italic text-[10px] font-black uppercase tracking-widest opacity-40">No yard slots configured.</span>}
                                 </div>
                             </div>
- 
+
                         </div>
                     </GlassCard>
 
@@ -457,70 +457,70 @@ export const YardVisibility: React.FC = () => {
             </DndContext>
 
             {
-        selectedTrailer && (
-            <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in duration-300" onClick={(e) => { e.stopPropagation(); setSelectedTrailer(null); }}>
-                <div className="bg-surface rounded-[3rem] p-10 w-full max-w-md shadow-2xl border border-border relative animate-in zoom-in-95 duration-300" onClick={(e) => e.stopPropagation()}>
-                    <button onClick={() => setSelectedTrailer(null)} className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-full hover:bg-muted/10 text-muted transition-colors">✕</button>
-                    <div className="flex items-center gap-4 mb-8">
-                        <div className="p-4 bg-primary/10 rounded-3xl text-primary">
-                            <Truck className="w-8 h-8" />
-                        </div>
-                        <div>
-                            <h2 className="text-3xl font-black text-foreground tracking-tighter">{selectedTrailer.number}</h2>
-                            <p className="text-xs font-black uppercase tracking-widest text-muted opacity-60 mt-1">{selectedTrailer.type} • {selectedTrailer.owner}</p>
-                        </div>
-                    </div>
-
-                    {(() => {
-                        const details = getTrailerDwellDetails(selectedTrailer);
-                        if (!details) return <p className="text-sm text-muted italic opacity-40">No dwell history recorded yet.</p>;
-                        return (
-                            <div className="space-y-4">
-                                <div className="flex flex-col gap-1 p-4 bg-muted/5 rounded-[1.5rem] border border-border/50">
-                                    <p className="text-[10px] text-muted uppercase font-black tracking-widest opacity-60">{details.isAtDock ? 'Arrived at Dock' : 'Arrived at Facility'}</p>
-                                    <p className="text-sm font-black text-foreground tracking-tight">{details.arrivedDate.toLocaleString()}</p>
+                selectedTrailer && (
+                    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in duration-300" onClick={(e) => { e.stopPropagation(); setSelectedTrailer(null); }}>
+                        <div className="bg-surface rounded-[3rem] p-10 w-full max-w-md shadow-2xl border border-border relative animate-in zoom-in-95 duration-300" onClick={(e) => e.stopPropagation()}>
+                            <button onClick={() => setSelectedTrailer(null)} className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-full hover:bg-muted/10 text-muted transition-colors">✕</button>
+                            <div className="flex items-center gap-4 mb-8">
+                                <div className="p-4 bg-primary/10 rounded-3xl text-primary">
+                                    <Truck className="w-8 h-8" />
                                 </div>
-                                <div className="grid grid-cols-1 gap-3">
-                                    <div className="flex flex-col gap-1 p-4 bg-emerald-500/5 rounded-[1.5rem] border border-emerald-500/20">
-                                        <p className="text-[10px] text-emerald-500 uppercase font-black tracking-widest flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-500" /> Secure Window</p>
-                                        <p className="text-sm font-black text-emerald-900 dark:text-emerald-400">Until {details.warningDate.toLocaleTimeString()}</p>
-                                    </div>
-                                    <div className="flex flex-col gap-1 p-4 bg-amber-500/5 rounded-[1.5rem] border border-amber-500/20">
-                                        <p className="text-[10px] text-amber-500 uppercase font-black tracking-widest flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-amber-400" /> Warning Threshold</p>
-                                        <p className="text-sm font-black text-amber-900 dark:text-amber-400">Until {details.criticalDate.toLocaleTimeString()}</p>
-                                    </div>
-                                    <div className="flex flex-col gap-1 p-4 bg-red-500/5 rounded-[1.5rem] border border-red-500/20 shadow-[0_0_20px_rgba(239,68,68,0.1)]">
-                                        <p className="text-[10px] text-red-500 uppercase font-black tracking-widest flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" /> Critical Breach</p>
-                                        <p className="text-sm font-black text-red-900 dark:text-red-400">From {details.criticalDate.toLocaleTimeString()}</p>
-                                    </div>
+                                <div>
+                                    <h2 className="text-3xl font-black text-foreground tracking-tighter">{selectedTrailer.number}</h2>
+                                    <p className="text-xs font-black uppercase tracking-widest text-muted opacity-60 mt-1">{selectedTrailer.type} • {selectedTrailer.owner}</p>
                                 </div>
                             </div>
-                        );
-                    })()}
-                </div>
-            </div>
-        )
-    }
 
-    {
-        capacityAlert?.open && (
-            <div className="fixed inset-0 z-[250] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-300" onClick={(e) => { e.stopPropagation(); setCapacityAlert(null); }}>
-                <div className="bg-surface rounded-[3rem] p-10 w-full max-w-sm shadow-2xl border border-red-500/20 relative text-center flex flex-col items-center animate-in zoom-in-95" onClick={(e) => e.stopPropagation()}>
-                    <div className="w-20 h-20 bg-red-500/10 rounded-[2rem] flex items-center justify-center mb-6">
-                        <AlertTriangle className="w-10 h-10 text-red-500 animate-pulse" />
+                            {(() => {
+                                const details = getTrailerDwellDetails(selectedTrailer);
+                                if (!details) return <p className="text-sm text-muted italic opacity-40">No dwell history recorded yet.</p>;
+                                return (
+                                    <div className="space-y-4">
+                                        <div className="flex flex-col gap-1 p-4 bg-muted/5 rounded-[1.5rem] border border-border/50">
+                                            <p className="text-[10px] text-muted uppercase font-black tracking-widest opacity-60">{details.isAtDock ? 'Arrived at Dock' : 'Arrived at Facility'}</p>
+                                            <p className="text-sm font-black text-foreground tracking-tight">{details.arrivedDate.toLocaleString()}</p>
+                                        </div>
+                                        <div className="grid grid-cols-1 gap-3">
+                                            <div className="flex flex-col gap-1 p-4 bg-emerald-500/5 rounded-[1.5rem] border border-emerald-500/20">
+                                                <p className="text-[10px] text-emerald-500 uppercase font-black tracking-widest flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-500" /> Secure Window</p>
+                                                <p className="text-sm font-black text-emerald-900 dark:text-emerald-400">Until {details.warningDate.toLocaleTimeString()}</p>
+                                            </div>
+                                            <div className="flex flex-col gap-1 p-4 bg-amber-500/5 rounded-[1.5rem] border border-amber-500/20">
+                                                <p className="text-[10px] text-amber-500 uppercase font-black tracking-widest flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-amber-400" /> Warning Threshold</p>
+                                                <p className="text-sm font-black text-amber-900 dark:text-amber-400">Until {details.criticalDate.toLocaleTimeString()}</p>
+                                            </div>
+                                            <div className="flex flex-col gap-1 p-4 bg-red-500/5 rounded-[1.5rem] border border-red-500/20 shadow-[0_0_20px_rgba(239,68,68,0.1)]">
+                                                <p className="text-[10px] text-red-500 uppercase font-black tracking-widest flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" /> Critical Breach</p>
+                                                <p className="text-sm font-black text-red-900 dark:text-red-400">From {details.criticalDate.toLocaleTimeString()}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })()}
+                        </div>
                     </div>
-                    <h2 className="text-2xl font-black text-foreground tracking-tighter mb-2">Capacity Full</h2>
-                    <p className="text-muted font-bold text-sm leading-relaxed opacity-60 mb-8">{capacityAlert.message}</p>
-                    <button
-                        onClick={() => setCapacityAlert(null)}
-                        className="w-full py-4 bg-red-500 hover:bg-red-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-red-500/20 transition-all active:scale-95"
-                    >
-                        Understood
-                    </button>
-                </div>
-            </div>
-        )
-    }
-        </div >
+                )
+            }
+
+            {
+                capacityAlert?.open && (
+                    <div className="fixed inset-0 z-[250] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-300" onClick={(e) => { e.stopPropagation(); setCapacityAlert(null); }}>
+                        <div className="bg-surface rounded-[3rem] p-10 w-full max-w-sm shadow-2xl border border-red-500/20 relative text-center flex flex-col items-center animate-in zoom-in-95" onClick={(e) => e.stopPropagation()}>
+                            <div className="w-20 h-20 bg-red-500/10 rounded-[2rem] flex items-center justify-center mb-6">
+                                <AlertTriangle className="w-10 h-10 text-red-500 animate-pulse" />
+                            </div>
+                            <h2 className="text-2xl font-black text-foreground tracking-tighter mb-2">Capacity Full</h2>
+                            <p className="text-muted font-bold text-sm leading-relaxed opacity-60 mb-8">{capacityAlert.message}</p>
+                            <button
+                                onClick={() => setCapacityAlert(null)}
+                                className="w-full py-4 bg-red-500 hover:bg-red-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-red-500/20 transition-all active:scale-95"
+                            >
+                                Understood
+                            </button>
+                        </div>
+                    </div>
+                )
+            }
+        </div>
     );
 };
