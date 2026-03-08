@@ -1,0 +1,23 @@
+{
+  "name": "SwiftYard Local Environment",
+  "values": [
+    {
+      "key": "API_BASE_URL",
+      "value": "http://localhost:4000",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "JWT_TOKEN",
+      "value": "",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "FACILITY_ID",
+      "value": "FAC-XXX",
+      "type": "default",
+      "enabled": true
+    }
+  ]
+}
