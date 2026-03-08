@@ -578,7 +578,21 @@ export const HelpDocs: React.FC = () => {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 print:hidden gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Help & Documentation</h1>
-                    <p className="text-slate-500 dark:text-gray-400">Standard Operating Procedures, Searchable Workflows, & Architecture.</p>
+                    <p className="text-slate-500 dark:text-gray-400 mb-4">Standard Operating Procedures, Searchable Workflows, & Architecture.</p>
+                    <div className="flex flex-wrap gap-2">
+                        <a href="https://github.com/Anumod4/SwiftYard/blob/main/README.md" target="_blank" rel="noopener noreferrer" className="text-xs flex items-center gap-1.5 text-blue-600 dark:text-blue-400 hover:underline bg-blue-50 dark:bg-blue-900/20 px-2.5 py-1.5 rounded-lg border border-blue-100 dark:border-blue-800 transition-colors">
+                            <FileText className="w-3.5 h-3.5" /> README.md
+                        </a>
+                        <a href="https://github.com/Anumod4/SwiftYard/blob/main/HELP_DOCUMENTATION.md" target="_blank" rel="noopener noreferrer" className="text-xs flex items-center gap-1.5 text-purple-600 dark:text-purple-400 hover:underline bg-purple-50 dark:bg-purple-900/20 px-2.5 py-1.5 rounded-lg border border-purple-100 dark:border-purple-800 transition-colors">
+                            <FileText className="w-3.5 h-3.5" /> HELP_DOCUMENTATION.md
+                        </a>
+                        <a href="https://github.com/Anumod4/SwiftYard/blob/main/API_DOCUMENTATION.md" target="_blank" rel="noopener noreferrer" className="text-xs flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 hover:underline bg-emerald-50 dark:bg-emerald-900/20 px-2.5 py-1.5 rounded-lg border border-emerald-100 dark:border-emerald-800 transition-colors">
+                            <Code className="w-3.5 h-3.5" /> API_DOCUMENTATION.md
+                        </a>
+                        <a href="https://github.com/Anumod4/SwiftYard/blob/main/API_ARCHITECTURE.md" target="_blank" rel="noopener noreferrer" className="text-xs flex items-center gap-1.5 text-amber-600 dark:text-amber-400 hover:underline bg-amber-50 dark:bg-amber-900/20 px-2.5 py-1.5 rounded-lg border border-amber-100 dark:border-amber-800 transition-colors">
+                            <Server className="w-3.5 h-3.5" /> API_ARCHITECTURE.md
+                        </a>
+                    </div>
                 </div>
                 <div className="flex gap-4">
                     <button
