@@ -1,0 +1,22 @@
+info:
+  name: GET /api/facilities
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{API_BASE_URL}}/api/facilities"
+  headers:
+    - name: Authorization
+      value: Bearer {{JWT_TOKEN}}
+    - name: X-Facility-ID
+      value: "{{FACILITY_ID}}"
+    - name: Content-Type
+      value: application/json
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

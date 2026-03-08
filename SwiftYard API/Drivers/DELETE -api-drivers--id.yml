@@ -1,0 +1,22 @@
+info:
+  name: DELETE /api/drivers/:id
+  type: http
+  seq: 5
+
+http:
+  method: DELETE
+  url: "{{API_BASE_URL}}/api/drivers/:id"
+  headers:
+    - name: Authorization
+      value: Bearer {{JWT_TOKEN}}
+    - name: X-Facility-ID
+      value: "{{FACILITY_ID}}"
+    - name: Content-Type
+      value: application/json
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

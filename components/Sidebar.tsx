@@ -75,50 +75,50 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, i
 
       {/* Sidebar Drawer */}
       <aside className={`
-        w-[280px] h-screen fixed left-0 top-0 border-r border-slate-200 dark:border-white/10 
-        bg-white/95 dark:bg-[#121212]/95 backdrop-blur-xl flex flex-col z-50 transition-transform duration-300 print:hidden shadow-2xl
+        w-[280px] h-screen fixed left-0 top-0 border-r border-border 
+        bg-surface/95 backdrop-blur-xl flex flex-col z-50 transition-transform duration-300 print:hidden shadow-2xl
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
-        <div className="h-24 flex items-center justify-between px-6 border-b border-slate-200 dark:border-white/5 shrink-0">
+        <div className="h-24 flex items-center justify-between px-6 border-b border-border/5 shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 flex items-center justify-center">
               <Logo className="w-full h-full" />
             </div>
             <div className="flex flex-col">
-              <span className="font-bold text-xl tracking-tight text-slate-900 dark:text-white block leading-none">
+              <span className="font-bold text-xl tracking-tight text-foreground block leading-none">
                 SwiftYard
               </span>
               {isAdminView ? (
                 <span className="text-[10px] uppercase font-black tracking-widest text-purple-500">Admin Console</span>
               ) : (
-                <span className="text-[10px] uppercase font-black tracking-widest text-blue-500">Yard Portal</span>
+                <span className="text-[10px] uppercase font-black tracking-widest text-primary">Yard Portal</span>
               )}
             </div>
           </div>
           <button
             onClick={() => setIsOpen(false)}
-            className="p-2 bg-slate-100 dark:bg-white/10 rounded-full hover:bg-slate-200 dark:hover:bg-white/20 transition-colors"
+            className="p-2 bg-muted/10 rounded-full hover:bg-muted/20 transition-colors"
           >
-            <X className="w-4 h-4 text-slate-600 dark:text-gray-300" />
+            <X className="w-4 h-4 text-muted" />
           </button>
         </div>
 
-        <div className="p-4 border-b border-slate-200 dark:border-white/5 shrink-0">
+        <div className="p-4 border-b border-border/5 shrink-0">
           <div className="relative">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
             <input
               type="text"
               placeholder="Search UI..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 bg-slate-100 dark:bg-white/5 border-none rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#0a84ff] text-slate-900 dark:text-white transition-all"
+              className="w-full pl-9 pr-3 py-2 bg-muted/5 border-none rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary text-foreground transition-all"
             />
           </div>
         </div>
 
         <nav className="flex-1 py-4 flex flex-col gap-1 px-3 overflow-y-auto custom-scrollbar">
           {filteredItems.length === 0 ? (
-            <div className="py-8 text-center text-sm text-slate-500">
+            <div className="py-8 text-center text-sm text-muted">
               No UI matches "{searchTerm}"
             </div>
           ) : (
@@ -134,8 +134,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, i
                   className={`
                     flex items-center p-3 rounded-xl transition-all duration-200 group w-full text-left
                     ${isActive
-                      ? (isAdminView ? 'bg-purple-600 text-white shadow-lg shadow-purple-900/50' : 'bg-[#0a84ff] text-white shadow-lg shadow-blue-900/50')
-                      : 'text-slate-500 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'
+                      ? (isAdminView ? 'bg-purple-600 text-white shadow-lg shadow-purple-900/50' : 'bg-primary text-white shadow-lg shadow-primary/50')
+                      : 'text-muted hover:bg-muted/5 hover:text-foreground'
                     }
                   `}
                 >

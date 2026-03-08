@@ -1,15 +1,31 @@
 /* SwiftYard Global Styles */
 
 :root {
-  --border: 214.3 31.8% 91.4%;
+  --primary: 217 91% 60%;
+  /* #3B82F6 */
   --background: 210 40% 98%;
-  --foreground: 222.2 84% 4.9%;
+  /* #F8FAFC */
+  --surface: 0 0% 100%;
+  /* #FFFFFF */
+  --foreground: 222 47% 11%;
+  /* #0F172A - Text Primary */
+  --muted: 215 16% 47%;
+  /* #64748B - Text Muted */
+  --border: 214 32% 91%;
 }
 
 .dark {
-  --border: 216 34% 17%;
-  --background: 0 0% 7%;
+  --primary: 214 94% 68%;
+  /* #60A5FA */
+  --background: 229 84% 5%;
+  /* #020617 */
+  --surface: 217 33% 17%;
+  /* #1E293B */
   --foreground: 210 40% 98%;
+  /* #F8FAFC - Text Primary */
+  --muted: 215 20% 65%;
+  /* #94A3B8 - Text Muted */
+  --border: 216 34% 17%;
 }
 
 * {
@@ -19,6 +35,8 @@
 body {
   font-family: 'Comfortaa', sans-serif;
   font-weight: 300;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
   /* Default details weight */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -92,6 +110,6 @@ textarea,
 
 /* Selection color */
 ::selection {
-  background-color: #0a84ff;
+  background-color: hsl(var(--primary));
   color: white;
 }

@@ -1,83 +1,88 @@
 <!doctype html>
 <html lang="en" class="dark">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>SwiftYard</title>
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;500;700&display=swap" rel="stylesheet">
-        <script src="https://cdn.tailwindcss.com"></script>
-        <script>
-            tailwind.config = {
-                darkMode: "class",
-                theme: {
-                    extend: {
-                        fontFamily: {
-                            sans: ['Comfortaa', 'sans-serif'],
-                        },
-                        colors: {
-                            border: "hsl(var(--border))",
-                            background: "hsl(var(--background))",
-                            foreground: "hsl(var(--foreground))",
-                        },
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SwiftYard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Comfortaa', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: "hsl(var(--primary))",
+                        surface: "hsl(var(--surface))",
+                        muted: "hsl(var(--muted))",
+                        background: "hsl(var(--background))",
+                        foreground: "hsl(var(--foreground))",
+                        border: "hsl(var(--border))",
                     },
                 },
-            };
-        </script>
-        <!-- Error Trap -->
-        <script>
-            window.addEventListener("error", function (e) {
-                if (document.body) {
-                    const err = document.createElement("div");
-                    err.style.position = "fixed";
-                    err.style.bottom = "0";
-                    err.style.left = "0";
-                    err.style.right = "0";
-                    err.style.background = "#ef4444";
-                    err.style.color = "white";
-                    err.style.padding = "12px";
-                    err.style.fontSize = "12px";
-                    err.style.zIndex = "9999";
-                    err.style.fontFamily = "monospace";
-                    err.style.width = "100%";
-                    err.textContent =
-                        "System Error: " + (e.message || e.reason);
-                    document.body.appendChild(err);
-                }
-            });
-        </script>
-        <!-- Google Identity Services & API Client -->
-        <script
-            src="https://accounts.google.com/gsi/client"
-            async
-            defer
-        ></script>
-        <script src="https://apis.google.com/js/api.js" async defer></script>
-        <style>
-            /* Custom scrollbar for WebKit */
-            ::-webkit-scrollbar {
-                width: 8px;
-                height: 8px;
+            },
+        };
+    </script>
+    <!-- Error Trap -->
+    <script>
+        window.addEventListener("error", function (e) {
+            if (document.body) {
+                const err = document.createElement("div");
+                err.style.position = "fixed";
+                err.style.bottom = "0";
+                err.style.left = "0";
+                err.style.right = "0";
+                err.style.background = "#ef4444";
+                err.style.color = "white";
+                err.style.padding = "12px";
+                err.style.fontSize = "12px";
+                err.style.zIndex = "9999";
+                err.style.fontFamily = "monospace";
+                err.style.width = "100%";
+                err.textContent =
+                    "System Error: " + (e.message || e.reason);
+                document.body.appendChild(err);
             }
-            ::-webkit-scrollbar-track {
-                background: transparent;
-            }
-            ::-webkit-scrollbar-thumb {
-                background: #333;
-                border-radius: 4px;
-            }
-            .dark ::-webkit-scrollbar-thumb {
-                background: #333;
-            }
-            :not(.dark) ::-webkit-scrollbar-thumb {
-                background: #ccc;
-            }
-            ::-webkit-scrollbar-thumb:hover {
-                background: #555;
-            }
-        </style>
-        <script type="importmap">
+        });
+    </script>
+    <!-- Google Identity Services & API Client -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://apis.google.com/js/api.js" async defer></script>
+    <style>
+        /* Custom scrollbar for WebKit */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+
+        .dark ::-webkit-scrollbar-thumb {
+            background: #333;
+        }
+
+        :not(.dark) ::-webkit-scrollbar-thumb {
+            background: #ccc;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+    <script type="importmap">
             {
                 "imports": {
                     "react": "https://esm.sh/react@18.3.1",
@@ -93,12 +98,13 @@
                 }
             }
         </script>
-        <link rel="stylesheet" href="/index.css" />
-    </head>
-    <body
-        class="bg-slate-50 dark:bg-[#121212] text-slate-900 dark:text-white overflow-hidden antialiased selection:bg-[#0a84ff] selection:text-white transition-colors duration-300"
-    >
-        <div id="root"></div>
-        <script type="module" src="index.tsx"></script>
-    </body>
+    <link rel="stylesheet" href="/index.css" />
+</head>
+
+<body
+    class="bg-background text-foreground overflow-hidden antialiased selection:bg-primary selection:text-white transition-colors duration-300">
+    <div id="root"></div>
+    <script type="module" src="index.tsx"></script>
+</body>
+
 </html>

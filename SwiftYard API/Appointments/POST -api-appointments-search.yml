@@ -1,0 +1,28 @@
+info:
+  name: POST /api/appointments/search
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{API_BASE_URL}}/api/appointments/search"
+  headers:
+    - name: Authorization
+      value: Bearer {{JWT_TOKEN}}
+    - name: X-Facility-ID
+      value: "{{FACILITY_ID}}"
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      { 
+          
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

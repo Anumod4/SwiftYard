@@ -1,0 +1,28 @@
+info:
+  name: POST /api/facilities/search
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{API_BASE_URL}}/api/facilities/search"
+  headers:
+    - name: Authorization
+      value: Bearer {{JWT_TOKEN}}
+    - name: X-Facility-ID
+      value: "{{FACILITY_ID}}"
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      { 
+          
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
