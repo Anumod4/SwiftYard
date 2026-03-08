@@ -459,61 +459,61 @@ export const GuardGate: React.FC = () => {
     );
 
     return (
-        <div className="p-8 h-full flex flex-col animate-in fade-in duration-500">
+        <div className="p-8 h-full flex flex-col animate-in fade-in duration-700">
             <div className="flex justify-between items-center mb-8">
                 <div>
-                    <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">{t('guard.title')}</h1>
-                    <p className="text-slate-500 dark:text-gray-400">{t('guard.subtitle')}</p>
+                    <h1 className="text-4xl font-black text-foreground tracking-tighter mb-2">{t('guard.title')}</h1>
+                    <p className="text-muted text-lg opacity-80">{t('guard.subtitle')}</p>
                 </div>
             </div>
 
-            <div className="flex gap-4 mb-8">
+            <div className="flex gap-6 mb-10">
                 <button
                     onClick={() => setActiveTab('in')}
-                    className={`flex-1 py-4 rounded-2xl flex items-center justify-center gap-3 transition-all border-2 ${activeTab === 'in' ? 'bg-white dark:bg-white/10 border-blue-500 shadow-xl' : 'bg-transparent border-transparent text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5'}`}
+                    className={`flex-1 py-5 rounded-[2rem] flex items-center justify-center gap-4 transition-all border-4 ${activeTab === 'in' ? 'bg-surface border-primary shadow-2xl shadow-primary/20' : 'bg-transparent border-transparent text-muted hover:bg-muted/5'}`}
                 >
-                    <LogIn className={`w-6 h-6 ${activeTab === 'in' ? 'text-blue-500' : ''}`} />
-                    <span className="font-black text-lg uppercase">{t('guard.induct')}</span>
+                    <LogIn className={`w-7 h-7 ${activeTab === 'in' ? 'text-primary' : 'opacity-40'}`} />
+                    <span className="font-black text-xl uppercase tracking-widest">{t('guard.induct')}</span>
                 </button>
                 <button
                     onClick={() => setActiveTab('out')}
-                    className={`flex-1 py-4 rounded-2xl flex items-center justify-center gap-3 transition-all border-2 ${activeTab === 'out' ? 'bg-white dark:bg-white/10 border-orange-500 shadow-xl' : 'bg-transparent border-transparent text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5'}`}
+                    className={`flex-1 py-5 rounded-[2rem] flex items-center justify-center gap-4 transition-all border-4 ${activeTab === 'out' ? 'bg-surface border-orange-500 shadow-2xl shadow-orange-500/20' : 'bg-transparent border-transparent text-muted hover:bg-muted/5'}`}
                 >
-                    <LogOut className={`w-6 h-6 ${activeTab === 'out' ? 'text-orange-500' : ''}`} />
-                    <span className="font-black text-lg uppercase">{t('guard.exodus')}</span>
+                    <LogOut className={`w-7 h-7 ${activeTab === 'out' ? 'text-orange-500' : 'opacity-40'}`} />
+                    <span className="font-black text-xl uppercase tracking-widest">{t('guard.exodus')}</span>
                 </button>
             </div>
 
             <div className="flex-1 overflow-y-auto custom-scrollbar">
                 {activeTab === 'in' ? (
-                    <GlassCard className="p-8 max-w-4xl mx-auto">
-                        <form onSubmit={handleGateIn} className="space-y-8">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <GlassCard className="p-10 max-w-5xl mx-auto rounded-[3rem] border-border/50">
+                        <form onSubmit={handleGateIn} className="space-y-10">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
 
                                 {/* Vehicle Details */}
-                                <div className="space-y-6">
-                                    <h3 className="text-sm font-black uppercase tracking-widest text-slate-400 border-b pb-2">Vehicle Information</h3>
+                                <div className="space-y-8">
+                                    <h3 className="text-xs font-black uppercase tracking-[0.3em] text-muted opacity-50 border-b border-border/50 pb-3">Vehicle Information</h3>
                                     <div>
-                                        <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-1.5">{t('guard.trailerNum')} *</label>
+                                        <label className="block text-[10px] font-black text-muted mb-2 uppercase tracking-widest opacity-60">{t('guard.trailerNum')} *</label>
                                         <div className="relative">
-                                            <Truck className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
+                                            <Truck className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted/40" />
                                             <input
                                                 required
                                                 value={trailerNum}
                                                 onChange={e => setTrailerNum(e.target.value)}
                                                 onBlur={handleTrailerBlur}
-                                                className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-3 text-lg font-bold text-slate-900 dark:text-white uppercase focus:border-blue-500 outline-none"
+                                                className="w-full bg-muted/5 border border-border rounded-2xl pl-12 pr-4 py-4 text-xl font-black text-foreground uppercase focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all tracking-tight"
                                                 placeholder="Enter Trailer ID"
                                             />
                                         </div>
                                     </div>
 
                                     <div>
-                                        <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-1.5">Trailer Type</label>
+                                        <label className="block text-[10px] font-black text-muted mb-2 uppercase tracking-widest opacity-60">Trailer Type</label>
                                         <select
                                             value={trailerType}
                                             onChange={e => setTrailerType(e.target.value)}
-                                            className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:border-blue-500 outline-none appearance-none"
+                                            className="w-full bg-muted/5 border border-border rounded-2xl px-4 py-4 text-foreground font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none"
                                         >
                                             <option value="">-- Select Type --</option>
                                             {trailerTypes.map(t => <option key={t.id} value={t.name}>{t.name}</option>)}
@@ -521,11 +521,11 @@ export const GuardGate: React.FC = () => {
                                     </div>
 
                                     <div>
-                                        <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-1.5">{t('guard.carrier')}</label>
+                                        <label className="block text-[10px] font-black text-muted mb-2 uppercase tracking-widest opacity-60">{t('guard.carrier')}</label>
                                         <select
                                             value={carrierId}
                                             onChange={handleCarrierSelect}
-                                            className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:border-blue-500 outline-none appearance-none"
+                                            className="w-full bg-muted/5 border border-border rounded-2xl px-4 py-4 text-foreground font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none"
                                         >
                                             <option value="">-- {t('guard.selectCarrier')} --</option>
                                             {carriers.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
@@ -534,23 +534,23 @@ export const GuardGate: React.FC = () => {
                                 </div>
 
                                 {/* Driver Details */}
-                                <div className="space-y-6">
-                                    <div className="flex justify-between items-center border-b pb-2">
-                                        <h3 className="text-sm font-black uppercase tracking-widest text-slate-400">Driver Information</h3>
-                                        <button type="button" onClick={() => setIsQuickAddDriverOpen(true)} className="text-xs font-bold text-blue-500 flex items-center gap-1 hover:text-blue-400">
-                                            <Plus className="w-3 h-3" /> New Driver
+                                <div className="space-y-8">
+                                    <div className="flex justify-between items-end border-b border-border/50 pb-3">
+                                        <h3 className="text-xs font-black uppercase tracking-[0.3em] text-muted opacity-50">Driver Information</h3>
+                                        <button type="button" onClick={() => setIsQuickAddDriverOpen(true)} className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-1.5 hover:opacity-80 transition-opacity">
+                                            <Plus className="w-3.5 h-3.5" /> New Driver
                                         </button>
                                     </div>
 
                                     <div>
-                                        <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-1.5">{t('guard.driverName')} *</label>
+                                        <label className="block text-[10px] font-black text-muted mb-2 uppercase tracking-widest opacity-60">{t('guard.driverName')} *</label>
                                         <div className="relative">
-                                            <User className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
+                                            <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted/40" />
                                             <select
                                                 required
                                                 value={driverId}
                                                 onChange={handleDriverSelect}
-                                                className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-3 text-slate-900 dark:text-white focus:border-blue-500 outline-none appearance-none"
+                                                className="w-full bg-muted/5 border border-border rounded-2xl pl-12 pr-4 py-4 text-foreground font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none"
                                             >
                                                 <option value="">-- Select Driver --</option>
                                                 {availableDrivers.map(d => (
@@ -560,63 +560,63 @@ export const GuardGate: React.FC = () => {
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-2 gap-6">
                                         <div>
-                                            <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-1.5">{t('guard.driverLicense')}</label>
+                                            <label className="block text-[10px] font-black text-muted mb-2 uppercase tracking-widest opacity-60">{t('guard.driverLicense')}</label>
                                             <input
                                                 value={driverLicense}
                                                 onChange={e => setDriverLicense(e.target.value)}
-                                                className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:border-blue-500 outline-none"
+                                                className="w-full bg-muted/5 border border-border rounded-2xl px-4 py-4 text-foreground font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                                                 placeholder="License #"
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-1.5">{t('guard.driverPhone')}</label>
+                                            <label className="block text-[10px] font-black text-muted mb-2 uppercase tracking-widest opacity-60">{t('guard.driverPhone')}</label>
                                             <input
                                                 value={driverPhone}
                                                 onChange={e => setDriverPhone(e.target.value)}
-                                                className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:border-blue-500 outline-none"
+                                                className="w-full bg-muted/5 border border-border rounded-2xl px-4 py-4 text-foreground font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                                                 placeholder="Phone #"
                                             />
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-2 gap-6">
                                         <div className="col-span-2">
-                                            <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-1.5">Document Information</label>
-                                            <div className="flex gap-2">
+                                            <label className="block text-[10px] font-black text-muted mb-2 uppercase tracking-widest opacity-60">Document Information</label>
+                                            <div className="flex gap-3">
                                                 <input
                                                     value={ewayBill}
                                                     onChange={e => setEwayBill(e.target.value)}
-                                                    className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:border-blue-500 outline-none"
+                                                    className="w-full bg-muted/5 border border-border rounded-2xl px-4 py-4 text-foreground font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                                                     placeholder="Doc Number (Optional)"
                                                 />
-                                                <button type="button" className="px-3 bg-slate-200 dark:bg-white/10 rounded-xl text-slate-600 dark:text-gray-300 hover:bg-slate-300 dark:hover:bg-white/20">
-                                                    <Camera className="w-4 h-4" />
+                                                <button type="button" className="px-5 bg-muted/10 rounded-2xl text-muted hover:bg-muted/20 hover:text-foreground transition-all">
+                                                    <Camera className="w-5 h-5" />
                                                 </button>
                                             </div>
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-1.5">Document Expiry</label>
+                                            <label className="block text-[10px] font-black text-muted mb-2 uppercase tracking-widest opacity-60">Document Expiry</label>
                                             <div className="relative">
-                                                <Calendar className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
+                                                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted/40" />
                                                 <input
                                                     type="date"
                                                     value={docExpiry}
                                                     onChange={e => setDocExpiry(e.target.value)}
-                                                    className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-3 text-slate-900 dark:text-white focus:border-blue-500 outline-none"
+                                                    className="w-full bg-muted/5 border border-border rounded-2xl pl-12 pr-4 py-4 text-foreground font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                                                 />
                                             </div>
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-1.5">Gate In Weight (kg)</label>
+                                            <label className="block text-[10px] font-black text-muted mb-2 uppercase tracking-widest opacity-60">Weight (kg)</label>
                                             <div className="relative">
-                                                <Scale className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
+                                                <Scale className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted/40" />
                                                 <input
                                                     type="number"
                                                     value={weight}
                                                     onChange={e => setWeight(e.target.value)}
-                                                    className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-3 text-slate-900 dark:text-white focus:border-blue-500 outline-none"
+                                                    className="w-full bg-muted/5 border border-border rounded-2xl pl-12 pr-4 py-4 text-foreground font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                                                     placeholder="Optional"
                                                 />
                                             </div>
@@ -625,24 +625,24 @@ export const GuardGate: React.FC = () => {
                                 </div>
                             </div>
 
-                            <div className="pt-6 border-t border-slate-200 dark:border-white/10 flex justify-end">
+                            <div className="pt-8 border-t border-border/50 flex justify-end">
                                 <button
                                     type="submit"
-                                    className="px-10 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-black shadow-xl shadow-blue-500/20 active:scale-95 transition-all flex items-center gap-2"
+                                    className="px-12 py-5 bg-primary hover:bg-primary/90 text-white rounded-3xl font-black uppercase tracking-widest shadow-2xl shadow-primary/20 active:scale-95 transition-all flex items-center gap-3"
                                 >
-                                    <LogIn className="w-5 h-5" /> {t('guard.gateInBtn')}
+                                    <LogIn className="w-6 h-6" /> {t('guard.gateInBtn')}
                                 </button>
                             </div>
                         </form>
                     </GlassCard>
                 ) : (
-                    <div className="space-y-4">
-                        <div className="max-w-md mx-auto relative mb-8">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <div className="space-y-6">
+                        <div className="max-w-xl mx-auto relative mb-12">
+                            <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted/40" />
                             <input
                                 value={outSearch}
                                 onChange={e => setOutSearch(e.target.value)}
-                                className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-orange-500"
+                                className="w-full bg-surface border border-border rounded-full pl-14 pr-6 py-4 text-foreground focus:outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 font-bold shadow-lg"
                                 placeholder="Search vehicle to exit..."
                             />
                         </div>
@@ -653,18 +653,18 @@ export const GuardGate: React.FC = () => {
                                 <p>No vehicles ready for departure found.</p>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                                 {trailersToExit.map(trailer => (
-                                    <GlassCard key={trailer.id} className="p-6 flex flex-col items-center text-center">
-                                        <div className="w-16 h-16 rounded-full bg-orange-500/10 flex items-center justify-center mb-4">
-                                            <Truck className="w-8 h-8 text-orange-500" />
+                                    <GlassCard key={trailer.id} className="p-8 flex flex-col items-center text-center rounded-[2.5rem] border-orange-500/20 hover:border-orange-500 transition-all group shadow-xl">
+                                        <div className="w-20 h-20 rounded-[2rem] bg-orange-500/10 flex items-center justify-center mb-6 transform transition-transform group-hover:scale-110 group-hover:rotate-3">
+                                            <Truck className="w-10 h-10 text-orange-500" />
                                         </div>
-                                        <h3 className="text-2xl font-black text-slate-900 dark:text-white">{trailer.number}</h3>
-                                        <p className="text-sm text-slate-500 mb-6">{trailer.owner}</p>
+                                        <h3 className="text-3xl font-black text-foreground tracking-tighter mb-2">{trailer.number}</h3>
+                                        <p className="text-sm font-black uppercase tracking-widest text-muted opacity-60 mb-8">{trailer.owner}</p>
 
                                         <button
                                             onClick={() => openGateOutModal(trailer.id)}
-                                            className="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-bold shadow-lg shadow-orange-500/20 active:scale-95 transition-all flex items-center justify-center gap-2"
+                                            className="w-full py-4 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-orange-500/30 active:scale-95 transition-all flex items-center justify-center gap-2"
                                         >
                                             <LogOut className="w-4 h-4" /> {t('guard.gateOutBtn')}
                                         </button>
@@ -684,51 +684,51 @@ export const GuardGate: React.FC = () => {
 
             {gateOutModalOpen && (
                 <ModalPortal>
-                    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-                        <div className="bg-white dark:bg-[#1e1e1e] w-full max-w-sm rounded-2xl shadow-2xl border border-slate-200 dark:border-white/10 overflow-hidden flex flex-col">
-                            <div className="p-5 border-b border-slate-200 dark:border-white/10 flex justify-between items-center bg-slate-50 dark:bg-[#1a1a1a]">
-                                <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                                    <LogOut className="w-5 h-5 text-orange-500" /> Confirm Gate Out
+                    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+                        <div className="bg-surface w-full max-w-md rounded-[2.5rem] shadow-2xl border border-border overflow-hidden flex flex-col animate-in zoom-in-95 duration-300">
+                            <div className="p-6 border-b border-border flex justify-between items-center bg-muted/5">
+                                <h2 className="text-xl font-black text-foreground tracking-tight flex items-center gap-2">
+                                    <LogOut className="w-6 h-6 text-orange-500" /> Confirm Exit
                                 </h2>
-                                <button onClick={() => setGateOutModalOpen(false)} className="text-slate-500 hover:text-slate-900 dark:hover:text-white"><X className="w-5 h-5" /></button>
+                                <button onClick={() => setGateOutModalOpen(false)} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-muted/10 text-muted transition-colors"><X className="w-5 h-5" /></button>
                             </div>
 
-                            <div className="p-6 space-y-5">
-                                <p className="text-sm text-slate-500 dark:text-gray-400">
-                                    Please verify checkout details for trailer.
+                            <div className="p-8 space-y-6">
+                                <p className="text-sm font-bold text-muted opacity-80 leading-relaxed">
+                                    Please verify checkout details before finalizing the departure.
                                 </p>
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-1.5">Checkout Weight (kg)</label>
+                                    <label className="block text-[10px] font-black text-muted mb-2 uppercase tracking-widest opacity-60">Checkout Weight (kg)</label>
                                     <div className="relative">
-                                        <Scale className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
+                                        <Scale className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted/40" />
                                         <input
                                             type="number"
                                             value={checkoutWeight}
                                             onChange={e => setCheckoutWeight(e.target.value)}
-                                            className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-orange-500"
+                                            className="w-full bg-muted/5 border border-border rounded-2xl pl-12 pr-4 py-4 text-foreground font-black focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
                                             placeholder="Optional"
                                         />
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-1.5">Document Information</label>
+                                    <label className="block text-[10px] font-black text-muted mb-2 uppercase tracking-widest opacity-60">Document Information</label>
                                     <div className="relative">
-                                        <FileText className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
+                                        <FileText className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted/40" />
                                         <input
                                             value={checkoutDocs}
                                             onChange={e => setCheckoutDocs(e.target.value)}
-                                            className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-orange-500"
+                                            className="w-full bg-muted/5 border border-border rounded-2xl pl-12 pr-4 py-4 text-foreground font-black focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
                                             placeholder="Optional"
                                         />
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="flex justify-end gap-3 p-4 bg-slate-50 dark:bg-[#1a1a1a] border-t border-slate-200 dark:border-white/10">
-                                <button onClick={() => setGateOutModalOpen(false)} className="px-4 py-2 text-sm font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white">Cancel</button>
+                            <div className="flex justify-end gap-3 p-6 bg-muted/5 border-t border-border">
+                                <button onClick={() => setGateOutModalOpen(false)} className="px-6 py-3 text-sm font-black uppercase tracking-widest text-muted hover:text-foreground transition-colors">Cancel</button>
                                 <button
                                     onClick={handleGateOutConfirm}
-                                    className="px-6 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-bold text-sm shadow-lg shadow-orange-500/20 flex items-center gap-2"
+                                    className="px-8 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-orange-500/30 flex items-center gap-2 active:scale-95 transition-all"
                                 >
                                     <CheckCircle2 className="w-4 h-4" /> Confirm Exit
                                 </button>

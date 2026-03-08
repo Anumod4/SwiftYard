@@ -311,7 +311,7 @@ export const CarrierPortal: React.FC = () => {
                                 placeholder="Search UI..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-9 pr-3 py-2 bg-slate-100 dark:bg-white/5 border-none rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#0a84ff] text-slate-900 dark:text-white transition-all"
+                                className="w-full pl-9 pr-3 py-2 bg-slate-100 dark:bg-white/5 border-none rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#3B82F6] text-slate-900 dark:text-white transition-all"
                             />
                         </div>
                     </div>
@@ -335,7 +335,7 @@ export const CarrierPortal: React.FC = () => {
                                         className={`
                                         flex items-center p-3 rounded-xl transition-all duration-200 group w-full text-left
                                         ${isActive
-                                                ? 'bg-[#0a84ff] text-white shadow-lg shadow-blue-900/50'
+                                                ? 'bg-[#3B82F6] text-white shadow-lg shadow-blue-900/50'
                                                 : 'text-slate-500 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'
                                             }
                                     `}
@@ -493,7 +493,7 @@ export const CarrierPortal: React.FC = () => {
                                         <button
                                             type="submit"
                                             disabled={isCreatingDriver}
-                                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2"
+                                            className="w-full bg-[#3B82F6] hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2"
                                         >
                                             {isCreatingDriver ? 'Creating...' : 'Add Driver'}
                                         </button>

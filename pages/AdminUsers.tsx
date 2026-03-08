@@ -171,50 +171,75 @@ export const AdminUsers: React.FC = () => {
 
     return (
         <div className="p-8 h-full flex flex-col animate-in fade-in duration-500">
-            <div className="flex justify-between items-center mb-8">
+            <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-12">
                 <div>
-                    <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">User Management</h1>
-                    <p className="text-slate-500 dark:text-gray-400">Control system access and carrier assignments.</p>
+                    <h1 className="text-5xl font-black text-foreground mb-3 tracking-tighter leading-tight">User Directory</h1>
+                    <p className="text-muted text-lg opacity-70 font-medium">Manage institutional access and personnel roles.</p>
                 </div>
-                <button onClick={() => handleOpenModal()} className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl flex items-center shadow-lg shadow-purple-500/30 transition-all font-medium"><Plus className="w-5 h-5 mr-2" />Add User</button>
+                <button
+                    onClick={() => handleOpenModal()}
+                    className="bg-primary hover:bg-blue-600 text-white px-8 py-4 rounded-2xl flex items-center shadow-2xl shadow-primary/30 transition-all font-black uppercase tracking-widest text-xs active:scale-95"
+                >
+                    <Plus className="w-5 h-5 mr-2" />
+                    Add Account
+                </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {paginatedUsers.map(user => (
-                    <GlassCard key={user.uid} className="p-6 relative group">
-                        <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button onClick={() => handleOpenModal(user)} className="p-2 bg-slate-100 dark:bg-white/10 hover:bg-blue-500 hover:text-white rounded-lg transition-colors"><Edit2 className="w-4 h-4" /></button>
-                            <button onClick={() => handleDeleteClick(user.uid)} className="p-2 bg-slate-100 dark:bg-white/10 hover:bg-red-500 hover:text-white rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
+                    <GlassCard key={user.uid} className="p-8 relative group h-full flex flex-col border-none shadow-xl hover:scale-[1.02] transition-all bg-surface/50 rounded-[2.5rem]">
+                        <div className="absolute top-6 right-6 flex items-center gap-2 z-10 transition-all duration-500 opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0">
+                            <button
+                                onClick={() => handleOpenModal(user)}
+                                className="w-10 h-10 flex items-center justify-center bg-surface hover:bg-primary hover:text-white rounded-xl shadow-lg transition-all text-muted"
+                                title="Edit"
+                            >
+                                <Edit2 className="w-4.5 h-4.5" />
+                            </button>
+                            <button
+                                onClick={() => handleDeleteClick(user.uid)}
+                                className="w-10 h-10 flex items-center justify-center bg-surface hover:bg-red-500 hover:text-white rounded-xl shadow-lg transition-all text-red-600"
+                                title="Delete"
+                            >
+                                <Trash2 className="w-4.5 h-4.5" />
+                            </button>
                         </div>
-                        <div className="flex items-center gap-4 mb-4">
-                            <div className={`w - 12 h - 12 rounded - full flex items - center justify - center text - white font - bold text - lg ${user.role === 'admin' ? 'bg-purple-500' : user.role === 'carrier' ? 'bg-amber-500' : 'bg-blue-500'} `}>{(user.displayName || 'U').charAt(0).toUpperCase()}</div>
-                            <div>
-                                <h3 className="font-bold text-slate-900 dark:text-white">{user.displayName}</h3>
-                                <p className="text-xs text-slate-500">{user.email}</p>
+                        <div className="flex items-center gap-6 mb-8">
+                            <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center text-white font-black text-2xl shadow-xl transition-transform group-hover:rotate-3 ${user.role === 'admin' ? 'bg-indigo-500 shadow-indigo-500/20' : user.role === 'carrier' ? 'bg-amber-500 shadow-amber-500/20' : 'bg-primary shadow-primary/20'} `}>
+                                {(user.displayName || 'U').charAt(0).toUpperCase()}
+                            </div>
+                            <div className="overflow-hidden">
+                                <h3 className="font-black text-foreground text-xl tracking-tighter truncate leading-tight">{user.displayName}</h3>
+                                <p className="text-xs font-bold text-muted opacity-60 truncate">{user.email}</p>
                             </div>
                         </div>
-                        <div className="space-y-3">
-                            <div className="flex items-center justify-between text-sm bg-slate-50 dark:bg-white/5 p-2 rounded">
-                                <span className="text-slate-500 flex items-center gap-2">
+                        <div className="space-y-4 mt-auto">
+                            <div className="flex items-center justify-between p-4 rounded-2xl bg-muted/5 border border-border/50">
+                                <span className="text-[10px] text-muted font-black uppercase tracking-widest flex items-center gap-2">
                                     {isCarrierRole(user.role) || user.carrierId ? (
-                                        <Briefcase className="w-4 h-4 text-amber-500" />
+                                        <Briefcase className="w-3.5 h-3.5 text-amber-500" />
                                     ) : (
-                                        <Warehouse className="w-4 h-4 text-blue-500" />
+                                        <Warehouse className="w-3.5 h-3.5 text-primary" />
                                     )}
-                                    Type
+                                    Level
                                 </span>
-                                <span className={`font - black uppercase text - [10px] px - 2 py - 0.5 rounded ${isCarrierRole(user.role) || user.carrierId ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'} `}>
-                                    {isCarrierRole(user.role) || user.carrierId ? 'Carrier User' : 'Yard User'}
+                                <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full ${isCarrierRole(user.role) || user.carrierId ? 'bg-amber-500/10 text-amber-600' : 'bg-primary/10 text-primary'} `}>
+                                    {isCarrierRole(user.role) || user.carrierId ? 'Partner' : 'Internal'}
                                 </span>
                             </div>
-                            <div className="flex items-center justify-between text-sm bg-slate-50 dark:bg-white/5 p-2 rounded">
-                                <span className="text-slate-500 flex items-center gap-2"><Shield className="w-4 h-4" /> Role</span>
-                                <span className="font-bold uppercase text-[10px]">{getRoleName(user.role || 'user')}</span>
+                            <div className="flex items-center justify-between p-4 rounded-2xl bg-muted/5 border border-border/50">
+                                <span className="text-[10px] text-muted font-black uppercase tracking-widest flex items-center gap-2">
+                                    <Shield className="w-3.5 h-3.5 text-muted" /> Access Role
+                                </span>
+                                <span className="text-sm font-black text-foreground tracking-tight">{getRoleName(user.role || 'user')}</span>
                             </div>
                             {user.carrierId && (
-                                <div className="flex items-center justify-between text-sm bg-amber-50 dark:bg-amber-500/10 p-2 rounded">
-                                    <span className="text-amber-600 flex items-center gap-2"><Briefcase className="w-4 h-4" /> Carrier</span>
-                                    <span className="font-bold text-amber-700 dark:text-amber-400 text-xs">{getCarrierName(user.carrierId || '')}</span>
+                                <div className="p-4 bg-amber-500/5 border border-amber-500/10 rounded-2xl">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest">Organization</span>
+                                        <Briefcase className="w-3.5 h-3.5 text-amber-500 opacity-40" />
+                                    </div>
+                                    <p className="font-black text-amber-700 dark:text-amber-400 text-sm mt-1 tracking-tighter truncate">{getCarrierName(user.carrierId || '')}</p>
                                 </div>
                             )}
                         </div>
@@ -232,63 +257,71 @@ export const AdminUsers: React.FC = () => {
 
             {isModalOpen && (
                 <ModalPortal>
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-                        <div className="bg-white dark:bg-[#1e1e1e] w-full max-w-lg rounded-2xl p-6 shadow-2xl border border-white/10">
-                            <h2 className="text-xl font-bold mb-6 text-slate-900 dark:text-white">{editingUser ? 'Edit User' : 'New User'}</h2>
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-md p-4 animate-in fade-in duration-200">
+                        <div className="bg-surface w-full max-w-2xl rounded-[3rem] p-12 shadow-2xl border border-border overflow-y-auto max-h-[90vh] custom-scrollbar">
+                            <h2 className="text-4xl font-black mb-10 text-foreground tracking-tighter">{editingUser ? 'Edit User' : 'Provision New User'}</h2>
 
                             {!editingUser && (
-                                <div className="bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 p-3 rounded-lg text-xs font-medium mb-4 flex gap-2">
-                                    <AlertCircle className="w-4 h-4 shrink-0" />
-                                    <span>User will be provisioned without a password. They must use the "Forgot Password" link on the login page to set their access.</span>
+                                <div className="bg-primary/5 text-primary p-6 rounded-[2rem] text-xs font-black uppercase tracking-widest leading-relaxed mb-10 flex gap-4 border border-primary/10 shadow-sm">
+                                    <AlertCircle className="w-8 h-8 shrink-0 opacity-60" />
+                                    <span>Passwords are handled securely via provider. New users must use "Forgot Password" to initialize their credentials.</span>
                                 </div>
                             )}
 
-                            <form onSubmit={handleSave} className="space-y-4">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div><label className="block text-xs font-bold text-slate-500 mb-1">First Name</label><input required value={firstName} onChange={e => setFirstName(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-2.5 outline-none text-slate-900 dark:text-white" /></div>
-                                    <div><label className="block text-xs font-bold text-slate-500 mb-1">Last Name</label><input required value={lastName} onChange={e => setLastName(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-2.5 outline-none text-slate-900 dark:text-white" /></div>
+                            <form onSubmit={handleSave} className="space-y-8">
+                                <div className="grid grid-cols-2 gap-6">
+                                    <div>
+                                        <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-3 px-1">First Name</label>
+                                        <input required value={firstName} onChange={e => setFirstName(e.target.value)} className="w-full bg-muted/5 border border-border rounded-2xl p-4 outline-none text-foreground font-bold focus:border-primary transition-all shadow-sm" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-3 px-1">Last Name</label>
+                                        <input required value={lastName} onChange={e => setLastName(e.target.value)} className="w-full bg-muted/5 border border-border rounded-2xl p-4 outline-none text-foreground font-bold focus:border-primary transition-all shadow-sm" />
+                                    </div>
                                 </div>
-                                <div><label className="block text-xs font-bold text-slate-500 mb-1">Email</label><input required type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-2.5 outline-none text-slate-900 dark:text-white" disabled={!!editingUser} /></div>
+                                <div><label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-3 px-1">Email Address</label><input required type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-muted/5 border border-border rounded-2xl p-4 outline-none text-foreground font-bold focus:border-primary transition-all shadow-sm" disabled={!!editingUser} /></div>
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-500 mb-1">Role</label>
-                                    <select value={role} onChange={e => setRole(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-2.5 outline-none text-slate-900 dark:text-white">
+                                    <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-3 px-1">System Access Level</label>
+                                    <select value={role} onChange={e => setRole(e.target.value)} className="w-full bg-muted/5 border border-border rounded-2xl p-4 outline-none text-foreground focus:border-primary transition-all appearance-none font-black uppercase tracking-widest text-xs cursor-pointer shadow-sm">
                                         {roles.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
                                     </select>
                                 </div>
+
                                 {isCarrierRole(role) && (
-                                    <div className="animate-in slide-in-from-top-2 duration-300">
-                                        <label className="block text-xs font-bold text-slate-500 mb-1">Assign to Carrier Organization</label>
+                                    <div className="animate-in slide-in-from-top-4 duration-500 p-6 bg-amber-500/5 rounded-3xl border border-amber-500/10">
+                                        <label className="block text-[10px] font-black uppercase tracking-widest text-amber-600 mb-4 px-1">Partner Organization Assignment</label>
                                         {allCarriers.length > 0 ? (
-                                            <select value={carrierId} onChange={handleCarrierChange} className="w-full bg-amber-100/50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-500/20 rounded-lg p-2.5 outline-none text-slate-900 dark:text-white">
-                                                <option value="">-- Choose Carrier Organization --</option>
+                                            <select value={carrierId} onChange={handleCarrierChange} className="w-full bg-surface border border-amber-500/20 rounded-2xl p-4 outline-none text-foreground font-black tracking-tight text-lg shadow-xl cursor-not-allowed">
+                                                <option value="">-- Select Partner Entity --</option>
                                                 {allCarriers.map(c => {
                                                     const fac = facilities.find(f => f.id === c.facilityId);
-                                                    return <option key={c.id} value={c.name}>{c.name} ({fac?.name || 'Unknown'})</option>;
+                                                    return <option key={c.id} value={c.name}>{c.name} ({fac?.name || 'All Yards'})</option>;
                                                 })}
                                             </select>
                                         ) : (
-                                            <div className="bg-amber-100 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-500/20 p-3 rounded-lg flex items-center gap-2 text-sm text-amber-800 dark:text-amber-200">
-                                                <AlertCircle className="w-4 h-4" />
-                                                <span>No carriers found. Please create a Carrier first.</span>
+                                            <div className="bg-red-500/5 border border-red-500/10 p-4 rounded-2xl flex items-center gap-3 text-xs font-black uppercase tracking-widest text-red-500">
+                                                <AlertCircle className="w-5 h-5" />
+                                                <span>No carrier entities defined. Create one first.</span>
                                             </div>
                                         )}
                                     </div>
                                 )}
-                                {/* Invitation UI removed: emails will not be sent now */}
+
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-500 mb-2">Facility Access</label>
-                                    <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto p-2 border border-slate-200 dark:border-white/10 rounded-lg">
+                                    <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-4 px-1">Authorized Facilities</label>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-64 overflow-y-auto p-6 bg-muted/5 border border-border rounded-[2rem] shadow-inner custom-scrollbar">
                                         {facilities.map(f => (
-                                            <div key={f.id} onClick={() => toggleFacility(f.id)} className={`flex items-center gap-2 p-2 rounded cursor-pointer transition-colors ${selectedFacilities.includes(f.id) ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-600 dark:text-gray-400'}`}>
-                                                <div className={`w-4 h-4 rounded border flex items-center justify-center ${selectedFacilities.includes(f.id) ? 'bg-purple-500 border-purple-500' : 'border-slate-300'}`}>{selectedFacilities.includes(f.id) && <Check className="w-3 h-3 text-white" />}</div>
-                                                <span className="text-sm">{f.name}</span>
+                                            <div key={f.id} onClick={() => toggleFacility(f.id)} className={`flex items-center gap-4 p-5 rounded-2xl cursor-pointer transition-all border-2 ${selectedFacilities.includes(f.id) ? 'bg-primary/10 border-primary shadow-lg scale-[1.02]' : 'bg-surface border-transparent hover:border-border/50 opacity-60'}`}>
+                                                <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${selectedFacilities.includes(f.id) ? 'bg-primary border-primary scale-110' : 'border-muted/30'}`}>{selectedFacilities.includes(f.id) && <Check className="w-4 h-4 text-white" />}</div>
+                                                <span className="text-sm font-black tracking-tighter truncate">{f.name}</span>
                                             </div>
                                         ))}
                                     </div>
                                 </div>
-                                <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-white/10 mt-4">
-                                    <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-slate-500 hover:text-slate-900 font-bold text-sm">Cancel</button>
-                                    <button type="submit" className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-bold text-sm shadow-lg">Save User</button>
+
+                                <div className="flex justify-end gap-6 pt-10 mt-6 border-t border-border/50">
+                                    <button type="button" onClick={() => setIsModalOpen(false)} className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-muted hover:text-foreground transition-colors">Dismiss</button>
+                                    <button type="submit" className="px-12 py-5 bg-primary hover:bg-blue-600 text-white rounded-3xl font-black uppercase tracking-widest text-xs shadow-2xl shadow-primary/30 transition-all active:scale-95">Commit Changes</button>
                                 </div>
                             </form>
                         </div>

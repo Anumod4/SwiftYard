@@ -357,7 +357,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onCl
                                         <select
                                             value={trailerType}
                                             onChange={e => setTrailerType(e.target.value)}
-                                            className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-3 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#0a84ff] appearance-none"
+                                            className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-3 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#3B82F6] appearance-none"
                                         >
                                             <option value="">Select Type</option>
                                             {trailerTypes.map(t => <option key={t.id} value={t.name}>{t.name}</option>)}
@@ -370,14 +370,14 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onCl
                                         <button
                                             type="button"
                                             onClick={() => setLoadType('Inbound')}
-                                            className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${loadType === 'Inbound' ? 'bg-[#0a84ff] text-white shadow-sm' : 'text-slate-500 dark:text-gray-400'}`}
+                                            className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${loadType === 'Inbound' ? 'bg-[#3B82F6] text-white shadow-sm' : 'text-slate-500 dark:text-gray-400'}`}
                                         >
                                             Inbound
                                         </button>
                                         <button
                                             type="button"
                                             onClick={() => setLoadType('Outbound')}
-                                            className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${loadType === 'Outbound' ? 'bg-[#0a84ff] text-white shadow-sm' : 'text-slate-500 dark:text-gray-400'}`}
+                                            className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${loadType === 'Outbound' ? 'bg-[#3B82F6] text-white shadow-sm' : 'text-slate-500 dark:text-gray-400'}`}
                                         >
                                             Outbound
                                         </button>
@@ -406,7 +406,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onCl
                                         step="15"
                                         value={duration}
                                         onChange={e => setDuration(parseInt(e.target.value))}
-                                        className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#0a84ff]"
+                                        className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#3B82F6]"
                                     />
                                 </div>
                             </div>
@@ -421,7 +421,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onCl
                                     <input
                                         value={trailerNumber}
                                         onChange={e => setTrailerNumber(e.target.value)}
-                                        className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#0a84ff] uppercase font-medium"
+                                        className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#3B82F6] uppercase font-medium"
                                         placeholder="TRL-####"
                                     />
                                 </div>
@@ -443,7 +443,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onCl
                                                 setDriverName('');
                                             }
                                         }}
-                                        className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#0a84ff] appearance-none"
+                                        className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#3B82F6] appearance-none"
                                     >
                                         <option value="">Select Carrier</option>
                                         {carriers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -467,7 +467,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onCl
                                     <select
                                         value={driverName}
                                         onChange={handleDriverChange as any}
-                                        className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#0a84ff] appearance-none"
+                                        className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#3B82F6] appearance-none"
                                     >
                                         <option value="">Select Driver</option>
                                         {filteredDrivers.map(d => (
@@ -525,7 +525,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onCl
                                 <select
                                     value={assignedResourceId}
                                     onChange={e => setAssignedResourceId(e.target.value)}
-                                    className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-3 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#0a84ff] appearance-none"
+                                    className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-3 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#3B82F6] appearance-none"
                                 >
                                     <option value="">-- No Dock Assigned --</option>
                                     {docks.map(d => (
@@ -546,7 +546,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onCl
                                     <input
                                         value={poNumber}
                                         onChange={e => setPoNumber(e.target.value)}
-                                        className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#0a84ff]"
+                                        className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#3B82F6]"
                                         placeholder="Optional"
                                     />
                                 </div>
@@ -558,7 +558,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onCl
                                     <input
                                         value={asnNumber}
                                         onChange={e => setAsnNumber(e.target.value)}
-                                        className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#0a84ff]"
+                                        className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#3B82F6]"
                                         placeholder="Optional"
                                     />
                                 </div>
@@ -572,7 +572,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onCl
                                         min="0"
                                         value={palletCount}
                                         onChange={e => setPalletCount(e.target.value === '' ? '' : parseInt(e.target.value))}
-                                        className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#0a84ff]"
+                                        className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#3B82F6]"
                                         placeholder="Qty"
                                     />
                                 </div>
@@ -603,7 +603,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onCl
                         <button
                             onClick={handleSubmit}
                             disabled={isSubmitting}
-                            className="px-8 py-3 bg-[#0a84ff] hover:bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-500/20 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                            className="px-8 py-3 bg-[#3B82F6] hover:bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-500/20 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                         >
                             {editingId ? t('common.save') : 'Confirm Schedule'} <Clock className="w-4 h-4" />
                         </button>

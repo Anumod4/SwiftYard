@@ -106,213 +106,213 @@ export const ActivityTracking: React.FC = () => {
     };
 
     return (
-        <div className="p-8 h-full flex flex-col animate-in fade-in duration-500">
-            <div className="flex justify-between items-start mb-8">
+        <div className="p-8 h-full flex flex-col animate-in fade-in duration-700">
+            <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-10">
                 <div>
-                    <h1 className="text-3xl font-black text-slate-900 dark:text-white mb-2 flex items-center gap-3">
-                        <History className="w-8 h-8 text-blue-500" />
+                    <h1 className="text-4xl font-black text-foreground mb-2 tracking-tighter flex items-center gap-4">
+                        <History className="w-10 h-10 text-primary" />
                         Activity Tracking
                     </h1>
-                    <p className="text-slate-500 dark:text-gray-400 font-medium font-inter">Audit logs of every action performed in the system.</p>
+                    <p className="text-muted text-lg opacity-70 font-medium font-inter">Audit logs of every action performed in the system.</p>
                 </div>
-                <div className="flex gap-4">
+                <div className="flex gap-4 items-end">
                     <button
                         onClick={() => setShowFilters(!showFilters)}
-                        className={`px-5 py-3 rounded-xl flex items-center gap-2 font-bold transition-all border-2 ${showFilters ? 'bg-blue-500 border-blue-600 text-white' : 'bg-white dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-600 dark:text-gray-300 hover:bg-slate-50'}`}
+                        className={`px-8 py-4 rounded-[1.25rem] flex items-center gap-3 font-black uppercase tracking-widest text-xs transition-all border-2 ${showFilters ? 'bg-primary border-primary text-white shadow-xl shadow-primary/20' : 'bg-surface border-border text-muted hover:bg-muted/5'}`}
                     >
                         <Filter className="w-5 h-5" />
-                        {showFilters ? 'Hide Filters' : 'Filters'}
+                        {showFilters ? 'Hide Filters' : 'Advanced Filters'}
                     </button>
                     <button
                         onClick={handleExport}
-                        className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl flex items-center gap-2 shadow-lg shadow-emerald-500/30 transition-all active:scale-95 font-bold"
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-4 rounded-[1.25rem] flex items-center gap-3 shadow-xl shadow-emerald-500/20 transition-all active:scale-95 font-black uppercase tracking-widest text-xs whitespace-nowrap"
                     >
                         <DownloadIcon className="w-5 h-5" />
-                        Export Data
+                        Export Audit Log
                     </button>
                 </div>
             </div>
 
             {showFilters && (
-                <GlassCard className="mb-6 p-6 animate-in slide-in-from-top duration-300">
-                    <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">Advanced Filters</h2>
-                        <button onClick={clearFilters} className="text-xs font-bold text-blue-500 hover:text-blue-600 uppercase tracking-widest">Clear All</button>
+                <GlassCard className="mb-8 p-10 animate-in slide-in-from-top duration-500 rounded-[2.5rem] border-none shadow-2xl">
+                    <div className="flex justify-between items-center mb-10">
+                        <h2 className="text-2xl font-black text-foreground tracking-tighter uppercase">Query Filters</h2>
+                        <button onClick={clearFilters} className="text-[10px] font-black text-primary hover:text-blue-600 uppercase tracking-[0.2em] transition-colors bg-primary/5 px-4 py-2 rounded-xl">Clear All Logic</button>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                         <div>
-                            <label className="block text-[10px] font-black uppercase text-slate-500 mb-1.5 ml-1">Action Type</label>
+                            <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-3 px-1">Action Type</label>
                             <input
                                 value={filterAction}
                                 onChange={e => setFilterAction(e.target.value)}
                                 placeholder="e.g. create*, gate*"
-                                className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500"
+                                className="w-full bg-muted/5 border border-border rounded-2xl px-5 py-4 text-sm font-bold text-foreground outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all"
                             />
                         </div>
                         <div>
-                            <label className="block text-[10px] font-black uppercase text-slate-500 mb-1.5 ml-1">User Name / Email</label>
+                            <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-3 px-1">User Identity</label>
                             <input
                                 value={filterUser}
                                 onChange={e => setFilterUser(e.target.value)}
                                 placeholder="e.g. john*, admin@*"
-                                className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500"
+                                className="w-full bg-muted/5 border border-border rounded-2xl px-5 py-4 text-sm font-bold text-foreground outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all"
                             />
                         </div>
                         <div>
-                            <label className="block text-[10px] font-black uppercase text-slate-500 mb-1.5 ml-1">Appointment ID</label>
+                            <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-3 px-1">Appointment ID</label>
                             <input
                                 value={filterAppt}
                                 onChange={e => setFilterAppt(e.target.value)}
                                 placeholder="e.g. APPT-*"
-                                className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500"
+                                className="w-full bg-muted/5 border border-border rounded-2xl px-5 py-4 text-sm font-bold text-foreground outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all"
                             />
                         </div>
                         <div>
-                            <label className="block text-[10px] font-black uppercase text-slate-500 mb-1.5 ml-1">Trailer ID</label>
+                            <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-3 px-1">Trailer Reference</label>
                             <input
                                 value={filterTrailer}
                                 onChange={e => setFilterTrailer(e.target.value)}
                                 placeholder="e.g. TRL-*"
-                                className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500"
+                                className="w-full bg-muted/5 border border-border rounded-2xl px-5 py-4 text-sm font-bold text-foreground outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all"
                             />
                         </div>
                         <div>
-                            <label className="block text-[10px] font-black uppercase text-slate-500 mb-1.5 ml-1">Carrier Name</label>
+                            <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-3 px-1">Carrier Name</label>
                             <input
                                 value={filterCarrier}
                                 onChange={e => setFilterCarrier(e.target.value)}
                                 placeholder="e.g. DHL, FedEx"
-                                className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500"
+                                className="w-full bg-muted/5 border border-border rounded-2xl px-5 py-4 text-sm font-bold text-foreground outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all"
                             />
                         </div>
                         <div>
-                            <label className="block text-[10px] font-black uppercase text-slate-500 mb-1.5 ml-1">Location Name</label>
+                            <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-3 px-1">Location Unit</label>
                             <input
                                 value={filterLocation}
                                 onChange={e => setFilterLocation(e.target.value)}
                                 placeholder="e.g. Dock*, Yard*"
-                                className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500"
+                                className="w-full bg-muted/5 border border-border rounded-2xl px-5 py-4 text-sm font-bold text-foreground outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all"
                             />
                         </div>
                         <div>
-                            <label className="block text-[10px] font-black uppercase text-slate-500 mb-1.5 ml-1">Date</label>
+                            <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-3 px-1">Execution Date</label>
                             <input
                                 type="date"
                                 value={filterDate}
                                 onChange={e => setFilterDate(e.target.value)}
-                                className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500"
+                                className="w-full bg-muted/5 border border-border rounded-2xl px-5 py-4 text-sm font-bold text-foreground outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all appearance-none cursor-pointer"
                             />
                         </div>
                     </div>
                 </GlassCard>
             )}
 
-            <div className="relative mb-6">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+            <div className="relative mb-8 group">
+                <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-muted w-6 h-6 transition-colors group-focus-within:text-primary" />
                 <input
                     type="text"
-                    placeholder="Quick search by action, user or details..."
+                    placeholder="Quick search by action, user, or specific details..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full bg-white dark:bg-white/5 border-2 border-slate-200 dark:border-white/10 rounded-2xl pl-12 pr-4 py-4 font-bold text-slate-900 dark:text-white outline-none focus:border-blue-500 transition-all shadow-lg"
+                    className="w-full bg-surface border-2 border-border/50 rounded-[1.5rem] pl-16 pr-6 py-5 font-bold text-foreground outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-xl placeholder:text-muted/40"
                 />
             </div>
 
-            <div className="flex-1 overflow-hidden flex flex-col">
-                <div className="rounded-[2rem] border border-slate-200 dark:border-white/10 overflow-hidden flex-1 flex flex-col bg-white/50 dark:bg-black/20 backdrop-blur-xl">
-                    <div className="overflow-x-auto flex-1 custom-scrollbar">
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr className="border-b border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-white/5">
-                                    <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-500">Timestamp</th>
-                                    <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-500">Action</th>
-                                    <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-500">User</th>
-                                    <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-500">Refs</th>
-                                    <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-500">Details</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100 dark:divide-white/5">
-                                {paginatedActivities.map((activity) => (
-                                    <tr key={activity.id} className="hover:bg-slate-50/30 dark:hover:bg-white/[0.02] transition-colors group">
-                                        <td className="px-6 py-5">
+            <GlassCard className="flex-1 overflow-hidden flex flex-col rounded-[2.5rem] border-none shadow-2xl">
+                <div className="flex-1 overflow-y-auto custom-scrollbar">
+                    <table className="w-full text-left border-collapse min-w-[1000px]">
+                        <thead className="sticky top-0 bg-surface/90 backdrop-blur-md z-10 text-[10px] uppercase text-muted font-black tracking-[0.2em] border-b border-border">
+                            <tr>
+                                <th className="p-8">Timestamp</th>
+                                <th className="p-8">Action</th>
+                                <th className="p-8">User Identity</th>
+                                <th className="p-8">References</th>
+                                <th className="p-8">Action Details</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-border/50 bg-surface/30">
+                            {paginatedActivities.map((activity) => (
+                                <tr key={activity.id} className="hover:bg-muted/5 transition-all group border-l-4 border-l-transparent hover:border-l-primary">
+                                    <td className="p-8">
+                                        <div className="flex flex-col">
+                                            <span className="text-base font-black text-foreground tracking-tighter leading-none">{formatDateTime(activity.timestamp).split(',')[0]}</span>
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-muted opacity-60 mt-2">{formatDateTime(activity.timestamp).split(',')[1]}</span>
+                                        </div>
+                                    </td>
+                                    <td className="p-8">
+                                        <div className={`inline-flex items-center px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-[0.1em] border-2 shadow-sm ${activity.action.toLowerCase().includes('create') || activity.action.toLowerCase().includes('add') ? 'bg-emerald-500/5 border-emerald-500/10 text-emerald-600 dark:text-emerald-400' :
+                                            activity.action.toLowerCase().includes('update') || activity.action.toLowerCase().includes('edit') ? 'bg-primary/5 border-primary/10 text-primary' :
+                                                activity.action.toLowerCase().includes('delete') || activity.action.toLowerCase().includes('remove') ? 'bg-red-500/5 border-red-500/10 text-red-600 dark:text-red-400' :
+                                                    'bg-muted/10 border-border/20 text-muted'
+                                            }`}>
+                                            {activity.action}
+                                        </div>
+                                    </td>
+                                    <td className="p-8">
+                                        <div className="flex items-center gap-5">
+                                            <div className="w-12 h-12 rounded-2xl bg-muted/5 border border-border flex items-center justify-center transition-transform group-hover:scale-110 shadow-lg">
+                                                <User className="w-6 h-6 text-muted group-hover:text-primary transition-colors" />
+                                            </div>
                                             <div className="flex flex-col">
-                                                <span className="text-sm font-black text-slate-700 dark:text-gray-200">{formatDateTime(activity.timestamp).split(',')[0]}</span>
-                                                <span className="text-[10px] font-bold text-slate-400 dark:text-gray-500">{formatDateTime(activity.timestamp).split(',')[1]}</span>
+                                                <span className="text-lg font-black text-foreground tracking-tighter leading-none">{activity.userName || 'System Auto'}</span>
+                                                <span className="text-[10px] font-black uppercase tracking-widest text-primary opacity-70 mt-2">{activity.userRole || 'Process Agent'}</span>
                                             </div>
-                                        </td>
-                                        <td className="px-6 py-5">
-                                            <div className={`inline-flex items-center px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-tight border ${activity.action.toLowerCase().includes('create') || activity.action.toLowerCase().includes('add') ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600' :
-                                                    activity.action.toLowerCase().includes('update') || activity.action.toLowerCase().includes('edit') ? 'bg-blue-500/10 border-blue-500/20 text-blue-600' :
-                                                        activity.action.toLowerCase().includes('delete') || activity.action.toLowerCase().includes('remove') ? 'bg-red-500/10 border-red-500/20 text-red-600' :
-                                                            'bg-slate-500/10 border-slate-500/20 text-slate-600'
-                                                }`}>
-                                                {activity.action}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-5">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-500">
-                                                    <User className="w-4 h-4" />
+                                        </div>
+                                    </td>
+                                    <td className="p-8">
+                                        <div className="flex flex-wrap gap-2.5 max-w-[240px]">
+                                            {activity.appointmentId && (
+                                                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary bg-primary/5 px-3 py-1.5 rounded-xl border border-primary/10 shadow-sm" title="Appointment ID">
+                                                    <Hash className="w-3.5 h-3.5" /> {activity.appointmentId}
                                                 </div>
-                                                <div className="flex flex-col">
-                                                    <span className="text-sm font-black text-slate-700 dark:text-gray-200">{activity.userName || 'System'}</span>
-                                                    <span className="text-[10px] font-bold text-slate-400 dark:text-gray-500">{activity.userRole}</span>
+                                            )}
+                                            {activity.trailerId && (
+                                                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400 bg-emerald-500/5 px-3 py-1.5 rounded-xl border border-emerald-500/10 shadow-sm" title="Trailer ID">
+                                                    <Truck className="w-3.5 h-3.5" /> {activity.trailerId}
                                                 </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-5">
-                                            <div className="flex flex-col gap-1.5">
-                                                {activity.appointmentId && (
-                                                    <div className="flex items-center gap-1.5 text-[10px] font-black text-blue-500 bg-blue-500/5 px-2 py-0.5 rounded-full w-fit border border-blue-500/10">
-                                                        <Hash className="w-3 h-3" /> {activity.appointmentId}
-                                                    </div>
-                                                )}
-                                                {activity.trailerId && (
-                                                    <div className="flex items-center gap-1.5 text-[10px] font-black text-emerald-500 bg-emerald-500/5 px-2 py-0.5 rounded-full w-fit border border-emerald-500/10">
-                                                        <Truck className="w-3 h-3" /> {activity.trailerId}
-                                                    </div>
-                                                )}
-                                                {activity.locationName && (
-                                                    <div className="flex items-center gap-1.5 text-[10px] font-black text-orange-500 bg-orange-500/5 px-2 py-0.5 rounded-full w-fit border border-orange-500/10">
-                                                        <MapPin className="w-3 h-3" /> {activity.locationName}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-5">
-                                            <p className="text-sm font-bold text-slate-600 dark:text-gray-400 max-w-xs truncate" title={activity.details}>
-                                                {activity.details || '-'}
-                                            </p>
-                                        </td>
-                                    </tr>
-                                ))}
-                                {filteredActivities.length === 0 && !dataLoading && (
-                                    <tr>
-                                        <td colSpan={5} className="px-6 py-20 text-center">
-                                            <div className="flex flex-col items-center justify-center gap-4">
-                                                <History className="w-16 h-16 text-slate-200 dark:text-white/5" />
-                                                <div className="space-y-1">
-                                                    <p className="text-lg font-black text-slate-400">No activities found</p>
-                                                    <p className="text-sm text-slate-400/60 font-medium">Try adjusting your filters or search terms.</p>
+                                            )}
+                                            {activity.locationName && (
+                                                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-orange-600 dark:text-orange-400 bg-orange-500/5 px-3 py-1.5 rounded-xl border border-orange-500/10 shadow-sm" title="Location">
+                                                    <MapPin className="w-3.5 h-3.5" /> {activity.locationName}
                                                 </div>
+                                            )}
+                                        </div>
+                                    </td>
+                                    <td className="p-8">
+                                        <p className="text-sm font-bold text-foreground opacity-80 max-w-sm" title={activity.details}>
+                                            {activity.details || <span className="text-muted/30 italic font-normal tracking-normal lowercase">No secondary details</span>}
+                                        </p>
+                                    </td>
+                                </tr>
+                            ))}
+                            {filteredActivities.length === 0 && !dataLoading && (
+                                <tr>
+                                    <td colSpan={5} className="p-20 text-center">
+                                        <div className="flex flex-col items-center justify-center gap-6">
+                                            <div className="w-20 h-20 bg-muted/5 rounded-full flex items-center justify-center">
+                                                <History className="w-10 h-10 text-muted/20" />
                                             </div>
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
+                                            <div className="space-y-2">
+                                                <p className="text-2xl font-black text-foreground tracking-tighter uppercase">{t('drv.empty') || 'No Audit Logs Found'}</p>
+                                                <p className="text-base text-muted font-medium">Try broadening your search or clearing advanced filters.</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
                 </div>
+            </GlassCard>
 
-                <div className="mt-6">
-                    <Pagination
-                        currentPage={currentPage}
-                        totalPages={Math.ceil(filteredActivities.length / pageSize)}
-                        onPageChange={setCurrentPage}
-                        totalRecords={filteredActivities.length}
-                        pageSize={pageSize}
-                    />
-                </div>
+            <div className="mt-6">
+                <Pagination
+                    currentPage={currentPage}
+                    totalPages={Math.ceil(filteredActivities.length / pageSize)}
+                    onPageChange={setCurrentPage}
+                    totalRecords={filteredActivities.length}
+                    pageSize={pageSize}
+                />
             </div>
         </div>
     );

@@ -313,7 +313,7 @@ export const Login: React.FC = () => {
                 <div className="w-full max-w-md bg-white dark:bg-[#1e1e1e] rounded-3xl shadow-2xl border border-slate-200 dark:border-white/10 overflow-hidden animate-in fade-in zoom-in-95 duration-300">
 
                     <div className="p-4 text-center border-b border-slate-200 dark:border-white/5 relative overflow-hidden bg-slate-50 dark:bg-white/5">
-                        <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#0a84ff] to-transparent transition-transform duration-500 ${loading ? 'translate-x-full' : '-translate-x-full'}`} />
+                        <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#3B82F6] to-transparent transition-transform duration-500 ${loading ? 'translate-x-full' : '-translate-x-full'}`} />
 
                         <div className="w-full max-w-[20rem] md:max-w-[24rem] mx-auto flex items-end justify-center">
                             <Logo className="h-24 md:h-32 drop-shadow-2xl object-bottom" />
@@ -358,9 +358,9 @@ export const Login: React.FC = () => {
                                 <div className="text-center mb-4"><h3 className="font-bold">Select Facility</h3></div>
                                 {matchedDrivers.map(d => (
                                     <button key={d.id} onClick={() => selectDriver(d)} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 p-4 rounded-xl flex items-center gap-4 group">
-                                        <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-600 group-hover:bg-blue-500 group-hover:text-white transition-colors"><Building className="w-5 h-5" /></div>
+                                        <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-600 group-hover:bg-[#3B82F6] group-hover:text-white transition-colors"><Building className="w-5 h-5" /></div>
                                         <div className="text-left"><div className="font-bold text-slate-900 dark:text-white">{getFacilityName(d.facilityId)}</div><div className="text-xs text-slate-500">Log in as {d.name}</div></div>
-                                        <ArrowRight className="w-5 h-5 text-slate-300 ml-auto group-hover:text-[#0a84ff]" />
+                                        <ArrowRight className="w-5 h-5 text-slate-300 ml-auto group-hover:text-[#3B82F6]" />
                                     </button>
                                 ))}
                             </div>
@@ -368,26 +368,27 @@ export const Login: React.FC = () => {
                             <form onSubmit={handleResetPassword} className="flex-1 flex flex-col h-full">
                                 <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
                                     <div className="text-center mb-6">
-                                        <div className="w-16 h-16 bg-[#0a84ff]/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                                            <Lock className="w-8 h-8 text-[#0a84ff]" />
+                                        <div className="w-16 h-16 bg-[#3B82F6]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <Lock className="w-8 h-8 text-[#3B82F6]" />
                                         </div>
                                         <h3 className="text-xl font-bold text-slate-900 dark:text-white">Reset Password</h3>
                                         <p className="text-sm text-slate-500 dark:text-gray-400 mt-2">Enter the code sent to {email} and your new password.</p>
                                     </div>
                                     <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Reset Code</label>
-                                    <div className="relative mb-4"><KeyRound className="absolute left-4 top-3.5 w-5 h-5 text-slate-400" /><input type="text" required value={resetCode} onChange={e => setResetCode(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-12 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#0a84ff]" placeholder="123456" /></div>
+                                    <div className="relative mb-4"><KeyRound className="absolute left-4 top-3.5 w-5 h-5 text-slate-400" /><input type="text" required value={resetCode} onChange={e => setResetCode(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-12 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#3B82F6]" placeholder="123456" /></div>
 
                                     <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">New Password</label>
-                                    <div className="relative"><Lock className="absolute left-4 top-3.5 w-5 h-5 text-slate-400" /><input type={showPassword ? 'text' : 'password'} required value={newPassword} onChange={e => setNewPassword(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-12 pr-12 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#0a84ff]" placeholder="••••••••" /><button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">{showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}</button></div>
+                                    <div className="relative"><Lock className="absolute left-4 top-3.5 w-5 h-5 text-slate-400" /><input type={showPassword ? 'text' : 'password'} required value={newPassword} onChange={e => setNewPassword(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-12 pr-12 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#3B82F6]" placeholder="••••••••" />
+                                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">{showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}</button></div>
                                 </div>
                                 <div className="mt-auto pt-6">
-                                    <button type="submit" disabled={loading} className="w-full bg-[#0a84ff] hover:bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                                    <button type="submit" disabled={loading} className="w-full bg-[#3B82F6] hover:bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2">
                                         {loading ? 'Resetting...' : <><ArrowRight className="w-5 h-5" /> Set Password</>}
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => { setIsResettingPassword(false); setError(''); }}
-                                        className="w-full mt-3 text-sm text-slate-500 hover:text-[#0a84ff] font-medium"
+                                        className="w-full mt-3 text-sm text-slate-500 hover:text-[#3B82F6] font-medium"
                                     >
                                         Cancel
                                     </button>
@@ -397,23 +398,23 @@ export const Login: React.FC = () => {
                             <form onSubmit={handleVerifyMfa} className="flex-1 flex flex-col h-full">
                                 <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
                                     <div className="text-center mb-6">
-                                        <div className="w-16 h-16 bg-[#0a84ff]/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                                            <KeyRound className="w-8 h-8 text-[#0a84ff]" />
+                                        <div className="w-16 h-16 bg-[#3B82F6]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <KeyRound className="w-8 h-8 text-[#3B82F6]" />
                                         </div>
                                         <h3 className="text-xl font-bold text-slate-900 dark:text-white">Two-Factor Authentication</h3>
                                         <p className="text-sm text-slate-500 dark:text-gray-400 mt-2">Enter the code from your authenticator app.</p>
                                     </div>
                                     <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Authenticator Code</label>
-                                    <div className="relative"><KeyRound className="absolute left-4 top-3.5 w-5 h-5 text-slate-400" /><input type="text" required value={mfaCode} onChange={e => setMfaCode(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-12 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#0a84ff]" placeholder="000000" /></div>
+                                    <div className="relative"><KeyRound className="absolute left-4 top-3.5 w-5 h-5 text-slate-400" /><input type="text" required value={mfaCode} onChange={e => setMfaCode(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-12 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#3B82F6]" placeholder="000000" /></div>
                                 </div>
                                 <div className="mt-auto pt-6">
-                                    <button type="submit" disabled={loading} className="w-full bg-[#0a84ff] hover:bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                                    <button type="submit" disabled={loading} className="w-full bg-[#3B82F6] hover:bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2">
                                         {loading ? 'Verifying...' : <><ArrowRight className="w-5 h-5" /> Verify</>}
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => { setVerifyingMfa(false); setError(''); }}
-                                        className="w-full mt-3 text-sm text-slate-500 hover:text-[#0a84ff] font-medium"
+                                        className="w-full mt-3 text-sm text-slate-500 hover:text-[#3B82F6] font-medium"
                                     >
                                         Back to login
                                     </button>
@@ -423,23 +424,23 @@ export const Login: React.FC = () => {
                             <form onSubmit={handleVerifyEmail} className="flex-1 flex flex-col h-full">
                                 <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
                                     <div className="text-center mb-6">
-                                        <div className="w-16 h-16 bg-[#0a84ff]/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                                            <Mail className="w-8 h-8 text-[#0a84ff]" />
+                                        <div className="w-16 h-16 bg-[#3B82F6]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <Mail className="w-8 h-8 text-[#3B82F6]" />
                                         </div>
                                         <h3 className="text-xl font-bold text-slate-900 dark:text-white">Verify Your Email</h3>
                                         <p className="text-sm text-slate-500 dark:text-gray-400 mt-2">We sent a verification code to {email}.</p>
                                     </div>
                                     <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Verification Code</label>
-                                    <div className="relative"><KeyRound className="absolute left-4 top-3.5 w-5 h-5 text-slate-400" /><input type="text" required value={emailCode} onChange={e => setEmailCode(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-12 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#0a84ff]" placeholder="000000" /></div>
+                                    <div className="relative"><KeyRound className="absolute left-4 top-3.5 w-5 h-5 text-slate-400" /><input type="text" required value={emailCode} onChange={e => setEmailCode(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-12 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#3B82F6]" placeholder="000000" /></div>
                                 </div>
                                 <div className="mt-auto pt-6">
-                                    <button type="submit" disabled={loading} className="w-full bg-[#0a84ff] hover:bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                                    <button type="submit" disabled={loading} className="w-full bg-[#3B82F6] hover:bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2">
                                         {loading ? 'Verifying...' : <><ArrowRight className="w-5 h-5" /> Confirm Email</>}
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => { setVerifyingEmail(false); setError(''); }}
-                                        className="w-full mt-3 text-sm text-slate-500 hover:text-[#0a84ff] font-medium"
+                                        className="w-full mt-3 text-sm text-slate-500 hover:text-[#3B82F6] font-medium"
                                     >
                                         Cancel
                                     </button>
@@ -451,7 +452,7 @@ export const Login: React.FC = () => {
                                     {loginMode === 'driver' ? (
                                         <div className="animate-in fade-in slide-in-from-right-4 duration-300">
                                             <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Trailer Number</label>
-                                            <div className="relative"><Truck className="absolute left-4 top-3.5 w-5 h-5 text-slate-400" /><input type="text" required value={trailerInput} onChange={e => setTrailerInput(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-12 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#0a84ff]" placeholder="TRL-####" /></div>
+                                            <div className="relative"><Truck className="absolute left-4 top-3.5 w-5 h-5 text-slate-400" /><input type="text" required value={trailerInput} onChange={e => setTrailerInput(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-12 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#3B82F6]" placeholder="TRL-####" /></div>
                                         </div>
                                     ) : (
                                         <div className="space-y-4 animate-in fade-in slide-in-from-left-4 duration-300">
@@ -465,8 +466,8 @@ export const Login: React.FC = () => {
 
                                             {isSignUp && (
                                                 <div className="flex gap-4">
-                                                    <div className="flex-1"><label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">First Name</label><div className="relative"><User className="absolute left-4 top-3.5 w-5 h-5 text-slate-400" /><input type="text" required value={firstName} onChange={e => setFirstName(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-12 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#0a84ff]" placeholder="Jane" /></div></div>
-                                                    <div className="flex-1"><label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Last Name</label><div className="relative"><User className="absolute left-4 top-3.5 w-5 h-5 text-slate-400" /><input type="text" required value={lastName} onChange={e => setLastName(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-12 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#0a84ff]" placeholder="Doe" /></div></div>
+                                                    <div className="flex-1"><label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">First Name</label><div className="relative"><User className="absolute left-4 top-3.5 w-5 h-5 text-slate-400" /><input type="text" required value={firstName} onChange={e => setFirstName(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-12 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#3B82F6]" placeholder="Jane" /></div></div>
+                                                    <div className="flex-1"><label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Last Name</label><div className="relative"><User className="absolute left-4 top-3.5 w-5 h-5 text-slate-400" /><input type="text" required value={lastName} onChange={e => setLastName(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-12 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#3B82F6]" placeholder="Doe" /></div></div>
                                                 </div>
                                             )}
 
@@ -481,7 +482,7 @@ export const Login: React.FC = () => {
                                                         required
                                                         value={email}
                                                         onChange={e => setEmail(e.target.value)}
-                                                        className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-12 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#0a84ff]"
+                                                        className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-12 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#3B82F6]"
                                                         placeholder={isSignUp ? "user@company.com" : "username or user@company.com"}
                                                     />
                                                 </div>
@@ -490,10 +491,10 @@ export const Login: React.FC = () => {
                                                 <div className="flex justify-between items-center mb-2">
                                                     <label className="block text-xs font-bold uppercase tracking-widest text-slate-500">Password</label>
                                                     {!isSignUp && (
-                                                        <button type="button" onClick={handleForgotPassword} disabled={loading} className="text-xs text-[#0a84ff] hover:text-blue-600 font-medium transition-colors focus:outline-none disabled:opacity-50">Forgot Password?</button>
+                                                        <button type="button" onClick={handleForgotPassword} disabled={loading} className="text-xs text-[#3B82F6] hover:text-blue-600 font-medium transition-colors focus:outline-none disabled:opacity-50">Forgot Password?</button>
                                                     )}
                                                 </div>
-                                                <div className="relative"><Lock className="absolute left-4 top-3.5 w-5 h-5 text-slate-400" /><input type={showPassword ? 'text' : 'password'} required value={password} onChange={e => setPassword(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-12 pr-12 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#0a84ff]" placeholder="••••••••" /><button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">{showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}</button></div>
+                                                <div className="relative"><Lock className="absolute left-4 top-3.5 w-5 h-5 text-slate-400" /><input type={showPassword ? 'text' : 'password'} required value={password} onChange={e => setPassword(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-12 pr-12 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#3B82F6]" placeholder="••••••••" /><button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">{showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}</button></div>
                                             </div>
                                             {isSignUp && loginMode === 'carrier' && (
                                                 <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 text-center mb-4">
@@ -515,7 +516,7 @@ export const Login: React.FC = () => {
                                 </div>
 
                                 <div className="mt-auto pt-6">
-                                    <button type="submit" disabled={loading} className="w-full bg-[#0a84ff] hover:bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                                    <button type="submit" disabled={loading} className="w-full bg-[#3B82F6] hover:bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2">
                                         {loading ? 'Processing...' : <><ArrowRight className="w-5 h-5" /> {isSignUp ? 'Create Account' : loginMode === 'driver' ? 'Find Driver' : 'Sign In'}</>}
                                     </button>
 
@@ -523,7 +524,7 @@ export const Login: React.FC = () => {
                                         <button
                                             type="button"
                                             onClick={() => { setIsSignUp(!isSignUp); setError(''); setSignupFacilityId(''); setSignupCarrierId(''); }}
-                                            className="w-full mt-3 text-sm text-slate-500 hover:text-[#0a84ff] font-medium"
+                                            className="w-full mt-3 text-sm text-slate-500 hover:text-[#3B82F6] font-medium"
                                         >
                                             {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
                                         </button>

@@ -203,7 +203,7 @@ export const CalendarView: React.FC = () => {
                 </div>
                 <div className="grid grid-cols-7 mb-2">{WEEK_DAYS_SHORT_LIST.map(d => <div key={d} className="text-center text-[10px] font-bold text-slate-400 py-1 uppercase">{d}</div>)}</div>
                 <div className="grid grid-cols-7 gap-1">{calendarGrid.map((item, idx) => (
-                  <button key={idx} onClick={() => selectDate(item.date)} className={`h-8 w-8 rounded-full flex items-center justify-center text-xs transition-all ${!item.isCurrentMonth ? 'text-slate-300' : 'text-slate-600 hover:bg-slate-100'} ${isSameDay(item.date, selectedDate) ? '!bg-[#0a84ff] !text-white font-bold shadow-lg' : ''}`}>{item.day}</button>
+                  <button key={idx} onClick={() => selectDate(item.date)} className={`h-8 w-8 rounded-full flex items-center justify-center text-xs transition-all ${!item.isCurrentMonth ? 'text-slate-300' : 'text-slate-600 hover:bg-slate-100'} ${isSameDay(item.date, selectedDate) ? '!bg-[#3B82F6] !text-white font-bold shadow-lg' : ''}`}>{item.day}</button>
                 ))}</div>
                 <div className="mt-3 pt-3 border-t flex justify-center"><button onClick={jumpToToday} className="text-xs text-blue-600 font-medium">Jump to Today</button></div>
               </div>

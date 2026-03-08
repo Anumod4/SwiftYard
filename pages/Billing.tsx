@@ -184,7 +184,7 @@ export const Billing: React.FC = () => {
                     <button
                         onClick={handleExportPDF}
                         disabled={filteredRecords.length === 0}
-                        className="bg-[#0a84ff] hover:bg-blue-600 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white px-6 py-2 rounded-xl flex items-center shadow-lg shadow-blue-500/30 transition-all font-medium whitespace-nowrap"
+                        className="bg-[#3B82F6] hover:bg-blue-600 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white px-6 py-2 rounded-xl flex items-center shadow-lg shadow-blue-500/30 transition-all font-medium whitespace-nowrap"
                     >
                         <Download className="w-4 h-4 mr-2" />
                         Export PDF

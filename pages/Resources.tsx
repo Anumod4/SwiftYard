@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useData } from '../contexts/DataContext';
 import { GlassCard } from '../components/ui/GlassCard';
 import { Resource, UnavailabilityPeriod } from '../types';
-import { Plus, Edit2, Trash2, Warehouse, Container, Clock, AlertTriangle, X, RefreshCcw, Settings2, ShieldCheck, ShieldAlert, Check, Briefcase, Truck, ListPlus, ArrowRightFromLine, ArrowLeftToLine, ArrowRightLeft, Users } from 'lucide-react';
+import { Plus, Edit2, Trash2, Warehouse, Container, Clock, AlertTriangle, X, RefreshCcw, Settings2, ShieldCheck, ShieldAlert, Check, Briefcase, Truck, ListPlus, ArrowRightFromLine, ArrowLeftToLine, ArrowRightLeft, Users, Search, ChevronDown } from 'lucide-react';
 import { ModalPortal } from '../components/ui/ModalPortal';
 import { Pagination } from '../components/ui/Pagination';
 import { BulkCreatorModal, BulkColumn } from '../components/BulkCreatorModal';
@@ -221,102 +221,99 @@ export const Resources: React.FC = () => {
   }
 
   return (
-    <div className="p-8 h-full flex flex-col animate-in fade-in duration-500">
-      <div className="flex justify-between items-start mb-8">
+    <div className="p-8 h-full flex flex-col animate-in fade-in duration-700">
+      <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-10">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">{t('res.title')}</h1>
-          <p className="text-slate-500 dark:text-gray-400">{t('res.subtitle')}</p>
+          <h1 className="text-4xl font-black text-foreground mb-2 tracking-tighter">{t('res.title')}</h1>
+          <p className="text-muted text-lg opacity-70 font-medium">{t('res.subtitle')}</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-4 items-end">
           {canEditResources && (
-            <>
+            <div className="flex gap-4">
               <button
                 type="button"
                 onClick={handleManagementToggle}
-                className={`px-5 py-3 rounded-xl flex items-center gap-3 font-black uppercase tracking-tighter transition-all border-2 ${isManageMode
-                  ? 'bg-red-600 border-red-700 text-white shadow-xl shadow-red-500/40 scale-105'
-                  : 'bg-slate-200 dark:bg-white/10 border-slate-300 dark:border-white/10 text-slate-600 dark:text-gray-300 hover:bg-slate-300 dark:hover:bg-white/20'
+                className={`px-6 py-4 rounded-[1.25rem] flex items-center gap-3 font-black uppercase tracking-widest text-[10px] transition-all border-2 ${isManageMode
+                  ? 'bg-red-500 border-red-500 text-white shadow-xl shadow-red-500/30'
+                  : 'bg-surface border-border text-muted hover:bg-muted/5'
                   }`}
               >
-                {isManageMode ? <ShieldAlert className="w-5 h-5 animate-pulse" /> : <ShieldCheck className="w-5 h-5" />}
+                {isManageMode ? <ShieldAlert className="w-5 h-5 animate-pulse" /> : <ShieldCheck className="w-5 h-5 text-primary" />}
                 {isManageMode ? t('res.modeExit') : t('res.modeEnter')}
               </button>
 
               <button
                 type="button"
                 onClick={() => setIsBulkOpen(true)}
-                className="bg-slate-800 dark:bg-white/20 hover:bg-slate-700 dark:hover:bg-white/30 text-white px-4 py-3 rounded-xl flex items-center shadow-lg transition-all active:scale-95 font-bold"
+                className="bg-surface border border-border hover:bg-muted/5 text-foreground px-6 py-4 rounded-[1.25rem] flex items-center shadow-lg transition-all active:scale-95 font-bold"
                 title="Bulk Create"
               >
-                <ListPlus className="w-5 h-5" />
+                <ListPlus className="w-5 h-5 mr-1 text-primary" />
               </button>
 
               <button
                 type="button"
                 onClick={() => handleOpenModal()}
-                className="bg-[#0a84ff] hover:bg-blue-600 text-white px-6 py-3 rounded-xl flex items-center shadow-lg shadow-blue-500/30 transition-all active:scale-95 font-bold"
+                className="bg-primary hover:bg-blue-600 text-white px-8 py-4 rounded-[1.25rem] flex items-center shadow-xl shadow-primary/20 transition-all active:scale-95 font-black uppercase tracking-widest text-xs whitespace-nowrap"
               >
                 <Plus className="w-5 h-5 mr-2" />
                 {activeTab === 'Dock' ? t('res.addDock') : t('res.addSlot')}
               </button>
-            </>
+            </div>
           )}
         </div>
       </div>
 
-      <div className="flex gap-4 mb-10">
+      <div className="flex bg-muted/5 p-1.5 rounded-[1.5rem] mb-10 max-w-2xl">
         <button
           onClick={() => { setActiveTab('Dock'); }}
-          className={`flex-1 py-4 rounded-2xl flex items-center justify-center gap-3 transition-all border-2 ${activeTab === 'Dock' ? 'bg-white dark:bg-white/10 border-blue-500 shadow-xl' : 'bg-transparent border-transparent text-slate-500 dark:text-gray-500 hover:bg-slate-100 dark:hover:bg-white/5'}`}
+          className={`flex-1 py-4 rounded-[1.125rem] flex items-center justify-center gap-3 transition-all ${activeTab === 'Dock' ? 'bg-surface text-primary shadow-xl ring-1 ring-border' : 'text-muted hover:text-foreground'}`}
         >
-          <Warehouse className={`w-6 h-6 ${activeTab === 'Dock' ? 'text-blue-500' : ''}`} />
-          <span className="font-black text-lg uppercase tracking-tight">{t('res.docks')}</span>
+          <Warehouse className={`w-6 h-6 ${activeTab === 'Dock' ? 'text-primary' : 'text-muted/40'}`} />
+          <span className="font-black text-lg tracking-tighter uppercase">{t('res.docks')}</span>
         </button>
         <button
           onClick={() => { setActiveTab('YardSlot'); }}
-          className={`flex-1 py-4 rounded-2xl flex items-center justify-center gap-3 transition-all border-2 ${activeTab === 'YardSlot' ? 'bg-white dark:bg-white/10 border-emerald-500 shadow-xl' : 'bg-transparent border-transparent text-slate-500 dark:text-gray-500 hover:bg-slate-100 dark:hover:bg-white/5'}`}
+          className={`flex-1 py-4 rounded-[1.125rem] flex items-center justify-center gap-3 transition-all ${activeTab === 'YardSlot' ? 'bg-surface text-emerald-500 shadow-xl ring-1 ring-border' : 'text-muted hover:text-foreground'}`}
         >
-          <Container className={`w-6 h-6 ${activeTab === 'YardSlot' ? 'text-emerald-500' : ''}`} />
-          <span className="font-black text-lg uppercase tracking-tight">{t('res.slots')}</span>
+          <Container className={`w-6 h-6 ${activeTab === 'YardSlot' ? 'text-emerald-500' : 'text-muted/40'}`} />
+          <span className="font-black text-lg tracking-tighter uppercase">{t('res.slots')}</span>
         </button>
       </div>
 
-      <GlassCard className="mb-6 p-4 !overflow-visible z-50">
-        <div className="flex flex-col md:flex-row gap-4 mb-2">
-          {/* General Search */}
-          <div className="relative flex-1">
+      <GlassCard className="mb-8 p-6 !overflow-visible z-50 rounded-[2.5rem] border-none shadow-xl">
+        <div className="flex flex-col md:flex-row gap-6">
+          <div className="relative flex-1 group">
+            <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted transition-colors group-focus-within:text-primary" />
             <input
               type="text"
-              placeholder="Search resources by name..."
+              placeholder="Search by resource name..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg pl-4 pr-10 py-2.5 text-sm text-slate-900 dark:text-white focus:border-blue-500 outline-none"
+              className="w-full bg-muted/5 border border-border rounded-[1.25rem] pl-14 pr-6 py-4 text-sm text-foreground focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all font-bold"
             />
-            {searchTerm && (
-              <button onClick={() => setSearchTerm('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-white">
-                <X className="w-4 h-4" />
-              </button>
-            )}
           </div>
 
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-widest hidden md:inline-block">Sort by</span>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
-              className="bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:border-blue-500 outline-none cursor-pointer"
-            >
-              <option value="name">Name</option>
-              <option value="status">Status</option>
-              {activeTab === 'YardSlot' && <option value="capacity">Capacity</option>}
-            </select>
+          <div className="flex items-center gap-4">
+            <div className="relative group">
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+                className="bg-muted/5 border border-border rounded-[1.25rem] px-6 py-4 text-sm text-foreground focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none cursor-pointer font-bold transition-all appearance-none pr-12"
+              >
+                <option value="name">Sort by Name</option>
+                <option value="status">Sort by Status</option>
+                {activeTab === 'YardSlot' && <option value="capacity">Sort by Capacity</option>}
+              </select>
+              <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted pointer-events-none" />
+            </div>
 
             <button
               onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
-              className="p-2.5 bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg text-slate-600 dark:text-gray-300 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors"
+              className="p-4 bg-muted/5 hover:bg-muted/10 border border-border rounded-[1.25rem] text-muted transition-all active:scale-90"
               title={`Sort ${sortOrder === 'asc' ? 'Descending' : 'Ascending'}`}
             >
-              <ArrowRightFromLine className={`w-4 h-4 transition-transform ${sortOrder === 'desc' ? 'rotate-90' : '-rotate-90'}`} />
+              <ArrowRightFromLine className={`w-5 h-5 transition-transform duration-300 ${sortOrder === 'desc' ? 'rotate-90 text-primary' : '-rotate-90 text-primary'}`} />
             </button>
           </div>
         </div>
@@ -359,20 +356,23 @@ export const Resources: React.FC = () => {
 
             <GlassCard
               onClick={() => !isManageMode && handleOpenModal(item)}
-              className={`flex flex-col h-full overflow-hidden p-0 transition-all duration-300 ${isManageMode ? 'ring-4 ring-red-500/10 scale-95 opacity-80 cursor-default grayscale-[0.2]' : 'hover:scale-[1.02] cursor-pointer'
+              className={`flex flex-col h-full overflow-hidden p-0 transition-all duration-500 rounded-[2.5rem] border-none shadow-xl ${isManageMode ? 'ring-4 ring-red-500/10 scale-95 opacity-80 cursor-default grayscale-[0.2]' : 'hover:scale-[1.03] hover:shadow-2xl cursor-pointer border-l-4 border-l-transparent hover:border-l-primary'
                 }`}
             >
-              <div className="p-6 flex-1 flex flex-col">
-                <div className="flex justify-between items-start mb-6">
-                  <h3 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-4">
-                    <div className={`p-3 rounded-2xl ${item.type === 'Dock' ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400' : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'}`}>
-                      {item.type === 'Dock' ? <Warehouse className="w-6 h-6" /> : <Container className="w-6 h-6" />}
+              <div className="p-8 flex-1 flex flex-col">
+                <div className="flex justify-between items-start mb-8">
+                  <div className="flex items-center gap-5">
+                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 ${item.type === 'Dock' ? 'bg-primary/10 text-primary' : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'}`}>
+                      {item.type === 'Dock' ? <Warehouse className="w-7 h-7" /> : <Container className="w-7 h-7" />}
                     </div>
-                    {item.name}
-                  </h3>
-                  <div className={`px-3 py-1.5 text-[10px] rounded-full border-2 font-black uppercase tracking-widest ${item.status === 'Available' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-500' :
-                    item.status === 'Unavailable' ? 'bg-orange-500/10 border-orange-500/20 text-orange-600 dark:text-orange-500' :
-                      'bg-blue-500/10 border-blue-500/20 text-blue-600 dark:text-blue-400'
+                    <div>
+                      <h3 className="text-2xl font-black text-foreground tracking-tighter leading-tight">{item.name}</h3>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-muted opacity-60">Location Unit</p>
+                    </div>
+                  </div>
+                  <div className={`px-4 py-2 text-[10px] rounded-2xl border-2 font-black uppercase tracking-[0.2em] shadow-sm ${item.status === 'Available' ? 'bg-emerald-500/5 border-emerald-500/10 text-emerald-600 dark:text-emerald-400' :
+                    item.status === 'Unavailable' ? 'bg-orange-500/5 border-orange-500/10 text-orange-600 dark:text-orange-400' :
+                      'bg-primary/5 border-primary/10 text-primary'
                     }`}>
                     {item.status}
                   </div>
@@ -382,48 +382,50 @@ export const Resources: React.FC = () => {
 
                   {/* Operation Mode */}
                   {item.type === 'Dock' && (
-                    <div>
-                      <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400 dark:text-gray-500 font-black mb-2">Operation Mode</p>
-                      <div className="flex items-center gap-2">
-                        {(!item.operationMode || item.operationMode === 'Both') && <ArrowRightLeft className="w-4 h-4 text-purple-500" />}
-                        {item.operationMode === 'Inbound' && <ArrowRightFromLine className="w-4 h-4 text-emerald-500" />}
-                        {item.operationMode === 'Outbound' && <ArrowLeftToLine className="w-4 h-4 text-blue-500" />}
-                        <span className="text-sm font-bold text-slate-700 dark:text-gray-300">{item.operationMode || 'Both (In & Out)'}</span>
+                    <div className="p-4 rounded-2xl bg-muted/5 border border-border/50">
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-3">Operation Mode</p>
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-surface shadow-sm">
+                          {(!item.operationMode || item.operationMode === 'Both') && <ArrowRightLeft className="w-4 h-4 text-purple-500" />}
+                          {item.operationMode === 'Inbound' && <ArrowRightFromLine className="w-4 h-4 text-emerald-500" />}
+                          {item.operationMode === 'Outbound' && <ArrowLeftToLine className="w-4 h-4 text-blue-500" />}
+                        </div>
+                        <span className="text-sm font-black text-foreground tracking-tight">{item.operationMode || 'Both (In & Out)'}</span>
                       </div>
                     </div>
                   )}
 
                   {/* Yard Capacity */}
                   {item.type === 'YardSlot' && (
-                    <div>
-                      <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400 dark:text-gray-500 font-black mb-2">Capacity</p>
-                      <div className="flex items-center gap-2">
-                        <Users className="w-4 h-4 text-emerald-500" />
-                        <span className="text-sm font-bold text-slate-700 dark:text-gray-300">Max {item.capacity || 1} Trailers</span>
+                    <div className="p-4 rounded-2xl bg-muted/5 border border-border/50">
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-3">Capacity</p>
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-surface shadow-sm text-emerald-500">
+                          <Users className="w-4 h-4" />
+                        </div>
+                        <span className="text-sm font-black text-foreground tracking-tight">Max {item.capacity || 1} Trailers</span>
                       </div>
                     </div>
                   )}
 
                   <div>
-                    <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400 dark:text-gray-500 font-black mb-3">{t('res.capabilities')}</p>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-4 px-1">{t('res.capabilities')}</p>
                     <div className="flex flex-wrap gap-2">
                       {(item.allowedTrailerTypes || []).map(t => (
-                        <span key={t} className="text-[11px] px-3 py-1.5 bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-200 rounded-xl border border-slate-200 dark:border-white/10 font-black">{t}</span>
+                        <span key={t} className="text-[11px] px-4 py-2 bg-muted/5 text-foreground rounded-xl border border-border/50 font-black shadow-sm">{t}</span>
                       ))}
-                      {(!item.allowedTrailerTypes || item.allowedTrailerTypes.length === 0) && <span className="text-xs text-slate-400 dark:text-gray-600 italic font-medium">{t('res.universal')}</span>}
+                      {(!item.allowedTrailerTypes || item.allowedTrailerTypes.length === 0) && <span className="text-[10px] text-muted/30 italic px-1 font-black uppercase tracking-widest">{t('res.universal')}</span>}
                     </div>
                   </div>
 
                   {item.allowedCarrierIds && item.allowedCarrierIds.length > 0 && (
                     <div>
-                      <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400 dark:text-gray-500 font-black mb-3">Allowed Carriers</p>
-                      <div className="flex flex-wrap gap-2 max-h-64 overflow-y-auto custom-scrollbar p-1">
-                        {carriers.length === 0 && <span className="text-sm text-slate-500 italic">No carriers defined.</span>}
-                        {carriers.map(c => {
-                          const isSelected = allowedCarrierIds.includes(c.id);
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-4 px-1">Restricted To</p>
+                      <div className="flex flex-wrap gap-2">
+                        {carriers.filter(c => item.allowedCarrierIds?.includes(c.id)).map(c => {
                           return (
-                            <span key={c.id} className="text-[10px] px-3 py-1.5 bg-purple-100 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 rounded-xl border border-purple-200 dark:border-purple-500/20 font-black">
-                              {c.name.substring(0, 10)}
+                            <span key={c.id} className="text-[10px] px-4 py-2 bg-primary/5 text-primary rounded-xl border border-primary/10 font-black shadow-sm">
+                              {c.name.length > 15 ? c.name.substring(0, 15) + '...' : c.name}
                             </span>
                           );
                         })}
@@ -435,10 +437,9 @@ export const Resources: React.FC = () => {
               </div>
 
               {!isManageMode && canEditResources && (
-                <div className="bg-slate-50 dark:bg-white/5 py-3 px-6 border-t border-slate-200 dark:border-white/5 flex items-center justify-center text-[11px] font-bold text-slate-400 dark:text-gray-500 group transition-colors">
-                  <div className="flex items-center gap-2 group-hover:text-blue-500">
-                    <Edit2 className="w-3.5 h-3.5" /> {t('res.configure')}
-                  </div>
+                <div className="bg-muted/5 py-4 px-8 border-t border-border/50 flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-muted group-hover:text-primary transition-colors">
+                  <span>Configure {activeTab}</span>
+                  <Edit2 className="w-4 h-4" />
                 </div>
               )}
             </GlassCard>
@@ -457,46 +458,49 @@ export const Resources: React.FC = () => {
       {isModalOpen && (
         <ModalPortal>
           <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/70 backdrop-blur-md p-4 animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-[#1e1e1e] w-full max-w-4xl rounded-[2.5rem] border-2 border-slate-200 dark:border-white/10 p-10 max-h-[90vh] overflow-y-auto custom-scrollbar flex flex-col shadow-2xl relative">
-              <div className="flex justify-between items-center mb-8">
-                <div className="flex items-center gap-5">
-                  <div className="p-4 bg-blue-500/10 rounded-3xl">
-                    <Settings2 className="w-8 h-8 text-blue-500" />
+            <div className="bg-surface w-full max-w-5xl rounded-[3rem] border border-border p-12 max-h-[90vh] overflow-y-auto custom-scrollbar flex flex-col shadow-2xl relative">
+              <div className="flex justify-between items-center mb-10">
+                <div className="flex items-center gap-6">
+                  <div className="w-20 h-20 bg-primary/10 rounded-[2.5rem] flex items-center justify-center">
+                    <Settings2 className="w-10 h-10 text-primary" />
                   </div>
                   <div>
-                    <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{canEditResources ? (editingResource ? t('res.modalEdit') : t('res.modalNew')) : 'View'} {activeTab}</h2>
-                    <p className="text-sm text-slate-500 dark:text-gray-400 font-medium">{t('res.modalSubtitle')}</p>
+                    <h2 className="text-4xl font-black text-foreground tracking-tighter">{canEditResources ? (editingResource ? t('res.modalEdit') : t('res.modalNew')) : 'View'} {activeTab}</h2>
+                    <p className="text-lg text-muted font-medium opacity-60">{t('res.modalSubtitle')}</p>
                   </div>
                 </div>
-                <button onClick={() => setIsModalOpen(false)} className="p-3 hover:bg-slate-100 dark:hover:bg-white/10 rounded-full transition-colors"><X className="w-7 h-7 text-slate-500 dark:text-gray-400" /></button>
+                <button onClick={() => setIsModalOpen(false)} className="w-14 h-14 hover:bg-muted/10 rounded-2xl flex items-center justify-center transition-all group"><X className="w-8 h-8 text-muted group-hover:text-foreground" /></button>
               </div>
 
-              <form onSubmit={handleSave} className="space-y-8">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <form onSubmit={handleSave} className="space-y-10">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                   <div className="col-span-1 md:col-span-3">
-                    <label className="block text-xs font-black uppercase tracking-[0.2em] text-slate-500 dark:text-gray-400 mb-3">{t('res.identifier')} *</label>
-                    <input disabled={!canEditResources} required value={name} onChange={e => setName(e.target.value)} className={`w-full bg-slate-100 dark:bg-black/40 border-2 border-transparent focus:border-blue-500 rounded-2xl p-4 text-xl font-bold text-slate-900 dark:text-white focus:outline-none transition-all ${!canEditResources && 'opacity-60 cursor-not-allowed'}`} placeholder="e.g. Row A - Lane 1" />
+                    <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-3 px-1">{t('res.identifier')} *</label>
+                    <input disabled={!canEditResources} required value={name} onChange={e => setName(e.target.value)} className={`w-full bg-muted/5 border border-border focus:ring-4 focus:ring-primary/10 focus:border-primary rounded-2xl p-6 text-2xl font-black tracking-tighter text-foreground focus:outline-none transition-all ${!canEditResources && 'opacity-60 cursor-not-allowed'}`} placeholder="e.g. Row A - Lane 1" />
                   </div>
                   <div>
-                    <label className="block text-xs font-black uppercase tracking-[0.2em] text-slate-500 dark:text-gray-400 mb-3">{t('res.defaultStatus')} *</label>
-                    <select disabled={!canEditResources} value={status} onChange={e => setStatus(e.target.value)} className={`w-full bg-slate-100 dark:bg-black/40 border-2 border-transparent focus:border-blue-500 rounded-2xl p-4 text-slate-900 dark:text-white focus:outline-none appearance-none font-bold ${!canEditResources && 'opacity-60 cursor-not-allowed'}`}>
-                      <option value="Available">{t('res.statusAvail')}</option>
-                      <option value="Unavailable">{t('res.statusUnavail')}</option>
-                    </select>
+                    <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-3 px-1">{t('res.defaultStatus')} *</label>
+                    <div className="relative group">
+                      <select disabled={!canEditResources} value={status} onChange={e => setStatus(e.target.value)} className={`w-full bg-muted/5 border border-border focus:ring-4 focus:ring-primary/10 focus:border-primary rounded-2xl p-5 text-foreground focus:outline-none appearance-none font-bold pr-12 ${!canEditResources && 'opacity-60 cursor-not-allowed'}`}>
+                        <option value="Available">{t('res.statusAvail')}</option>
+                        <option value="Unavailable">{t('res.statusUnavail')}</option>
+                      </select>
+                      <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted pointer-events-none" />
+                    </div>
                   </div>
 
                   {activeTab === 'YardSlot' && (
                     <div>
-                      <label className="block text-xs font-black uppercase tracking-[0.2em] text-slate-500 dark:text-gray-400 mb-3">Capacity</label>
+                      <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-3 px-1">Capacity</label>
                       <div className="relative">
-                        <Users className="absolute left-4 top-4 w-5 h-5 text-slate-400" />
+                        <Users className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
                         <input
                           disabled={!canEditResources}
                           type="number"
                           min="1"
                           value={capacity}
                           onChange={e => setCapacity(parseInt(e.target.value))}
-                          className={`w-full bg-slate-100 dark:bg-black/40 border-2 border-transparent focus:border-blue-500 rounded-2xl pl-12 pr-4 py-4 text-slate-900 dark:text-white focus:outline-none font-bold ${!canEditResources && 'opacity-60 cursor-not-allowed'}`}
+                          className={`w-full bg-muted/5 border border-border focus:ring-4 focus:ring-primary/10 focus:border-primary rounded-2xl pl-14 pr-6 py-5 text-foreground focus:outline-none font-bold ${!canEditResources && 'opacity-60 cursor-not-allowed'}`}
                         />
                       </div>
                     </div>
@@ -504,26 +508,26 @@ export const Resources: React.FC = () => {
 
                   {activeTab === 'Dock' && (
                     <div className="col-span-2">
-                      <label className="block text-xs font-black uppercase tracking-[0.2em] text-slate-500 dark:text-gray-400 mb-3">Operation Mode</label>
-                      <div className={`flex bg-slate-100 dark:bg-black/40 rounded-2xl p-1 ${!canEditResources && 'opacity-60 cursor-not-allowed pointer-events-none'}`}>
+                      <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-3 px-1">Operation Mode</label>
+                      <div className={`flex bg-muted/5 rounded-[1.25rem] p-1.5 border border-border ${!canEditResources && 'opacity-60 cursor-not-allowed pointer-events-none'}`}>
                         <button
                           type="button"
                           onClick={() => setOperationMode('Inbound')}
-                          className={`flex-1 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all ${operationMode === 'Inbound' ? 'bg-emerald-500 text-white shadow-md' : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white'}`}
+                          className={`flex-1 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${operationMode === 'Inbound' ? 'bg-emerald-500 text-white shadow-xl shadow-emerald-500/20' : 'text-muted hover:text-foreground hover:bg-muted/5'}`}
                         >
                           <ArrowRightFromLine className="w-4 h-4" /> Inbound
                         </button>
                         <button
                           type="button"
                           onClick={() => setOperationMode('Outbound')}
-                          className={`flex-1 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all ${operationMode === 'Outbound' ? 'bg-blue-500 text-white shadow-md' : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white'}`}
+                          className={`flex-1 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${operationMode === 'Outbound' ? 'bg-primary text-white shadow-xl shadow-primary/20' : 'text-muted hover:text-foreground hover:bg-muted/5'}`}
                         >
                           <ArrowLeftToLine className="w-4 h-4" /> Outbound
                         </button>
                         <button
                           type="button"
                           onClick={() => setOperationMode('Both')}
-                          className={`flex-1 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all ${operationMode === 'Both' ? 'bg-purple-500 text-white shadow-md' : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white'}`}
+                          className={`flex-1 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${operationMode === 'Both' ? 'bg-purple-500 text-white shadow-xl shadow-purple-500/20' : 'text-muted hover:text-foreground hover:bg-muted/5'}`}
                         >
                           <ArrowRightLeft className="w-4 h-4" /> Both
                         </button>
@@ -532,10 +536,10 @@ export const Resources: React.FC = () => {
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-4">
                   <div>
-                    <label className="block text-xs font-black uppercase tracking-[0.2em] text-slate-500 dark:text-gray-400 mb-4">{t('res.equipTypes')}</label>
-                    <div className={`flex flex-wrap gap-2 ${!canEditResources && 'opacity-60 pointer-events-none'}`}>
+                    <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-5 px-1">{t('res.equipTypes')}</label>
+                    <div className={`flex flex-wrap gap-3 ${!canEditResources && 'opacity-60 pointer-events-none'}`}>
                       {trailerTypes.map(def => {
                         const type = def.name;
                         const isSelected = allowedTrailerTypes.includes(type);
@@ -545,27 +549,27 @@ export const Resources: React.FC = () => {
                             key={type}
                             type="button"
                             onClick={() => toggleTrailerType(type)}
-                            className={`px-4 py-3 rounded-xl border font-bold transition-all text-sm flex items-center gap-2
+                            className={`px-5 py-3 rounded-2xl border font-black uppercase tracking-widest text-[10px] transition-all flex items-center gap-2
                                       ${isSelected
-                                ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/20'
-                                : 'bg-slate-100 dark:bg-white/5 border-transparent text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/10'
+                                ? 'bg-primary text-white border-primary shadow-lg shadow-primary/30'
+                                : 'bg-muted/5 border-border text-foreground hover:bg-muted/10'
                               }`}
                           >
-                            {isSelected && <Check className="w-4 h-4" />}
+                            {isSelected ? <Check className="w-4 h-4" /> : <Truck className="w-4 h-4 opacity-30" />}
                             {type}
                           </button>
                         );
                       })}
+                      {trailerTypes.length === 0 && <span className="text-xs text-muted/30 italic">No equipment types defined.</span>}
                     </div>
-                    <p className="text-[10px] text-slate-400 mt-2 italic">
-                      * Leaving all unselected implies universal access (any type).
+                    <p className="text-[10px] text-muted opacity-40 mt-4 italic font-medium px-1">
+                      * Empty selection allows all equipment.
                     </p>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-black uppercase tracking-[0.2em] text-slate-500 dark:text-gray-400 mb-4">Allowed Carriers</label>
-                    <div className={`flex flex-wrap gap-2 max-h-64 overflow-y-auto custom-scrollbar p-1 ${!canEditResources && 'opacity-60 pointer-events-none'}`}>
-                      {carriers.length === 0 && <span className="text-sm text-slate-500 italic">No carriers defined.</span>}
+                    <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-5 px-1">Allowed Carriers</label>
+                    <div className={`flex flex-wrap gap-3 max-h-64 overflow-y-auto custom-scrollbar p-1 ${!canEditResources && 'opacity-60 pointer-events-none'}`}>
                       {carriers.map(c => {
                         const isSelected = allowedCarrierIds.includes(c.id);
                         return (
@@ -573,29 +577,30 @@ export const Resources: React.FC = () => {
                             key={c.id}
                             type="button"
                             onClick={() => toggleCarrier(c.id)}
-                            className={`px-3 py-2 rounded-xl border text-sm font-bold transition-all flex items-center gap-2
+                            className={`px-5 py-3 rounded-2xl border text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2
                                             ${isSelected
-                                ? 'bg-purple-600 text-white border-purple-600 shadow-md shadow-purple-500/20'
-                                : 'bg-slate-100 dark:bg-white/5 border-transparent text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/10'
+                                ? 'bg-purple-600 text-white border-purple-600 shadow-lg shadow-purple-500/30'
+                                : 'bg-muted/5 border-border text-foreground hover:bg-muted/10'
                               }`}
                           >
-                            {isSelected && <Briefcase className="w-3 h-3" />}
+                            {isSelected ? <Check className="w-4 h-4" /> : <Briefcase className="w-4 h-4 opacity-30" />}
                             {c.name}
                           </button>
                         );
                       })}
+                      {carriers.length === 0 && <span className="text-xs text-muted/30 italic px-1">No carriers defined.</span>}
                     </div>
-                    <p className="text-[10px] text-slate-400 mt-2 italic">
-                      * Leaving all unselected implies universal access (any carrier).
+                    <p className="text-[10px] text-muted opacity-40 mt-4 italic font-medium px-1">
+                      * Empty selection allows all organizations.
                     </p>
                   </div>
                 </div>
 
-                <div className="flex justify-end gap-5 pt-8 border-t border-slate-200 dark:border-white/10">
-                  <button type="button" onClick={() => setIsModalOpen(false)} className="px-8 py-3 text-sm font-bold text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white transition-colors">{canEditResources ? t('common.dismiss') : 'Close'}</button>
+                <div className="flex justify-end gap-6 pt-10 border-t border-border/50">
+                  <button type="button" onClick={() => setIsModalOpen(false)} className="px-10 py-5 text-xs font-black uppercase tracking-widest text-muted hover:text-foreground transition-colors">{canEditResources ? t('common.dismiss') : 'Close'}</button>
                   {canEditResources && (
-                    <button type="submit" className="px-10 py-4 bg-[#0a84ff] hover:bg-blue-600 rounded-2xl font-black text-white shadow-xl shadow-blue-500/30 transition-all active:scale-95">
-                      {editingResource ? t('res.apply') : t('res.deploy')}
+                    <button type="submit" className="px-16 py-5 bg-primary hover:bg-blue-600 rounded-3xl font-black uppercase tracking-widest text-xs text-white shadow-2xl shadow-primary/30 transition-all active:scale-95">
+                      {editingResource ? 'Update Location' : 'Deploy Location'}
                     </button>
                   )}
                 </div>

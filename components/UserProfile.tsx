@@ -161,7 +161,7 @@ export const UserProfile: React.FC = () => {
                                             <button
                                                 type="button"
                                                 onClick={toggleTheme}
-                                                className={`w-12 h-6 rounded-full relative transition-colors duration-200 ${theme === 'dark' ? 'bg-[#0a84ff]' : 'bg-slate-300'}`}
+                                                className={`w-12 h-6 rounded-full relative transition-colors duration-200 ${theme === 'dark' ? 'bg-[#3B82F6]' : 'bg-slate-300'}`}
                                             >
                                                 <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${theme === 'dark' ? 'translate-x-6' : ''}`} />
                                             </button>
@@ -170,7 +170,7 @@ export const UserProfile: React.FC = () => {
                                 </div>
                                 <div className="flex gap-3 pt-2">
                                     <button type="button" onClick={() => setIsEditModalOpen(false)} className="flex-1 py-3.5 rounded-xl font-bold text-slate-500 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors">Cancel</button>
-                                    <button type="submit" disabled={loading} className="flex-1 bg-[#0a84ff] hover:bg-blue-600 text-white py-3.5 rounded-xl font-bold shadow-lg shadow-blue-500/20 active:scale-[0.98] transition-all disabled:opacity-70 disabled:cursor-not-allowed">{loading ? 'Saving...' : 'Save Changes'}</button>
+                                    <button type="submit" disabled={loading} className="flex-1 bg-[#3B82F6] hover:bg-blue-600 text-white py-3.5 rounded-xl font-bold shadow-lg shadow-blue-500/20 active:scale-[0.98] transition-all disabled:opacity-70 disabled:cursor-not-allowed">{loading ? 'Saving...' : 'Save Changes'}</button>
                                 </div>
                             </form>
                         </div>

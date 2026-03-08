@@ -76,7 +76,7 @@ export const CarrierDashboard: React.FC<CarrierDashboardProps> = ({
     }, [activeAppointments, pastAppointments, allAppointments]);
 
     const pieData = [
-        { name: 'Inbound', value: metrics.inboundCount || 0, color: '#0a84ff' },
+        { name: 'Inbound', value: metrics.inboundCount || 0, color: '#3B82F6' },
         { name: 'Outbound', value: metrics.outboundCount || 0, color: '#10b981' },
     ];
 
@@ -101,7 +101,7 @@ export const CarrierDashboard: React.FC<CarrierDashboardProps> = ({
 
             {metrics.rescheduleSuggestions > 0 && (
                 <div
-                    className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-[2rem] flex items-center justify-between cursor-pointer hover:bg-blue-500/15 transition-all group animate-pulse"
+                    className="p-4 bg-[#3B82F6]/10 border border-[#3B82F6]/20 rounded-[2rem] flex items-center justify-between cursor-pointer hover:bg-[#3B82F6]/15 transition-all group animate-pulse"
                     onClick={() => {
                         // Find the first one and open it
                         const firstSuggestion = activeAppointments.find(a => a.acknowledgementStatus === 'RescheduleSuggested');
@@ -112,15 +112,15 @@ export const CarrierDashboard: React.FC<CarrierDashboardProps> = ({
                     }}
                 >
                     <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-2xl bg-blue-500 flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
+                        <div className="w-12 h-12 rounded-2xl bg-[#3B82F6] flex items-center justify-center text-white shadow-lg shadow-[#3B82F6]/30">
                             <Clock className="w-6 h-6" />
                         </div>
                         <div>
-                            <h4 className="text-lg font-black text-blue-600 dark:text-blue-400 leading-none">Reschedule Suggestions</h4>
+                            <h4 className="text-lg font-black text-[#3B82F6] dark:text-blue-400 leading-none">Reschedule Suggestions</h4>
                             <p className="text-xs text-slate-500 dark:text-gray-400 mt-1">Facility has proposed new times for {metrics.rescheduleSuggestions} appointments. Action required.</p>
                         </div>
                     </div>
-                    <ArrowRight className="w-6 h-6 text-blue-500 group-hover:translate-x-1 transition-transform" />
+                    <ArrowRight className="w-6 h-6 text-[#3B82F6] group-hover:translate-x-1 transition-transform" />
                 </div>
             )}
 
@@ -129,7 +129,7 @@ export const CarrierDashboard: React.FC<CarrierDashboardProps> = ({
                     title="Active Missions"
                     value={activeAppointments.length}
                     icon={Activity}
-                    color="bg-blue-500"
+                    color="bg-[#3B82F6]"
                     subText={`${activeAppointments.filter(a => a.status === 'CheckedIn').length} Loads On-site`}
                 />
                 <KPICard
@@ -208,7 +208,7 @@ export const CarrierDashboard: React.FC<CarrierDashboardProps> = ({
                             <Package className="w-6 h-6 text-purple-500" /> Active Operations
                         </h3>
                         <div className="flex gap-2">
-                            <span className="text-[10px] font-black uppercase text-blue-500 bg-blue-500/10 px-2 py-1 rounded-lg border border-blue-500/20">Live: {metrics.liveCount}</span>
+                            <span className="text-[10px] font-black uppercase text-[#3B82F6] bg-[#3B82F6]/10 px-2 py-1 rounded-lg border border-[#3B82F6]/20">Live: {metrics.liveCount}</span>
                             <span className="text-[10px] font-black uppercase text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-lg border border-emerald-500/20">Drop: {metrics.dropCount}</span>
                         </div>
                     </div>
@@ -223,12 +223,12 @@ export const CarrierDashboard: React.FC<CarrierDashboardProps> = ({
                             paginatedAppointments.map(appt => (
                                 <GlassCard
                                     key={appt.id}
-                                    className="p-5 flex items-center justify-between group cursor-pointer hover:bg-slate-100 dark:hover:bg-white/5 transition-all border-l-4 border-l-transparent hover:border-l-blue-500 shadow-sm"
+                                    className="p-5 flex items-center justify-between group cursor-pointer hover:bg-slate-100 dark:hover:bg-white/5 transition-all border-l-4 border-l-transparent hover:border-l-#3B82F6 shadow-sm"
                                     onClick={() => { onSetSelectedApptId(appt.id); onSetIsDetailsModalOpen(true); }}
                                 >
                                     <div className="flex items-center gap-5">
                                         <div className={`w-14 h-14 rounded-3xl flex items-center justify-center transition-all group-hover:scale-110 ${appt.status === 'PendingApproval' ? 'bg-amber-500/10 text-amber-500' :
-                                            appt.status === 'CheckedIn' ? 'bg-blue-500/10 text-blue-500' :
+                                            appt.status === 'CheckedIn' ? 'bg-[#3B82F6]/10 text-[#3B82F6]' :
                                                 'bg-indigo-500/10 text-indigo-500'
                                             }`}>
                                             <Truck className="w-7 h-7" />
@@ -236,7 +236,7 @@ export const CarrierDashboard: React.FC<CarrierDashboardProps> = ({
                                         <div>
                                             <div className="flex items-center gap-2 mb-1">
                                                 <p className="font-black text-slate-900 dark:text-white text-base tracking-tighter">{appt.trailerNumber || 'TBA'}</p>
-                                                <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-lg ${appt.loadType === 'Inbound' ? 'bg-blue-500 text-white' : 'bg-emerald-500 text-white'
+                                                <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-lg ${appt.loadType === 'Inbound' ? 'bg-[#3B82F6] text-white' : 'bg-emerald-500 text-white'
                                                     }`}>
                                                     {appt.loadType || 'Type N/A'}
                                                 </span>
@@ -253,9 +253,9 @@ export const CarrierDashboard: React.FC<CarrierDashboardProps> = ({
                                         </div>
                                     </div>
                                     <div className="flex flex-col items-end gap-3">
-                                        <div className={`text-[10px] font-black px-4 py-1.5 rounded-2xl uppercase tracking-tighter shadow-sm ${appt.acknowledgementStatus === 'RescheduleSuggested' ? 'bg-blue-500 text-white shadow-blue-500/20' :
+                                        <div className={`text-[10px] font-black px-4 py-1.5 rounded-2xl uppercase tracking-tighter shadow-sm ${appt.acknowledgementStatus === 'RescheduleSuggested' ? 'bg-[#3B82F6] text-white shadow-[#3B82F6]/20' :
                                                 appt.status === 'PendingApproval' ? 'bg-amber-500 text-white shadow-amber-500/20' :
-                                                    appt.status === 'CheckedIn' ? 'bg-blue-500 text-white shadow-blue-500/20' :
+                                                    appt.status === 'CheckedIn' ? 'bg-[#3B82F6] text-white shadow-[#3B82F6]/20' :
                                                         'bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-gray-400'
                                             }`}>
                                             {appt.acknowledgementStatus === 'RescheduleSuggested' ? 'Re-schedule Offered' : appt.status.replace(/([A-Z])/g, ' $1').trim()}

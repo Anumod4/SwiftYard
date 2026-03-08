@@ -188,7 +188,7 @@ export const TrailerActionModal: React.FC<TrailerActionModalProps> = ({ isOpen, 
                         <button
                             disabled={action === 'none' || (action === 'to-yard' && !selectedSlotId) || (action === 'to-dock' && !selectedDockId)}
                             onClick={handleConfirm}
-                            className="px-6 py-2 bg-[#0a84ff] hover:bg-blue-600 text-white rounded-lg font-bold text-sm shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                            className="px-6 py-2 bg-[#3B82F6] hover:bg-blue-600 text-white rounded-lg font-bold text-sm shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                         >
                             <Navigation className="w-4 h-4" /> Send Instruction
                         </button>

@@ -38,31 +38,39 @@ const MultiSelectDropdown: React.FC<{
         <div className="relative" ref={wrapperRef}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className={`w-full flex items-center justify-between bg-slate-100 dark:bg-black/20 border ${isOpen ? 'border-blue-500' : 'border-slate-200 dark:border-white/10'} rounded-lg px-3 py-2 text-sm text-slate-700 dark:text-gray-200 transition-all`}
+                className={`w-full flex items-center justify-between bg-muted/5 border ${isOpen ? 'border-primary' : 'border-border'} rounded-[1.25rem] px-5 py-4 text-sm text-foreground font-bold transition-all hover:bg-muted/10`}
             >
-                <span className="truncate">
-                    {selectedCount === 0 ? label : `${label} (${selectedCount})`}
+                <span className="truncate flex items-center gap-2">
+                    {selectedCount > 0 && <span className="w-5 h-5 flex items-center justify-center bg-primary text-white text-[10px] rounded-full">{selectedCount}</span>}
+                    {label}
                 </span>
-                <ChevronDown className={`w-4 h-4 ml-2 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-4 h-4 ml-2 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {isOpen && (
-                <div className="absolute top-full left-0 mt-2 w-64 max-h-60 overflow-y-auto custom-scrollbar bg-white dark:bg-[#1e1e1e] border border-slate-200 dark:border-white/10 rounded-xl shadow-2xl z-[100] p-2">
-                    {options.length === 0 ? (
-                        <div className="p-2 text-xs text-slate-400 text-center">No options available</div>
-                    ) : (
-                        options.map(opt => (
-                            <label key={opt.id} className="flex items-center gap-2 p-2 hover:bg-slate-50 dark:hover:bg-white/5 rounded-lg cursor-pointer transition-colors">
-                                <input
-                                    type="checkbox"
-                                    checked={selectedIds.includes(opt.id)}
-                                    onChange={() => onToggle(opt.id)}
-                                    className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                                />
-                                <span className="text-sm text-slate-700 dark:text-gray-300 truncate">{opt.name}</span>
-                            </label>
-                        ))
-                    )}
+                <div className="absolute top-full left-0 mt-3 w-72 max-h-80 overflow-y-auto custom-scrollbar bg-surface border border-border rounded-[2rem] shadow-2xl z-[100] p-6 animate-in fade-in zoom-in-95 duration-200">
+                    <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-4 px-2">{label}</h4>
+                    <div className="space-y-1">
+                        {options.length === 0 ? (
+                            <div className="p-4 text-xs text-muted text-center italic">No options available</div>
+                        ) : (
+                            options.map(opt => (
+                                <label key={opt.id} className="flex items-center gap-3 p-3 hover:bg-muted/5 rounded-2xl cursor-pointer transition-all group">
+                                    <div className="relative flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedIds.includes(opt.id)}
+                                            onChange={() => onToggle(opt.id)}
+                                            className="w-5 h-5 rounded-lg border-border text-primary focus:ring-primary/20 bg-transparent transition-all cursor-pointer"
+                                        />
+                                    </div>
+                                    <span className={`text-sm tracking-tight transition-colors truncate font-bold ${selectedIds.includes(opt.id) ? 'text-primary' : 'text-foreground group-hover:text-primary'}`}>
+                                        {opt.name}
+                                    </span>
+                                </label>
+                            ))
+                        )}
+                    </div>
                 </div>
             )}
         </div>
@@ -215,8 +223,8 @@ export const Schedule: React.FC = () => {
             return <span className="opacity-0 group-hover:opacity-30 ml-1 text-[10px]">&uarr;&darr;</span>;
         }
         return sortConfig.direction === 'asc'
-            ? <span className="ml-1 text-blue-500 font-bold">&uarr;</span>
-            : <span className="ml-1 text-blue-500 font-bold">&darr;</span>;
+            ? <span className="ml-1 text-primary font-black">&uarr;</span>
+            : <span className="ml-1 text-primary font-black">&darr;</span>;
     };
 
     const filteredAppointments = appointments.filter(a => {
@@ -281,104 +289,86 @@ export const Schedule: React.FC = () => {
     }, [searchTerm, statusFilter, startDate, endDate, carrierFilterIds, typeFilterNames]);
 
     return (
-        <div className="p-8 h-full flex flex-col animate-in fade-in duration-500">
-            <div className="flex justify-between items-center mb-8">
+        <div className="p-8 h-full flex flex-col animate-in fade-in duration-700">
+            <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-12">
                 <div>
-                    <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">{t('schedule.title')}</h1>
-                    <p className="text-slate-500 dark:text-gray-400">{t('schedule.subtitle')}</p>
+                    <h1 className="text-5xl font-black text-foreground mb-3 tracking-tighter leading-tight">Shipment Schedule</h1>
+                    <p className="text-muted text-lg font-medium opacity-70">{t('schedule.subtitle')}</p>
                 </div>
-                {canEditSchedule && (
-                    <div className="flex items-center gap-3">
-                        {settings.enableAiSchedule !== false && (
-                            <button
-                                onClick={() => setIsAiModalOpen(true)}
-                                className="flex items-center gap-2 px-4 py-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 dark:text-purple-400 font-bold rounded-xl transition-colors border border-purple-500/20 text-sm whitespace-nowrap"
-                            >
-                                <Sparkles className="w-4 h-4" />
-                                <span className="hidden sm:inline">Smart Schedule</span>
-                                <span className="sm:hidden">Smart</span>
-                            </button>
-                        )}
+                <div className="flex gap-4">
+                    <button
+                        onClick={() => setIsAiModalOpen(true)}
+                        className="bg-surface border border-border hover:bg-muted/5 text-foreground px-6 py-4 rounded-2xl flex items-center shadow-lg transition-all active:scale-95 font-bold"
+                        title="AI Automation"
+                    >
+                        <Sparkles className="w-5 h-5 mr-3 text-primary animate-pulse" />
+                        AI Optimizer
+                    </button>
+                    {canEditSchedule && (
                         <button
-                            onClick={handleCreate}
-                            className="bg-[#0a84ff] hover:bg-blue-600 text-white px-4 py-2 rounded-xl flex items-center shadow-lg shadow-blue-500/30 transition-all active:scale-95 font-medium"
+                            onClick={() => setIsModalOpen(true)}
+                            className="bg-primary hover:bg-blue-600 text-white px-8 py-4 rounded-2xl flex items-center shadow-2xl shadow-primary/30 transition-all active:scale-95 font-black uppercase tracking-widest text-xs"
                         >
                             <Plus className="w-5 h-5 mr-2" />
-                            {t('schedule.new')}
+                            {t('schedule.add')}
                         </button>
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
 
             {/* Filters Bar */}
-            <GlassCard className="mb-6 p-4 !overflow-visible z-50">
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-4">
+            <GlassCard className="mb-8 p-8 !overflow-visible z-50 rounded-[2.5rem]">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
                     {/* General Search */}
-                    <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-gray-500" />
+                    <div className="relative flex-1 group">
+                        <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted transition-colors group-focus-within:text-primary" />
                         <input
                             type="text"
                             placeholder={t('schedule.searchPlaceholder')}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg pl-9 pr-4 py-2 text-sm text-slate-900 dark:text-white focus:border-blue-500 outline-none"
+                            className="w-full bg-muted/5 border border-border rounded-[1.25rem] pl-14 pr-6 py-4 text-sm text-foreground focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all font-bold"
                         />
                     </div>
-
-                    {/* Carrier Filter */}
+                    <div className="flex-1">
+                        <div className="relative group">
+                            <Calendar className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted transition-colors group-focus-within:text-primary z-10" />
+                            <input
+                                type="date"
+                                value={startDate}
+                                onChange={(e) => setStartDate(e.target.value)}
+                                className="w-full bg-muted/5 border border-border rounded-[1.25rem] pl-14 pr-6 py-4 text-sm text-foreground focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all font-bold appearance-none cursor-pointer"
+                            />
+                        </div>
+                    </div>
                     <div className="flex-1">
                         <MultiSelectDropdown
-                            label="Carriers"
+                            label={t('common.carrier')}
                             options={carriers.map(c => ({ id: c.id, name: c.name }))}
                             selectedIds={carrierFilterIds}
-                            onToggle={toggleCarrierFilter}
+                            onToggle={(id) => setCarrierFilterIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])}
                         />
                     </div>
-
-                    {/* Trailer Type Filter */}
                     <div className="flex-1">
                         <MultiSelectDropdown
                             label="Trailer Types"
                             options={trailerTypes.map(t => ({ id: t.name, name: t.name }))}
                             selectedIds={typeFilterNames}
-                            onToggle={toggleTypeFilter}
+                            onToggle={(id) => setTypeFilterNames(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])}
                         />
-                    </div>
-
-                    {/* Date Range */}
-                    <div className="flex gap-2 items-center flex-1">
-                        <DatePicker
-                            value={startDate}
-                            onChange={setStartDate}
-                            className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg px-2 py-2 text-sm text-slate-900 dark:text-white focus:border-blue-500 outline-none cursor-pointer"
-                            placeholder="Start Date"
-                        />
-                        <span className="text-slate-400 dark:text-gray-500">-</span>
-                        <DatePicker
-                            value={endDate}
-                            onChange={setEndDate}
-                            className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg px-2 py-2 text-sm text-slate-900 dark:text-white focus:border-blue-500 outline-none cursor-pointer"
-                            placeholder="End Date"
-                        />
-                        {(startDate || endDate) && (
-                            <button
-                                onClick={() => { setStartDate(''); setEndDate(''); }}
-                                className="p-1 hover:bg-slate-200 dark:hover:bg-white/10 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"
-                                title="Clear Date Filter"
-                            >
-                                <X className="w-4 h-4" />
-                            </button>
-                        )}
                     </div>
                 </div>
 
                 {/* Status Tabs */}
-                <div className="flex gap-2 w-full overflow-x-auto pb-1 custom-scrollbar">
+                <div className="flex gap-3 w-full overflow-x-auto pb-2 custom-scrollbar">
                     {['All', 'PendingApproval', 'Scheduled', 'ReadyForCheckIn', 'CheckedIn', 'Completed', 'Departed', 'Cancelled', 'Rejected'].map(status => (
                         <button
                             key={status}
                             onClick={() => setStatusFilter(status as any)}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${statusFilter === status ? 'bg-blue-500 text-white' : 'bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-gray-400 hover:bg-slate-200 dark:hover:bg-white/10'}`}
+                            className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap border-2
+                                ${statusFilter === status
+                                    ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20'
+                                    : 'bg-muted/5 text-muted border-transparent hover:border-border hover:bg-muted/10'}`}
                         >
                             {status === 'All' ? 'All Statuses' : status.replace(/([A-Z])/g, ' $1').trim()}
                         </button>
@@ -386,36 +376,51 @@ export const Schedule: React.FC = () => {
                 </div>
             </GlassCard>
 
-            <GlassCard className="flex-1 overflow-hidden flex flex-col">
-                <div className="overflow-y-auto flex-1 custom-scrollbar">
-                    <table className="w-full text-left border-collapse">
-                        <thead className="sticky top-0 bg-slate-50 dark:bg-[#1a1a1a] z-10 text-xs uppercase text-slate-500 dark:text-gray-500 font-bold tracking-wider">
+            <GlassCard className="flex-1 overflow-hidden flex flex-col rounded-[2.5rem] border-none shadow-2xl bg-surface/40">
+                <div className="flex-1 overflow-y-auto custom-scrollbar">
+                    <table className="w-full text-left border-collapse min-w-[1000px]">
+                        <thead className="sticky top-0 bg-surface/95 backdrop-blur-xl z-10 text-[10px] uppercase text-muted font-black tracking-[0.2em] border-b border-border">
                             <tr>
-                                <th onClick={() => handleSort('startTime')} className="p-5 border-b border-slate-200 dark:border-white/10 cursor-pointer group hover:bg-slate-100 dark:hover:bg-white/5 transition-colors">
-                                    {t('common.time')} {getSortIcon('startTime')}
+                                <th onClick={() => handleSort('startTime')} className="p-10 cursor-pointer group hover:bg-primary/5 transition-colors">
+                                    <div className="flex items-center gap-2">
+                                        <Clock className="w-3 h-3" />
+                                        {t('schedule.time')} {getSortIcon('startTime')}
+                                    </div>
                                 </th>
-                                <th onClick={() => handleSort('trailerNumber')} className="p-5 border-b border-slate-200 dark:border-white/10 cursor-pointer group hover:bg-slate-100 dark:hover:bg-white/5 transition-colors">
-                                    {t('common.trailer')} {getSortIcon('trailerNumber')}
+                                <th onClick={() => handleSort('trailerNumber')} className="p-8 cursor-pointer group hover:bg-muted/5 transition-colors">
+                                    <div className="flex items-center gap-2">
+                                        <Truck className="w-3 h-3" />
+                                        {t('common.trailer')} {getSortIcon('trailerNumber')}
+                                    </div>
                                 </th>
-                                <th onClick={() => handleSort('driverName')} className="p-5 border-b border-slate-200 dark:border-white/10 cursor-pointer group hover:bg-slate-100 dark:hover:bg-white/5 transition-colors">
-                                    {t('common.driver')} {getSortIcon('driverName')}
+                                <th onClick={() => handleSort('driverName')} className="p-8 cursor-pointer group hover:bg-muted/5 transition-colors">
+                                    <div className="flex items-center gap-2">
+                                        <User className="w-3 h-3" />
+                                        {t('common.driver')} {getSortIcon('driverName')}
+                                    </div>
                                 </th>
-                                <th onClick={() => handleSort('carrierId')} className="p-5 border-b border-slate-200 dark:border-white/10 cursor-pointer group hover:bg-slate-100 dark:hover:bg-white/5 transition-colors">
-                                    {t('common.carrier')} {getSortIcon('carrierId')}
+                                <th onClick={() => handleSort('carrierId')} className="p-8 cursor-pointer group hover:bg-muted/5 transition-colors">
+                                    <div className="flex items-center gap-2">
+                                        <FileText className="w-3 h-3" />
+                                        {t('common.carrier')} {getSortIcon('carrierId')}
+                                    </div>
                                 </th>
-                                <th onClick={() => handleSort('status')} className="p-5 border-b border-slate-200 dark:border-white/10 cursor-pointer group hover:bg-slate-100 dark:hover:bg-white/5 transition-colors">
-                                    {t('common.status')} {getSortIcon('status')}
+                                <th onClick={() => handleSort('status')} className="p-8 cursor-pointer group hover:bg-muted/5 transition-colors text-center">
+                                    <div className="flex items-center gap-2 justify-center">
+                                        <CheckCircle2 className="w-3 h-3" />
+                                        {t('common.status')} {getSortIcon('status')}
+                                    </div>
                                 </th>
-                                <th className="p-5 border-b border-slate-200 dark:border-white/10 text-right">
+                                <th className="p-8 text-right pr-12">
                                     {t('common.actions')}
                                 </th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-200 dark:divide-white/5">
+                        <tbody className="divide-y divide-border/50 bg-surface/30">
                             {filteredAppointments.length === 0 ? (
                                 <tr>
                                     <td colSpan={6}>
-                                        <div className="h-64 flex flex-col items-center justify-center text-slate-400 dark:text-gray-500">
+                                        <div className="h-64 flex flex-col items-center justify-center text-muted">
                                             <Calendar className="w-12 h-12 mb-4 opacity-20" />
                                             <p className="text-lg font-medium">{t('schedule.emptyTitle')}</p>
                                             <p className="text-sm mt-1">{t('schedule.emptyDesc')}</p>
@@ -433,101 +438,101 @@ export const Schedule: React.FC = () => {
                                     return (
                                         <tr
                                             key={appt.id}
-                                            className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors group cursor-pointer"
+                                            className="hover:bg-muted/5 transition-all group cursor-pointer relative border-l-4 border-l-transparent hover:border-l-primary"
                                             onClick={() => handleRowClick(appt.id)}
                                         >
-                                            <td className="p-5">
-                                                <div className="flex items-center text-slate-900 dark:text-white font-medium">
-                                                    <Clock className="w-4 h-4 mr-2 text-slate-400 dark:text-gray-500" />
+                                            <td className="p-8">
+                                                <div className="flex items-center text-foreground font-black tracking-tighter text-xl">
+                                                    <Clock className="w-5 h-5 mr-3 text-primary opacity-80" />
                                                     {new Date(appt.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                 </div>
-                                                <div className="text-xs text-slate-500 dark:text-gray-500 mt-1 pl-6">
+                                                <div className="text-[10px] font-black uppercase tracking-[0.2em] text-muted opacity-60 mt-2 pl-8">
                                                     {formatDate(appt.startTime)}
                                                 </div>
                                             </td>
-                                            <td className="p-5">
-                                                <div className="flex items-center gap-3">
-                                                    <div className={`p-2 rounded-lg ${appt.isBobtail ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'bg-blue-500/10 text-blue-600 dark:text-blue-400'}`}>
-                                                        <Truck className="w-4 h-4" />
+                                            <td className="p-8">
+                                                <div className="flex items-center gap-5">
+                                                    <div className={`p-4 rounded-[1.25rem] transition-all group-hover:scale-110 group-hover:rotate-3 shadow-lg ${appt.isBobtail ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'bg-primary/10 text-primary'}`}>
+                                                        <Truck className="w-6 h-6" />
                                                     </div>
                                                     <div>
-                                                        <div className="font-bold text-slate-900 dark:text-white">{appt.isBobtail ? 'Bobtail' : appt.trailerNumber}</div>
-                                                        <div className="text-xs text-slate-500 dark:text-gray-500">{appt.trailerType || 'N/A'}</div>
+                                                        <div className="font-black text-foreground text-lg tracking-tighter leading-none">{appt.isBobtail ? 'Bobtail' : appt.trailerNumber}</div>
+                                                        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-muted opacity-60 mt-2">{appt.trailerType || 'N/A'}</div>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="p-5">
-                                                <div className="flex items-center gap-2">
-                                                    <User className="w-3.5 h-3.5 text-slate-400" />
-                                                    <span className="text-slate-600 dark:text-gray-300 font-medium">{appt.driverName}</span>
+                                            <td className="p-8">
+                                                <div className="flex items-center gap-3.5">
+                                                    <div className="w-10 h-10 rounded-full bg-muted/5 border border-border flex items-center justify-center group-hover:border-primary/30 transition-colors">
+                                                        <User className="w-5 h-5 text-muted group-hover:text-primary transition-colors" />
+                                                    </div>
+                                                    <span className="text-foreground font-bold text-base tracking-tight">{appt.driverName}</span>
                                                 </div>
                                             </td>
-                                            <td className="p-5 text-sm text-slate-600 dark:text-gray-300">
-                                                <div>{getCarrierName(appt.carrierId)}</div>
+                                            <td className="p-8">
+                                                <div className="font-black uppercase tracking-widest text-sm text-primary group-hover:tracking-[0.1em] transition-all duration-300">{getCarrierName(appt.carrierId)}</div>
                                                 {appt.carrierId && carriers.find(c => c.id === appt.carrierId)?.bufferTimeMinutes !== undefined && (
-                                                    <div className="text-[10px] text-blue-500 dark:text-blue-400 font-bold flex items-center gap-1 mt-1">
-                                                        <Clock className="w-3 h-3" />
+                                                    <div className="text-[10px] text-primary font-black uppercase flex items-center gap-1.5 mt-2 opacity-70">
+                                                        <Clock className="w-3.5 h-3.5" />
                                                         Buffer: {carriers.find(c => c.id === appt.carrierId)?.bufferTimeMinutes}m
                                                     </div>
                                                 )}
                                             </td>
-                                            <td className="p-5">
-                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border
-                         ${appt.status === 'Scheduled' ? 'bg-blue-500/10 text-blue-600 dark:text-blue-500 border-blue-500/20' :
-                                                        appt.status === 'CheckedIn' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-500 border-emerald-500/20' :
-                                                            appt.status === 'Cancelled' || appt.status === 'Rejected' ? 'bg-red-500/10 text-red-600 dark:text-red-500 border-red-500/20' :
-                                                                appt.status === 'Completed' ? 'bg-orange-500/10 text-orange-600 dark:text-orange-500 border-orange-500/20' :
-                                                                    appt.status === 'PendingApproval' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-500 border-amber-500/20' :
-                                                                        'bg-slate-200 dark:bg-gray-500/10 text-slate-500 dark:text-gray-400 border-slate-300 dark:border-gray-500/20'
+                                            <td className="p-8 text-center">
+                                                <span className={`inline-flex items-center px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] border-2
+                                                    ${appt.status === 'Scheduled' ? 'bg-primary/5 text-primary border-primary/20' :
+                                                        appt.status === 'CheckedIn' ? 'bg-emerald-500/5 text-emerald-600 dark:text-emerald-500 border-emerald-500/20' :
+                                                            appt.status === 'Cancelled' || appt.status === 'Rejected' ? 'bg-red-500/5 text-red-600 dark:text-red-500 border-red-500/20 shadow-lg shadow-red-500/10' :
+                                                                appt.status === 'Completed' ? 'bg-orange-500/5 text-orange-600 dark:text-orange-500 border-orange-500/20' :
+                                                                    appt.status === 'PendingApproval' ? 'bg-amber-500/5 text-amber-600 dark:text-amber-500 border-amber-500/20 animate-pulse' :
+                                                                        'bg-muted/10 text-muted border-border/20'
                                                     }
-                      `}>
+                                                `}>
                                                     {appt.status.replace(/([A-Z])/g, ' $1').trim()}
                                                 </span>
                                             </td>
-                                            <td className="p-5 text-right" onClick={(e) => e.stopPropagation()}>
-                                                <div className="flex justify-end gap-2 items-center">
-
-                                                    {/* Approval Actions - Updated to Text Buttons */}
+                                            <td className="p-8 text-right pr-12 whitespace-nowrap overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                                                <div className="flex justify-end gap-3 items-center transition-all duration-300 translate-x-12 group-hover:translate-x-0">
                                                     {appt.status === 'PendingApproval' && canEditSchedule && (
-                                                        <>
+                                                        <div className="flex gap-2.5">
                                                             <button
                                                                 onClick={() => handleApprove(appt.id)}
-                                                                className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-lg shadow-sm transition-colors flex items-center gap-1"
+                                                                className="px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-emerald-500/20 transition-all active:scale-95 flex items-center gap-2"
                                                             >
-                                                                <Check className="w-3 h-3" /> Approve
+                                                                <Check className="w-4 h-4" /> Approve
                                                             </button>
                                                             <button
                                                                 onClick={() => handleRejectClick(appt.id)}
-                                                                className="px-3 py-1.5 bg-white dark:bg-white/5 border border-red-200 dark:border-red-900/30 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 text-xs font-bold rounded-lg transition-colors flex items-center gap-1"
+                                                                className="px-6 py-3 bg-surface border border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all active:scale-95 flex items-center gap-2 shadow-lg"
                                                             >
-                                                                <X className="w-3 h-3" /> Reject
+                                                                <X className="w-4 h-4" /> Reject
                                                             </button>
-                                                        </>
+                                                        </div>
                                                     )}
 
-                                                    {/* Cancel Button */}
-                                                    {canCancel && (
-                                                        <button
-                                                            type="button"
-                                                            onClick={(e) => handleCancelClick(e, appt.id)}
-                                                            className="p-2 bg-orange-50 dark:bg-orange-500/10 hover:bg-orange-100 dark:hover:bg-orange-500/20 rounded-lg text-orange-600 dark:text-orange-500 transition-colors"
-                                                            title="Cancel Appointment"
-                                                        >
-                                                            <Ban className="w-4 h-4" />
-                                                        </button>
-                                                    )}
+                                                    <div className="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-all">
+                                                        {canCancel && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={(e) => handleCancelClick(e, appt.id)}
+                                                                className="w-12 h-12 flex items-center justify-center bg-red-500/10 hover:bg-red-500 hover:text-white rounded-[1rem] text-red-600 transition-all shadow-lg hover:shadow-red-500/30"
+                                                                title="Cancel Appointment"
+                                                            >
+                                                                <Ban className="w-5 h-5" />
+                                                            </button>
+                                                        )}
 
-                                                    {/* Edit Button */}
-                                                    {canModify && (
-                                                        <button
-                                                            type="button"
-                                                            onClick={(e) => canEditSchedule ? handleEdit(e, appt.id) : null}
-                                                            className={`p-2 rounded-lg transition-colors ${canEditSchedule ? 'bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white cursor-pointer' : 'bg-transparent text-slate-400 cursor-default opacity-50'}`}
-                                                            title={canEditSchedule ? "Edit" : "View Only"}
-                                                        >
-                                                            {canEditSchedule ? <Edit2 className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                                        </button>
-                                                    )}
+                                                        {canModify && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={(e) => canEditSchedule ? handleEdit(e, appt.id) : null}
+                                                                className={`w-12 h-12 flex items-center justify-center rounded-[1rem] transition-all shadow-lg ${canEditSchedule ? 'bg-muted/10 hover:bg-primary hover:text-white text-muted cursor-pointer hover:shadow-primary/30' : 'bg-transparent text-muted cursor-default opacity-50'}`}
+                                                                title={canEditSchedule ? "Edit" : "View Only"}
+                                                            >
+                                                                {canEditSchedule ? <Edit2 className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                                            </button>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </td>
                                         </tr>
@@ -585,6 +590,6 @@ export const Schedule: React.FC = () => {
                 onClose={() => { setIsDetailsModalOpen(false); setSelectedDetailsApptId(null); }}
                 appointmentId={selectedDetailsApptId || ''}
             />
-        </div>
+        </div >
     );
 };

@@ -144,38 +144,38 @@ export const Carriers: React.FC = () => {
   ];
 
   return (
-    <div className="p-8 h-full flex flex-col animate-in fade-in duration-500">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+    <div className="p-8 h-full flex flex-col animate-in fade-in duration-700">
+      <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-12">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">{t('car.title')}</h1>
-          <p className="text-slate-500 dark:text-gray-400">{t('car.subtitle')}</p>
+          <h1 className="text-5xl font-black text-foreground mb-3 tracking-tighter leading-tight">Carrier Network</h1>
+          <p className="text-muted text-lg font-medium opacity-70">{t('car.subtitle')}</p>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-          <div className="relative flex-1 sm:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <div className="relative flex-1 sm:w-80 group">
+            <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted transition-colors group-focus-within:text-primary" />
             <input
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
               placeholder="Search carriers..."
-              className="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+              className="w-full bg-muted/5 border border-border rounded-2xl pl-14 pr-6 py-4 text-sm text-foreground focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all font-bold"
             />
           </div>
 
           {canEditCarriers && (
-            <div className="flex gap-2">
+            <div className="flex gap-4">
               <button
                 onClick={() => setIsBulkOpen(true)}
-                className="bg-slate-800 dark:bg-white/20 hover:bg-slate-700 dark:hover:bg-white/30 text-white px-4 py-2 rounded-xl flex items-center shadow-md transition-all active:scale-95 font-bold"
+                className="bg-surface border border-border hover:bg-muted/5 text-foreground px-6 py-4 rounded-2xl flex items-center shadow-lg transition-all active:scale-95 font-bold"
                 title="Bulk Create"
               >
-                <ListPlus className="w-5 h-5" />
+                <ListPlus className="w-5 h-5 text-primary" />
               </button>
               <button
                 onClick={() => handleOpenModal()}
-                className="bg-[#0a84ff] hover:bg-blue-600 text-white px-6 py-2 rounded-xl flex items-center shadow-lg shadow-blue-500/30 transition-all active:scale-95 font-medium whitespace-nowrap"
+                className="bg-primary hover:bg-blue-600 text-white px-8 py-4 rounded-2xl flex items-center shadow-2xl shadow-primary/30 transition-all active:scale-95 font-black uppercase tracking-widest text-xs whitespace-nowrap"
               >
-                <Plus className="w-4 h-4 mr-2" />
+                <Plus className="w-5 h-5 mr-2" />
                 {t('car.add')}
               </button>
             </div>
@@ -206,52 +206,52 @@ export const Carriers: React.FC = () => {
 
       {isModalOpen && (
         <ModalPortal>
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-            <div className="bg-white dark:bg-[#1e1e1e] w-full max-w-md rounded-2xl border border-slate-200 dark:border-white/10 p-6">
-              <h2 className="text-xl font-bold mb-6 text-slate-900 dark:text-white">{editingCarrier ? t('common.edit') : t('common.add')} {t('car.modalTitle')}</h2>
-              <form onSubmit={handleSave} className="space-y-4">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+            <div className="bg-surface w-full max-w-md rounded-[2.5rem] border border-border p-8 shadow-2xl overflow-y-auto max-h-[90vh] custom-scrollbar">
+              <h2 className="text-2xl font-black mb-8 text-foreground tracking-tight">{editingCarrier ? t('common.edit') : t('common.add')} {t('car.modalTitle')}</h2>
+              <form onSubmit={handleSave} className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-slate-500 dark:text-gray-400 mb-1">{t('car.name')} *</label>
-                  <input required value={name} onChange={e => setName(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-3 text-slate-900 dark:text-white focus:border-blue-500 focus:outline-none" />
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">{t('car.name')} *</label>
+                  <input required value={name} onChange={e => setName(e.target.value)} className="w-full bg-muted/5 border border-border rounded-xl p-4 text-foreground font-bold focus:border-primary focus:outline-none transition-all" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-500 dark:text-gray-400 mb-1">{t('car.email')}</label>
-                  <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-3 text-slate-900 dark:text-white focus:border-blue-500 focus:outline-none" />
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">{t('car.email')}</label>
+                  <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-muted/5 border border-border rounded-xl p-4 text-foreground font-bold focus:border-primary focus:outline-none transition-all" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-500 dark:text-gray-400 mb-1">{t('car.phone')}</label>
-                  <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-3 text-slate-900 dark:text-white focus:border-blue-500 focus:outline-none" />
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">{t('car.phone')}</label>
+                  <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} className="w-full bg-muted/5 border border-border rounded-xl p-4 text-foreground font-bold focus:border-primary focus:outline-none transition-all" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-500 dark:text-gray-400 mb-1">Buffer Time (Minutes)</label>
-                  <input type="number" min="0" value={bufferTime} onChange={e => setBufferTime(e.target.value)} placeholder="Minutes before/after" className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-3 text-slate-900 dark:text-white focus:border-blue-500 focus:outline-none" />
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">Buffer Time (Minutes)</label>
+                  <input type="number" min="0" value={bufferTime} onChange={e => setBufferTime(e.target.value)} placeholder="Minutes before/after" className="w-full bg-muted/5 border border-border rounded-xl p-4 text-foreground font-bold focus:border-primary focus:outline-none transition-all" />
                 </div>
 
-                <div className="pt-4 border-t border-slate-200 dark:border-white/10">
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4">Custom Billing Rules (Optional)</h3>
+                <div className="pt-6 border-t border-border/50">
+                  <h3 className="text-[10px] font-black uppercase tracking-widest text-foreground mb-4 opacity-100">Custom Billing Rules (Optional)</h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-[10px] font-black uppercase text-slate-400 mb-1">Free Yard Hrs</label>
-                      <input type="number" min="0" placeholder="System Default" value={freeYardHours} onChange={e => setFreeYardHours(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-2 text-sm text-slate-900 dark:text-white focus:border-blue-500 outline-none" />
+                      <label className="block text-[8px] font-black uppercase tracking-widest text-muted mb-1.5 opacity-60">Free Yard Hrs</label>
+                      <input type="number" min="0" placeholder="System Default" value={freeYardHours} onChange={e => setFreeYardHours(e.target.value)} className="w-full bg-muted/5 border border-border rounded-xl p-3 text-sm text-foreground font-bold focus:border-primary outline-none transition-all" />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-black uppercase text-slate-400 mb-1">Yard Rate/Day ($)</label>
-                      <input type="number" min="0" placeholder="System Default" value={yardRatePerDay} onChange={e => setYardRatePerDay(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-2 text-sm text-slate-900 dark:text-white focus:border-blue-500 outline-none" />
+                      <label className="block text-[8px] font-black uppercase tracking-widest text-muted mb-1.5 opacity-60">Yard Rate/Day ($)</label>
+                      <input type="number" min="0" placeholder="System Default" value={yardRatePerDay} onChange={e => setYardRatePerDay(e.target.value)} className="w-full bg-muted/5 border border-border rounded-xl p-3 text-sm text-foreground font-bold focus:border-primary outline-none transition-all" />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-black uppercase text-slate-400 mb-1">Free Dock Hrs</label>
-                      <input type="number" min="0" placeholder="System Default" value={freeDockHours} onChange={e => setFreeDockHours(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-2 text-sm text-slate-900 dark:text-white focus:border-blue-500 outline-none" />
+                      <label className="block text-[8px] font-black uppercase tracking-widest text-muted mb-1.5 opacity-60">Free Dock Hrs</label>
+                      <input type="number" min="0" placeholder="System Default" value={freeDockHours} onChange={e => setFreeDockHours(e.target.value)} className="w-full bg-muted/5 border border-border rounded-xl p-3 text-sm text-foreground font-bold focus:border-primary outline-none transition-all" />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-black uppercase text-slate-400 mb-1">Dock Rate/Hr ($)</label>
-                      <input type="number" min="0" placeholder="System Default" value={dockRatePerHour} onChange={e => setDockRatePerHour(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-2 text-sm text-slate-900 dark:text-white focus:border-blue-500 outline-none" />
+                      <label className="block text-[8px] font-black uppercase tracking-widest text-muted mb-1.5 opacity-60">Dock Rate/Hr ($)</label>
+                      <input type="number" min="0" placeholder="System Default" value={dockRatePerHour} onChange={e => setDockRatePerHour(e.target.value)} className="w-full bg-muted/5 border border-border rounded-xl p-3 text-sm text-foreground font-bold focus:border-primary outline-none transition-all" />
                     </div>
                   </div>
                 </div>
 
-                <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-white/10">
-                  <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white">{t('common.cancel')}</button>
-                  <button type="submit" className="px-6 py-2 bg-[#0a84ff] hover:bg-blue-600 rounded-lg font-medium text-white">{t('common.save')}</button>
+                <div className="flex justify-end gap-5 pt-8 border-t border-border/50">
+                  <button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-3 text-sm font-black uppercase tracking-widest text-muted hover:text-foreground transition-colors">{t('common.dismiss')}</button>
+                  <button type="submit" className="px-10 py-4 bg-primary hover:bg-blue-600 rounded-2xl font-black uppercase tracking-widest text-xs text-white shadow-xl shadow-primary/30 transition-all active:scale-95">{t('common.save')}</button>
                 </div>
               </form>
             </div>
@@ -286,19 +286,20 @@ const CarrierCard = React.memo<{
   onDelete: (id: string) => void;
   t: any;
 }>(({ carrier, canEdit, onEdit, onDelete, t }) => (
-  <GlassCard className="p-6 flex flex-col group relative h-full">
+  <GlassCard className="p-10 flex flex-col group relative h-full hover:scale-[1.02] transition-all duration-500 border-none shadow-xl bg-surface/50 rounded-[2.5rem] overflow-hidden">
+    <div className="absolute top-0 left-0 w-2 h-full bg-primary shadow-[0_0_15px_rgba(59,130,246,0.3)]"></div>
     {canEdit && (
-      <div className="absolute top-4 right-4 flex items-center gap-2 z-10 transition-all duration-300 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto translate-x-2 group-hover:translate-x-0">
+      <div className="absolute top-8 right-8 flex items-center gap-2 z-10 transition-all duration-500 opacity-0 group-hover:opacity-100">
         <button
           onClick={() => onEdit(carrier)}
-          className="w-8 h-8 flex items-center justify-center bg-muted/10 hover:bg-muted/20 rounded-lg text-muted hover:text-foreground transition-colors"
+          className="w-10 h-10 flex items-center justify-center bg-surface hover:bg-primary hover:text-white rounded-xl shadow-lg transition-all text-muted"
           title="Edit"
         >
           <Edit2 className="w-4 h-4" />
         </button>
         <button
           onClick={() => onDelete(carrier.id)}
-          className="w-8 h-8 flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-500 rounded-lg transition-colors"
+          className="w-10 h-10 flex items-center justify-center bg-surface hover:bg-red-500 hover:text-white rounded-xl shadow-lg transition-all text-red-600"
           title="Delete"
         >
           <Trash2 className="w-4 h-4" />
@@ -306,37 +307,41 @@ const CarrierCard = React.memo<{
       </div>
     )}
 
-    <div className="flex items-center gap-4 mb-4 pr-12">
-      <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center shrink-0">
-        <Briefcase className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+    <div className="flex items-center gap-6 mb-10 pr-12 pl-4">
+      <div className="w-16 h-16 rounded-[1.5rem] bg-primary/10 flex items-center justify-center shrink-0 transition-transform group-hover:rotate-3 shadow-lg shadow-primary/5">
+        <Briefcase className="w-8 h-8 text-primary" />
       </div>
       <div className="overflow-hidden">
-        <h3 className="text-lg font-black text-slate-900 dark:text-white leading-tight truncate">{carrier.name}</h3>
-        <p className="text-[10px] text-slate-400 dark:text-gray-500 truncate tracking-widest font-bold uppercase">{carrier.id.slice(0, 8)}</p>
+        <h3 className="text-2xl font-black text-foreground leading-tight truncate tracking-tighter">{carrier.name}</h3>
+        <p className="text-[10px] font-black uppercase tracking-widest text-muted opacity-40">System ID: {carrier.id.slice(0, 8)}</p>
       </div>
     </div>
 
-    <div className="space-y-3 mt-2 flex-1">
+    <div className="space-y-6 mt-2 flex-1 pl-4">
       {carrier.contactEmail && (
-        <div className="flex items-center text-sm text-slate-600 dark:text-gray-400">
-          <Mail className="w-4 h-4 mr-2 text-slate-400 dark:text-gray-600" />
-          <span className="truncate">{carrier.contactEmail}</span>
+        <div className="flex items-center text-sm text-foreground font-bold group/item">
+          <div className="p-2.5 rounded-xl bg-muted/5 mr-4 transition-colors group-hover/item:bg-primary/10">
+            <Mail className="w-4.5 h-4.5 text-muted transition-colors group-hover/item:text-primary" />
+          </div>
+          <span className="truncate opacity-80 select-all">{carrier.contactEmail}</span>
         </div>
       )}
       {carrier.contactPhone && (
-        <div className="flex items-center text-sm text-slate-600 dark:text-gray-400">
-          <Phone className="w-4 h-4 mr-2 text-slate-400 dark:text-gray-600" />
-          {carrier.contactPhone}
+        <div className="flex items-center text-sm text-foreground font-bold group/item">
+          <div className="p-2.5 rounded-xl bg-muted/5 mr-4 transition-colors group-hover/item:bg-primary/10">
+            <Phone className="w-4.5 h-4.5 text-muted transition-colors group-hover/item:text-primary" />
+          </div>
+          <span className="opacity-80 select-all">{carrier.contactPhone}</span>
         </div>
       )}
       {!carrier.contactEmail && !carrier.contactPhone && (
-        <div className="text-xs text-slate-400 dark:text-gray-600 italic px-1">{t('car.noContact')}</div>
+        <div className="text-[10px] text-muted/30 italic px-1 font-black uppercase tracking-[0.2em]">{t('car.noContact')}</div>
       )}
       {(carrier.bufferTimeMinutes !== undefined) && (
-        <div className="mt-2 pt-2 border-t border-slate-100 dark:border-white/5">
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-slate-500 dark:text-gray-400 font-medium">Buffer Time</span>
-            <span className="text-xs font-bold text-blue-600 dark:text-blue-400">{carrier.bufferTimeMinutes} mins</span>
+        <div className="mt-8 pt-8 border-t border-border/50">
+          <div className="flex items-center justify-between bg-muted/5 p-4 rounded-2xl border border-border/30">
+            <span className="text-[10px] text-muted font-black uppercase tracking-widest opacity-60">Operations Buffer</span>
+            <span className="text-sm font-black text-primary tracking-tight">{carrier.bufferTimeMinutes} Minutes</span>
           </div>
         </div>
       )}

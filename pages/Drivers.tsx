@@ -4,7 +4,7 @@ import { useDebounce } from '../hooks/useDebounce';
 import { useData } from '../contexts/DataContext';
 import { GlassCard } from '../components/ui/GlassCard';
 import { Driver } from '../types';
-import { Plus, Edit2, Trash2, User, CheckCircle2, XCircle, Briefcase, ListPlus, Search, Phone } from 'lucide-react';
+import { Plus, Edit2, Trash2, User, CheckCircle2, XCircle, Briefcase, ListPlus, Search, Phone, ChevronDown } from 'lucide-react';
 import { ModalPortal } from '../components/ui/ModalPortal';
 import { Pagination } from '../components/ui/Pagination';
 import { BulkCreatorModal, BulkColumn } from '../components/BulkCreatorModal';
@@ -32,8 +32,8 @@ export const Drivers: React.FC = () => {
   };
 
   const getSortIcon = (key: string) => {
-    if (!sortConfig || sortConfig.key !== key) return null;
-    return <span className="ml-1 font-bold text-blue-500 dark:text-blue-400">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>;
+    if (!sortConfig || sortConfig.key !== key) return <span className="opacity-0 group-hover:opacity-30 ml-1 text-[10px]">&uarr;&darr;</span>;
+    return <span className="ml-1 font-black text-primary">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>;
   };
 
   // Form
@@ -184,38 +184,39 @@ export const Drivers: React.FC = () => {
   ];
 
   return (
-    <div className="p-8 h-full flex flex-col animate-in fade-in duration-500">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+    <div className="p-8 h-full flex flex-col animate-in fade-in duration-700">
+      <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-10">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">{t('drv.title')}</h1>
-          <p className="text-slate-500 dark:text-gray-400">{t('drv.subtitle')}</p>
+          <h1 className="text-4xl font-black text-foreground mb-2 tracking-tighter">{t('drv.title')}</h1>
+          <p className="text-muted text-lg opacity-70 font-medium">{t('drv.subtitle')}</p>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-          <div className="relative flex-1 sm:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+        <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto items-end">
+          <div className="relative flex-1 sm:w-96 group">
+            <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted transition-colors group-focus-within:text-primary" />
             <input
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              placeholder="Search drivers..."
-              className="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+              placeholder="Search by name, license or carrier..."
+              className="w-full bg-muted/5 border border-border rounded-[1.25rem] pl-14 pr-6 py-4 text-sm focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all font-bold text-foreground placeholder:text-muted/50"
             />
           </div>
 
           {canEditDrivers && (
-            <div className="flex gap-2">
+            <div className="flex gap-4">
               <button
                 onClick={() => setIsBulkOpen(true)}
-                className="bg-slate-800 dark:bg-white/20 hover:bg-slate-700 dark:hover:bg-white/30 text-white px-4 py-2 rounded-xl flex items-center shadow-md transition-all active:scale-95 font-bold"
+                className="bg-surface border border-border hover:bg-muted/5 text-foreground px-6 py-4 rounded-[1.25rem] flex items-center shadow-lg transition-all active:scale-95 font-bold"
                 title="Bulk Create"
               >
-                <ListPlus className="w-5 h-5" />
+                <ListPlus className="w-5 h-5 mr-2 text-primary" />
+                Bulk Add
               </button>
               <button
                 onClick={() => handleOpenModal()}
-                className="bg-[#0a84ff] hover:bg-blue-600 text-white px-6 py-2 rounded-xl flex items-center shadow-lg shadow-blue-500/30 transition-all active:scale-95 font-medium whitespace-nowrap"
+                className="bg-primary hover:bg-blue-600 text-white px-8 py-4 rounded-[1.25rem] flex items-center shadow-xl shadow-primary/20 transition-all active:scale-95 font-black uppercase tracking-widest text-xs whitespace-nowrap"
               >
-                <Plus className="w-4 h-4 mr-2" />
+                <Plus className="w-5 h-5 mr-1" />
                 {t('drv.add')}
               </button>
             </div>
@@ -223,80 +224,97 @@ export const Drivers: React.FC = () => {
         </div>
       </div>
 
-      <GlassCard className="flex-1 overflow-hidden flex flex-col p-0 mb-6">
+      <GlassCard className="flex-1 overflow-hidden flex flex-col rounded-[2.5rem] border-none shadow-2xl">
         <div className="flex-1 overflow-y-auto custom-scrollbar">
           {filteredDrivers.length === 0 ? (
-            <div className="h-64 flex flex-col items-center justify-center text-slate-400 dark:text-gray-500">
-              <User className="w-16 h-16 mb-4 opacity-20" />
+            <div className="h-64 flex flex-col items-center justify-center text-muted">
+              <User className="w-12 h-12 mb-4 opacity-20" />
               <p className="text-lg font-medium">{t('drv.empty') || 'No drivers found.'}</p>
             </div>
           ) : (
             <table className="w-full text-left border-collapse min-w-[800px]">
-              <thead className="sticky top-0 bg-slate-50 dark:bg-[#1a1a1a] z-10 text-xs uppercase text-slate-500 dark:text-gray-500 font-bold tracking-wider">
+              <thead className="sticky top-0 bg-surface/90 backdrop-blur-md z-10 text-[10px] uppercase text-muted font-black tracking-[0.2em] border-b border-border">
                 <tr>
-                  <th onClick={() => handleSort('name')} className="p-5 border-b border-slate-200 dark:border-white/10 cursor-pointer group hover:bg-slate-100 dark:hover:bg-white/5 transition-colors">
-                    {t('drv.fullName')} {getSortIcon('name')}
+                  <th onClick={() => handleSort('name')} className="p-8 cursor-pointer group hover:bg-muted/5 transition-colors">
+                    <div className="flex items-center gap-2">
+                      <User className="w-3 h-3" />
+                      {t('drv.fullName')} {getSortIcon('name')}
+                    </div>
                   </th>
-                  <th onClick={() => handleSort('licenseNumber')} className="p-5 border-b border-slate-200 dark:border-white/10 cursor-pointer group hover:bg-slate-100 dark:hover:bg-white/5 transition-colors">
-                    {t('drv.license')} {getSortIcon('licenseNumber')}
+                  <th onClick={() => handleSort('licenseNumber')} className="p-8 cursor-pointer group hover:bg-muted/5 transition-colors">
+                    License {getSortIcon('licenseNumber')}
                   </th>
-                  <th onClick={() => handleSort('phone')} className="p-5 border-b border-slate-200 dark:border-white/10 cursor-pointer group hover:bg-slate-100 dark:hover:bg-white/5 transition-colors">
-                    {t('common.phone')} {getSortIcon('phone')}
+                  <th onClick={() => handleSort('phone')} className="p-8 cursor-pointer group hover:bg-muted/5 transition-colors">
+                    <div className="flex items-center gap-2">
+                      <Phone className="w-3 h-3" />
+                      {t('common.phone')} {getSortIcon('phone')}
+                    </div>
                   </th>
-                  <th onClick={() => handleSort('carrier')} className="p-5 border-b border-slate-200 dark:border-white/10 cursor-pointer group hover:bg-slate-100 dark:hover:bg-white/5 transition-colors">
-                    {t('common.carrier')} {getSortIcon('carrier')}
+                  <th onClick={() => handleSort('carrier')} className="p-8 cursor-pointer group hover:bg-muted/5 transition-colors">
+                    <div className="flex items-center gap-2">
+                      <Briefcase className="w-3 h-3" />
+                      {t('common.carrier')} {getSortIcon('carrier')}
+                    </div>
                   </th>
-                  <th onClick={() => handleSort('status')} className="p-5 border-b border-slate-200 dark:border-white/10 cursor-pointer group hover:bg-slate-100 dark:hover:bg-white/5 transition-colors">
+                  <th onClick={() => handleSort('status')} className="p-8 cursor-pointer group hover:bg-muted/5 transition-colors text-center">
                     Status {getSortIcon('status')}
                   </th>
-                  <th className="p-5 border-b border-slate-200 dark:border-white/10 text-right">Actions</th>
+                  <th className="p-8 text-right pr-12">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200 dark:divide-white/5">
+              <tbody className="divide-y divide-border/50 bg-surface/30">
                 {paginatedDrivers.map(driver => {
                   const isOnSite = driver.status === 'On Site';
                   const carrierName = getCarrierDisplayName(driver.carrierId);
 
                   return (
-                    <tr key={driver.id} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors group">
-                      <td className="p-5">
-                        <div className="flex items-center gap-3">
-                          <div className={`w-8 h-8 rounded-full flex flex-shrink-0 items-center justify-center relative ${isOnSite ? 'bg-emerald-50! dark:bg-emerald-500/10' : 'bg-slate-100 dark:bg-white/5'}`}>
-                            <User className={`w-4 h-4 ${isOnSite ? 'text-emerald-500' : 'text-slate-400'}`} />
+                    <tr
+                      key={driver.id}
+                      className="hover:bg-muted/5 transition-all group relative cursor-pointer border-l-4 border-l-transparent hover:border-l-primary"
+                      onClick={() => handleOpenModal(driver)}
+                    >
+                      <td className="p-8">
+                        <div className="flex items-center gap-5">
+                          <div className={`w-12 h-12 rounded-[1.25rem] flex flex-shrink-0 items-center justify-center relative transition-all group-hover:scale-110 group-hover:rotate-3 shadow-lg ${isOnSite ? 'bg-emerald-500/10 text-emerald-500' : 'bg-primary/10 text-primary'}`}>
+                            <User className="w-6 h-6" />
                           </div>
-                          <span className="font-bold text-slate-900 dark:text-white truncate max-w-[150px]" title={driver.name}>
+                          <span className="font-black text-foreground text-lg tracking-tighter truncate max-w-[200px]" title={driver.name}>
                             {driver.name}
                           </span>
                         </div>
                       </td>
-                      <td className="p-5 font-mono font-medium text-slate-600 dark:text-gray-300">
+                      <td className="p-8 font-black uppercase tracking-widest text-xs text-muted/60">
                         {driver.licenseNumber}
                       </td>
-                      <td className="p-5 font-medium text-slate-600 dark:text-gray-300 flex items-center gap-2">
-                        <Phone className="w-3.5 h-3.5 text-slate-400" />
-                        {driver.phone}
+                      <td className="p-8">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-muted/5 flex items-center justify-center">
+                            <Phone className="w-4 h-4 text-muted/40" />
+                          </div>
+                          <span className="font-bold text-foreground text-base tracking-tight">{driver.phone}</span>
+                        </div>
                       </td>
-                      <td className="p-5">
-                        <span className="text-sm font-medium text-blue-600 dark:text-blue-400 truncate max-w-[150px] inline-block" title={carrierName}>
-                          {carrierName !== '-' ? carrierName : <span className="text-slate-400 italic">None</span>}
+                      <td className="p-8">
+                        <span className="text-sm font-black uppercase tracking-widest text-primary group-hover:tracking-[0.1em] transition-all duration-300 truncate max-w-[200px] inline-block" title={carrierName}>
+                          {carrierName !== '-' ? carrierName : <span className="text-muted/30 italic font-normal tracking-normal lowercase">No Organization</span>}
                         </span>
                       </td>
-                      <td className="p-5">
+                      <td className="p-8 text-center">
                         {isOnSite ? (
-                          <span className="inline-flex px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-500 bg-emerald-500/10 border border-emerald-500/20">{t('drv.statusOn') || 'On Site'}</span>
+                          <span className="inline-flex px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] text-emerald-600 dark:text-emerald-400 bg-emerald-500/5 border-2 border-emerald-500/20 shadow-lg shadow-emerald-500/5">{t('drv.statusOn') || 'On Site'}</span>
                         ) : (
-                          <span className="inline-flex px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-gray-500 bg-slate-100 dark:bg-gray-500/10 border border-slate-200 dark:border-white/5">{t('drv.statusAway') || 'Away'}</span>
+                          <span className="inline-flex px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] text-muted bg-muted/10 border-2 border-border/20">{t('drv.statusAway') || 'Away'}</span>
                         )}
                       </td>
-                      <td className="p-5 text-right">
-                        <div className="flex justify-end gap-2">
+                      <td className="p-8 text-right pr-12 whitespace-nowrap overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex justify-end gap-3 items-center transition-all duration-300 translate-x-12 group-hover:translate-x-0">
                           {canEditDrivers ? (
-                            <>
-                              <button onClick={() => handleOpenModal(driver)} className="p-2 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 rounded-lg text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white transition-colors" title="Edit"><Edit2 className="w-4 h-4" /></button>
-                              <button onClick={() => handleDeleteClick(driver.id)} className="p-2 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 text-red-600 dark:text-red-400 rounded-lg transition-colors" title="Delete"><Trash2 className="w-4 h-4" /></button>
-                            </>
+                            <div className="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-all">
+                              <button onClick={() => handleOpenModal(driver)} className="w-12 h-12 flex items-center justify-center bg-muted/10 hover:bg-primary hover:text-white rounded-[1rem] text-muted transition-all shadow-lg hover:shadow-primary/30" title="Edit"><Edit2 className="w-5 h-5" /></button>
+                              <button onClick={() => handleDeleteClick(driver.id)} className="w-12 h-12 flex items-center justify-center bg-red-500/10 hover:bg-red-500 hover:text-white text-red-600 rounded-[1rem] transition-all shadow-lg hover:shadow-red-500/30" title="Delete"><Trash2 className="w-5 h-5" /></button>
+                            </div>
                           ) : (
-                            <span className="text-xs text-slate-400 italic">No access</span>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-muted/30 italic">No access</span>
                           )}
                         </div>
                       </td>
@@ -320,42 +338,47 @@ export const Drivers: React.FC = () => {
       {isModalOpen && (
         <ModalPortal>
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-[#1e1e1e] w-full max-w-md rounded-2xl border border-slate-200 dark:border-white/10 p-6 shadow-2xl">
-              <h2 className="text-xl font-bold mb-6 text-slate-900 dark:text-white">{editingDriver ? t('drv.edit') : t('drv.add')}</h2>
-              <form onSubmit={handleSave} className="space-y-4">
+            <div className="bg-surface w-full max-w-lg rounded-[3rem] border border-border p-10 shadow-2xl relative overflow-y-auto max-h-[90vh] custom-scrollbar">
+              <h2 className="text-3xl font-black mb-10 text-foreground tracking-tighter">{editingDriver ? t('drv.edit') : t('drv.add')} Driver</h2>
+              <form onSubmit={handleSave} className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-slate-500 dark:text-gray-400 mb-1">{t('drv.fullName')} *</label>
-                  <input required value={name} onChange={e => setName(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-3 text-slate-900 dark:text-white focus:border-blue-500 focus:outline-none" />
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-3 px-1">{t('drv.fullName')} *</label>
+                  <input required value={name} onChange={e => setName(e.target.value)} className="w-full bg-muted/5 border border-border rounded-2xl p-5 text-foreground font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all" placeholder="Enter full name" />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-500 dark:text-gray-400 mb-1">{t('drv.license')} *</label>
-                  <input required value={license} onChange={e => setLicense(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-3 text-slate-900 dark:text-white focus:border-blue-500 focus:outline-none" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-500 dark:text-gray-400 mb-1">{t('common.phone')} *</label>
-                  <input required value={phone} onChange={e => setPhone(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-3 text-slate-900 dark:text-white focus:border-blue-500 focus:outline-none" />
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-3 px-1">{t('drv.license')} *</label>
+                    <input required value={license} onChange={e => setLicense(e.target.value)} className="w-full bg-muted/5 border border-border rounded-2xl p-5 text-foreground font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all" placeholder="License #" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-3 px-1">{t('common.phone')} *</label>
+                    <input required value={phone} onChange={e => setPhone(e.target.value)} className="w-full bg-muted/5 border border-border rounded-2xl p-5 text-foreground font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all" placeholder="Phone #" />
+                  </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-500 dark:text-gray-400 mb-1">{t('common.carrier')}</label>
-                  <div className="relative">
-                    <Briefcase className="absolute left-3 top-3 w-5 h-5 text-slate-400 dark:text-gray-500" />
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-3 px-1">{t('common.carrier')}</label>
+                  <div className="relative group">
+                    <Briefcase className="absolute left-5 top-1/2 -translate-y-1/2 w-6 h-6 text-muted transition-colors group-focus-within:text-primary" />
                     <select
                       value={carrierId}
                       onChange={e => setCarrierId(e.target.value)}
-                      className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg pl-10 pr-3 py-3 text-slate-900 dark:text-white focus:border-blue-500 focus:outline-none appearance-none"
+                      className="w-full bg-muted/5 border border-border rounded-2xl pl-16 pr-6 py-5 text-foreground font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none appearance-none transition-all"
                     >
-                      <option value="">-- No Carrier --</option>
+                      <option value="">-- No Organization --</option>
                       {carriers.map(c => (
                         <option key={c.id} value={c.name}>{c.name}</option>
                       ))}
                     </select>
+                    <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-muted">
+                      <ChevronDown className="w-5 h-5" />
+                    </div>
                   </div>
                 </div>
 
-                <div className="flex justify-end gap-3 pt-4">
-                  <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white">{t('common.cancel')}</button>
-                  <button type="submit" className="px-6 py-2 bg-[#0a84ff] hover:bg-blue-600 rounded-lg font-medium text-white">{t('common.save')}</button>
+                <div className="flex justify-end gap-5 pt-10 border-t border-border/50 mt-4">
+                  <button type="button" onClick={() => setIsModalOpen(false)} className="px-8 py-4 text-sm font-black uppercase tracking-widest text-muted hover:text-foreground transition-colors">{t('common.dismiss')}</button>
+                  <button type="submit" className="px-12 py-5 bg-primary hover:bg-blue-600 rounded-2xl font-black uppercase tracking-widest text-xs text-white shadow-xl shadow-primary/30 transition-all active:scale-95">{t('common.save')}</button>
                 </div>
               </form>
             </div>

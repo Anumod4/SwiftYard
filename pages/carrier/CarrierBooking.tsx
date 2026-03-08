@@ -121,7 +121,7 @@ export const CarrierBooking: React.FC<CarrierBookingProps> = ({
     return (
         <div className="max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
             <header className="mb-10 text-center">
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-500/10 text-blue-500 rounded-full text-[10px] font-black uppercase tracking-widest mb-4 border border-blue-500/20 shadow-sm">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#3B82F6]/10 text-[#3B82F6] rounded-full text-[10px] font-black uppercase tracking-widest mb-4 border border-[#3B82F6]/20 shadow-sm">
                     <Calendar className="w-3 h-3" /> New Appointment
                 </div>
                 <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter mb-2">Reserve Your Slot</h2>
@@ -129,12 +129,12 @@ export const CarrierBooking: React.FC<CarrierBookingProps> = ({
             </header>
 
             <GlassCard className="p-1 md:p-10 relative overflow-hidden bg-white/40 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-xl">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-emerald-500 opacity-50" />
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#3B82F6] via-indigo-500 to-emerald-500 opacity-50" />
 
                 <form onSubmit={handleBooking} className="p-6 md:p-0 space-y-10">
                     <section className="space-y-6">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-2xl bg-blue-500/10 text-blue-500 flex items-center justify-center shadow-inner">
+                            <div className="w-10 h-10 rounded-2xl bg-[#3B82F6]/10 text-[#3B82F6] flex items-center justify-center shadow-inner">
                                 <MapPin className="w-5 h-5" />
                             </div>
                             <div>
@@ -150,7 +150,7 @@ export const CarrierBooking: React.FC<CarrierBookingProps> = ({
                                     required
                                     value={bookingFacilityId}
                                     onChange={e => setBookingFacilityId(e.target.value)}
-                                    className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-2xl p-4 text-slate-900 dark:text-white font-bold focus:border-blue-500 focus:ring-4 focus:ring-blue-500/5 outline-none transition-all appearance-none cursor-pointer"
+                                    className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-2xl p-4 text-slate-900 dark:text-white font-bold focus:border-[#3B82F6] focus:ring-4 focus:ring-[#3B82F6]/5 outline-none transition-all appearance-none cursor-pointer"
                                 >
                                     <option value="">Choose a Location...</option>
                                     {facilities.filter(f => userProfile?.assignedFacilities.includes(f.id)).map(f => (
@@ -164,14 +164,14 @@ export const CarrierBooking: React.FC<CarrierBookingProps> = ({
                                     <button
                                         type="button"
                                         onClick={() => setBookingLoad('Inbound')}
-                                        className={`flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${bookingLoad === 'Inbound' ? 'bg-white dark:bg-white/10 text-blue-500 shadow-sm border border-slate-200 dark:border-white/10' : 'text-slate-400 hover:text-slate-600 dark:hover:text-white'}`}
+                                        className={`flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${bookingLoad === 'Inbound' ? 'bg-white dark:bg-white/10 text-[#3B82F6] shadow-sm border border-slate-200 dark:border-white/10' : 'text-slate-400 hover:text-slate-600 dark:hover:text-white'}`}
                                     >
                                         Inbound
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => setBookingLoad('Outbound')}
-                                        className={`flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${bookingLoad === 'Outbound' ? 'bg-white dark:bg-white/10 text-blue-500 shadow-sm border border-slate-200 dark:border-white/10' : 'text-slate-400 hover:text-slate-600 dark:hover:text-white'}`}
+                                        className={`flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${bookingLoad === 'Outbound' ? 'bg-white dark:bg-white/10 text-[#3B82F6] shadow-sm border border-slate-200 dark:border-white/10' : 'text-slate-400 hover:text-slate-600 dark:hover:text-white'}`}
                                     >
                                         Outbound
                                     </button>
@@ -221,7 +221,7 @@ export const CarrierBooking: React.FC<CarrierBookingProps> = ({
                                     value={bookingTrailer}
                                     onChange={e => setBookingTrailer(e.target.value)}
                                     placeholder="EX: TRL-9012"
-                                    className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-2xl p-4 text-slate-900 dark:text-white font-bold placeholder:text-slate-300 dark:placeholder:text-gray-700 focus:border-blue-500 outline-none transition-all"
+                                    className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-2xl p-4 text-slate-900 dark:text-white font-bold placeholder:text-slate-300 dark:placeholder:text-gray-700 focus:border-[#3B82F6] outline-none transition-all"
                                 />
                             </div>
 
@@ -241,7 +241,7 @@ export const CarrierBooking: React.FC<CarrierBookingProps> = ({
                                                 }}
                                                 onFocus={() => setIsTrailerTypeDropdownOpen(true)}
                                                 placeholder="Search Equipment Type..."
-                                                className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-2xl pl-10 pr-10 py-4 text-slate-900 dark:text-white font-bold focus:border-blue-500 outline-none transition-all"
+                                                className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-2xl pl-10 pr-10 py-4 text-slate-900 dark:text-white font-bold focus:border-[#3B82F6] outline-none transition-all"
                                             />
                                             {trailerTypeSearch && (
                                                 <button
@@ -283,7 +283,7 @@ export const CarrierBooking: React.FC<CarrierBookingProps> = ({
                                                             setIsNewTrailerTypeModalOpen(true);
                                                             setIsTrailerTypeDropdownOpen(false);
                                                         }}
-                                                        className="w-full text-left px-4 py-3 bg-blue-50/50 hover:bg-blue-50 dark:bg-blue-500/10 dark:hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-xl transition-colors font-bold text-sm flex items-center gap-2"
+                                                        className="w-full text-left px-4 py-3 bg-blue-50/50 hover:bg-blue-50 dark:bg-[#3B82F6]/10 dark:hover:bg-[#3B82F6]/20 text-[#3B82F6] dark:text-blue-400 rounded-xl transition-colors font-bold text-sm flex items-center gap-2"
                                                     >
                                                         <Truck className="w-4 h-4" /> + Add New Trailer Type
                                                     </button>
@@ -320,7 +320,7 @@ export const CarrierBooking: React.FC<CarrierBookingProps> = ({
                                                     }}
                                                     onFocus={() => setIsDriverDropdownOpen(true)}
                                                     placeholder="Search by Name or License..."
-                                                    className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-2xl pl-10 pr-10 py-4 text-slate-900 dark:text-white font-bold focus:border-blue-500 outline-none transition-all"
+                                                    className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-2xl pl-10 pr-10 py-4 text-slate-900 dark:text-white font-bold focus:border-[#3B82F6] outline-none transition-all"
                                                 />
                                                 {driverSearch && (
                                                     <button
@@ -365,7 +365,7 @@ export const CarrierBooking: React.FC<CarrierBookingProps> = ({
                                                                 setIsNewDriverModalOpen(true);
                                                                 setIsDriverDropdownOpen(false);
                                                             }}
-                                                            className="w-full text-left px-4 py-3 bg-blue-50/50 hover:bg-blue-50 dark:bg-blue-500/10 dark:hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-xl transition-colors font-bold text-sm flex items-center gap-2"
+                                                            className="w-full text-left px-4 py-3 bg-blue-50/50 hover:bg-blue-50 dark:bg-[#3B82F6]/10 dark:hover:bg-[#3B82F6]/20 text-[#3B82F6] dark:text-blue-400 rounded-xl transition-colors font-bold text-sm flex items-center gap-2"
                                                         >
                                                             <User className="w-4 h-4" /> + Onboard New Driver
                                                         </button>
@@ -386,11 +386,11 @@ export const CarrierBooking: React.FC<CarrierBookingProps> = ({
                     </section>
 
                     <div className="pt-6 relative group">
-                        <div className="absolute inset-0 bg-blue-500 rounded-2xl blur-xl group-hover:blur-2xl opacity-10 transition-all" />
+                        <div className="absolute inset-0 bg-[#3B82F6] rounded-2xl blur-xl group-hover:blur-2xl opacity-10 transition-all" />
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-400 text-white font-black py-5 rounded-2xl shadow-xl shadow-blue-600/20 active:scale-[0.98] transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-sm relative overflow-hidden"
+                            className="w-full bg-[#3B82F6] hover:bg-blue-700 disabled:bg-slate-400 text-white font-black py-5 rounded-2xl shadow-xl shadow-[#3B82F6]/20 active:scale-[0.98] transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-sm relative overflow-hidden"
                         >
                             {isSubmitting ? (
                                 <>

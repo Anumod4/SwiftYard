@@ -112,47 +112,51 @@ export const TrailerTypes: React.FC = () => {
   ];
 
   return (
-    <div className="p-8 h-full flex flex-col animate-in fade-in duration-500">
-      <div className="flex justify-between items-center mb-8">
+    <div className="p-8 h-full flex flex-col animate-in fade-in duration-700">
+      <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-12">
         <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">{t('tt.title')}</h1>
-          <p className="text-muted">{t('tt.subtitle')}</p>
+          <h1 className="text-5xl font-black text-foreground mb-3 tracking-tighter leading-tight">Equipment Types</h1>
+          <p className="text-muted text-lg font-medium opacity-70">{t('tt.subtitle')}</p>
         </div>
-        {canEditTypes && (
-          <div className="flex gap-2">
-            <button
-              onClick={() => setIsBulkOpen(true)}
-              className="bg-muted/10 hover:bg-muted/20 text-foreground px-4 py-3 rounded-xl flex items-center shadow-lg transition-all active:scale-95 font-bold"
-              title="Bulk Create"
-            >
-              <ListPlus className="w-5 h-5" />
-            </button>
-            <button
-              onClick={() => handleOpenModal()}
-              className="bg-primary hover:bg-blue-600 text-white px-6 py-3 rounded-xl flex items-center shadow-lg shadow-primary/30 transition-all active:scale-95 font-medium"
-            >
-              <Plus className="w-5 h-5 mr-2" />
-              {t('tt.add')}
-            </button>
-          </div>
-        )}
+
+        <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+          {canEditTypes && (
+            <div className="flex gap-4">
+              <button
+                onClick={() => setIsBulkOpen(true)}
+                className="bg-surface border border-border hover:bg-muted/5 text-foreground px-6 py-4 rounded-2xl flex items-center shadow-lg transition-all active:scale-95 font-bold"
+                title="Bulk Create"
+              >
+                <ListPlus className="w-5 h-5 text-primary" />
+              </button>
+              <button
+                onClick={() => handleOpenModal()}
+                className="bg-primary hover:bg-blue-600 text-white px-8 py-4 rounded-2xl flex items-center shadow-2xl shadow-primary/30 transition-all active:scale-95 font-black uppercase tracking-widest text-xs whitespace-nowrap"
+              >
+                <Plus className="w-5 h-5 mr-2" />
+                {t('tt.add')}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {paginatedTrailerTypes.map(type => (
-          <GlassCard key={type.id || type.name} className="p-6 flex flex-col group h-44 relative">
+          <GlassCard key={type.id || type.name} className="p-10 flex flex-col group relative h-full hover:scale-[1.02] transition-all duration-500 border-none shadow-xl bg-surface/50 rounded-[2.5rem] overflow-hidden">
+            <div className="absolute top-0 left-0 w-2 h-full bg-primary shadow-[0_0_15px_rgba(59,130,246,0.3)]"></div>
             {canEditTypes && (
-              <div className="absolute top-4 right-4 flex items-center gap-2 z-10 transition-all duration-300 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto translate-x-2 group-hover:translate-x-0">
+              <div className="absolute top-8 right-8 flex items-center gap-2 z-10 transition-all duration-500 opacity-0 group-hover:opacity-100">
                 <button
                   onClick={() => handleOpenModal(type)}
-                  className="w-8 h-8 flex items-center justify-center bg-muted/10 hover:bg-primary hover:text-white rounded-lg transition-colors text-muted"
+                  className="w-10 h-10 flex items-center justify-center bg-surface hover:bg-primary hover:text-white rounded-xl shadow-lg transition-all text-muted"
                   title="Edit"
                 >
                   <Edit2 className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => handleDeleteClick(type.id)}
-                  className="w-8 h-8 flex items-center justify-center bg-red-500/10 hover:bg-red-500 hover:text-white rounded-lg transition-colors text-red-600 dark:text-red-500"
+                  className="w-10 h-10 flex items-center justify-center bg-surface hover:bg-red-500 hover:text-white rounded-xl shadow-lg transition-all text-red-600"
                   title="Delete"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -160,23 +164,34 @@ export const TrailerTypes: React.FC = () => {
               </div>
             )}
 
-            <div className="flex items-start justify-between pr-16">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                  <Truck className="w-6 h-6" />
-                </div>
-                <div>
-                  <span className="font-bold text-lg text-foreground block">{type.name}</span>
-                  <div className="flex items-center text-xs text-muted mt-1">
-                    <Clock className="w-3 h-3 mr-1" /> {type.defaultDuration} {t('tt.defaultDuration')}
-                  </div>
-                  {type.processTimePerPallet ? (
-                    <div className="flex items-center text-xs text-emerald-600 dark:text-emerald-400 mt-1">
-                      <Box className="w-3 h-3 mr-1" /> {type.processTimePerPallet} {t('tt.processTime')}
-                    </div>
-                  ) : null}
-                </div>
+            <div className="flex items-center gap-6 mb-10 pr-12 pl-4">
+              <div className="w-16 h-16 rounded-[1.5rem] bg-primary/10 flex items-center justify-center shrink-0 transition-transform group-hover:rotate-3 shadow-lg shadow-primary/5">
+                <Truck className="w-8 h-8 text-primary" />
               </div>
+              <div className="overflow-hidden">
+                <h3 className="text-2xl font-black text-foreground leading-tight truncate tracking-tighter">{type.name}</h3>
+                <p className="text-[10px] text-muted truncate tracking-widest font-black uppercase opacity-40">Equipment Class</p>
+              </div>
+            </div>
+
+            <div className="space-y-6 mt-2 flex-1 pl-4">
+              <div className="flex items-center text-sm text-foreground font-bold group/item">
+                <div className="p-2.5 rounded-xl bg-muted/5 mr-4 transition-colors group-hover/item:bg-primary/10">
+                  <Clock className="w-4.5 h-4.5 text-muted transition-colors group-hover/item:text-primary" />
+                </div>
+                <span className="opacity-80 font-black tracking-tight">{type.defaultDuration} Minutes Standard</span>
+              </div>
+
+              {type.processTimePerPallet ? (
+                <div className="flex items-center text-sm font-bold group/item">
+                  <div className="p-2.5 rounded-xl bg-emerald-500/5 mr-4 transition-colors group-hover/item:bg-emerald-500/10">
+                    <Box className="w-4.5 h-4.5 text-emerald-500" />
+                  </div>
+                  <span className="text-emerald-600 dark:text-emerald-400 font-black tracking-tight">{type.processTimePerPallet} Min / Unit</span>
+                </div>
+              ) : (
+                <div className="text-[10px] text-muted/30 italic px-1 font-black uppercase tracking-[0.2em] mt-4">Static Loading Profile</div>
+              )}
             </div>
           </GlassCard>
         ))}
@@ -192,23 +207,24 @@ export const TrailerTypes: React.FC = () => {
 
       {isModalOpen && (
         <ModalPortal>
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-            <div className="bg-surface w-full max-w-sm rounded-2xl border border-border p-6 shadow-2xl">
-              <h2 className="text-xl font-bold mb-6 text-foreground">{editingType ? t('common.edit') : t('common.add')} {t('tt.modalTitle')}</h2>
-              <form onSubmit={handleSave} className="space-y-4">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+            <div className="bg-surface w-full max-w-sm rounded-[2.5rem] border border-border p-8 shadow-2xl overflow-y-auto max-h-[90vh] custom-scrollbar">
+              <h2 className="text-2xl font-black mb-8 text-foreground tracking-tight">{editingType ? t('common.edit') : t('common.add')} {t('tt.modalTitle')}</h2>
+              <form onSubmit={handleSave} className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-muted mb-1">{t('tt.typeName')} *</label>
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">{t('tt.typeName')} *</label>
                   <input
                     required
                     autoFocus
+                    placeholder="e.g. 53ft Dry Van"
                     value={typeName}
                     onChange={e => setTypeName(e.target.value)}
-                    className="w-full bg-muted/5 border border-border rounded-lg p-3 text-foreground focus:border-primary focus:outline-none"
+                    className="w-full bg-muted/5 border border-border rounded-xl p-4 text-foreground font-bold focus:border-primary focus:outline-none transition-all"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-muted mb-1">{t('tt.defServiceTime')} *</label>
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">{t('tt.defServiceTime')} (Min) *</label>
                   <input
                     type="number"
                     min="15"
@@ -216,27 +232,27 @@ export const TrailerTypes: React.FC = () => {
                     required
                     value={duration}
                     onChange={e => setDuration(parseInt(e.target.value))}
-                    className="w-full bg-muted/5 border border-border rounded-lg p-3 text-foreground focus:border-primary focus:outline-none"
+                    className="w-full bg-muted/5 border border-border rounded-xl p-4 text-foreground font-bold focus:border-primary focus:outline-none transition-all"
                   />
-                  <p className="text-xs text-muted/60 mt-1">{t('tt.multiplesHint')}</p>
+                  <p className="text-[10px] text-muted/40 font-black uppercase tracking-widest mt-2">{t('tt.multiplesHint')}</p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-muted mb-1">Minutes/Pallet (Optional)</label>
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">Minutes/Pallet (Optional)</label>
                   <input
                     type="number"
                     min="0"
                     placeholder="e.g. 5"
                     value={processTimePerPallet ?? ''}
                     onChange={e => setProcessTimePerPallet(e.target.value ? parseFloat(e.target.value) : undefined)}
-                    className="w-full bg-muted/5 border border-border rounded-lg p-3 text-foreground focus:border-primary focus:outline-none"
+                    className="w-full bg-muted/5 border border-border rounded-xl p-4 text-foreground font-bold focus:border-primary focus:outline-none transition-all"
                   />
-                  <p className="text-xs text-muted/60 mt-1">{t('tt.palletHint')}</p>
+                  <p className="text-[10px] text-muted/40 font-black uppercase tracking-widest mt-2">{t('tt.palletHint')}</p>
                 </div>
 
-                <div className="flex justify-end gap-3 pt-4">
-                  <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-muted hover:text-foreground font-bold">{t('common.cancel')}</button>
-                  <button type="submit" className="px-6 py-2 bg-primary hover:bg-blue-600 rounded-lg font-medium text-white shadow-lg shadow-primary/20">{t('common.save')}</button>
+                <div className="flex justify-end gap-5 pt-8 border-t border-border/50">
+                  <button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-3 text-sm font-black uppercase tracking-widest text-muted hover:text-foreground transition-colors">{t('common.cancel')}</button>
+                  <button type="submit" className="px-10 py-4 bg-primary hover:bg-blue-600 rounded-2xl font-black uppercase tracking-widest text-xs text-white shadow-xl shadow-primary/30 transition-all active:scale-95">{t('common.save')}</button>
                 </div>
               </form>
             </div>

@@ -38,31 +38,39 @@ const MultiSelectDropdown: React.FC<{
         <div className="relative" ref={wrapperRef}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className={`w-full flex items-center justify-between bg-slate-100 dark:bg-black/20 border ${isOpen ? 'border-blue-500' : 'border-slate-200 dark:border-white/10'} rounded-lg px-3 py-2 text-sm text-slate-700 dark:text-gray-200 transition-all`}
+                className={`w-full flex items-center justify-between bg-muted/5 border ${isOpen ? 'border-primary' : 'border-border'} rounded-[1.25rem] px-5 py-4 text-sm text-foreground font-bold transition-all hover:bg-muted/10`}
             >
-                <span className="truncate">
-                    {selectedCount === 0 ? label : `${label} (${selectedCount})`}
+                <span className="truncate flex items-center gap-2">
+                    {selectedCount > 0 && <span className="w-5 h-5 flex items-center justify-center bg-primary text-white text-[10px] rounded-full">{selectedCount}</span>}
+                    {label}
                 </span>
-                <ChevronDown className={`w-4 h-4 ml-2 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-4 h-4 ml-2 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {isOpen && (
-                <div className="absolute top-full left-0 mt-2 w-64 max-h-60 overflow-y-auto custom-scrollbar bg-white dark:bg-[#1e1e1e] border border-slate-200 dark:border-white/10 rounded-xl shadow-2xl z-[100] p-2">
-                    {options.length === 0 ? (
-                        <div className="p-2 text-xs text-slate-400 text-center">No options available</div>
-                    ) : (
-                        options.map(opt => (
-                            <label key={opt.id} className="flex items-center gap-2 p-2 hover:bg-slate-50 dark:hover:bg-white/5 rounded-lg cursor-pointer transition-colors">
-                                <input
-                                    type="checkbox"
-                                    checked={selectedIds.includes(opt.id)}
-                                    onChange={() => onToggle(opt.id)}
-                                    className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                                />
-                                <span className="text-sm text-slate-700 dark:text-gray-300 truncate">{opt.name}</span>
-                            </label>
-                        ))
-                    )}
+                <div className="absolute top-full left-0 mt-3 w-72 max-h-80 overflow-y-auto custom-scrollbar bg-surface border border-border rounded-[2rem] shadow-2xl z-[100] p-6 animate-in fade-in zoom-in-95 duration-200">
+                    <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-4 px-2">{label}</h4>
+                    <div className="space-y-1">
+                        {options.length === 0 ? (
+                            <div className="p-4 text-xs text-muted text-center italic">No options available</div>
+                        ) : (
+                            options.map(opt => (
+                                <label key={opt.id} className="flex items-center gap-3 p-3 hover:bg-muted/5 rounded-2xl cursor-pointer transition-all group">
+                                    <div className="relative flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedIds.includes(opt.id)}
+                                            onChange={() => onToggle(opt.id)}
+                                            className="w-5 h-5 rounded-lg border-border text-primary focus:ring-primary/20 bg-transparent transition-all cursor-pointer"
+                                        />
+                                    </div>
+                                    <span className={`text-sm tracking-tight transition-colors truncate font-bold ${selectedIds.includes(opt.id) ? 'text-primary' : 'text-foreground group-hover:text-primary'}`}>
+                                        {opt.name}
+                                    </span>
+                                </label>
+                            ))
+                        )}
+                    </div>
                 </div>
             )}
         </div>
@@ -280,8 +288,8 @@ export const Trailers: React.FC = () => {
             return <span className="opacity-0 group-hover:opacity-30 ml-1 text-[10px]">&uarr;&darr;</span>;
         }
         return sortConfig.direction === 'asc'
-            ? <span className="ml-1 text-blue-500 font-bold">&uarr;</span>
-            : <span className="ml-1 text-blue-500 font-bold">&darr;</span>;
+            ? <span className="ml-1 text-primary font-black">&uarr;</span>
+            : <span className="ml-1 text-primary font-black">&darr;</span>;
     };
 
     // Reset page on filter change
@@ -375,24 +383,24 @@ export const Trailers: React.FC = () => {
     ];
 
     return (
-        <div className="p-8 h-full flex flex-col animate-in fade-in duration-500">
-            <div className="flex justify-between items-center mb-8">
+        <div className="p-8 h-full flex flex-col animate-in fade-in duration-700">
+            <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-12">
                 <div>
-                    <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">{t('log.title')}</h1>
-                    <p className="text-slate-500 dark:text-gray-400">{t('log.subtitle')}</p>
+                    <h1 className="text-5xl font-black text-foreground mb-3 tracking-tighter leading-tight">Equipment Log</h1>
+                    <p className="text-muted text-lg font-medium opacity-70">Monitor live asset status and localized positioning.</p>
                 </div>
                 {canEditTrailers && (
-                    <div className="flex gap-2">
+                    <div className="flex gap-4">
                         <button
                             onClick={() => setIsBulkOpen(true)}
-                            className="bg-slate-800 dark:bg-white/20 hover:bg-slate-700 dark:hover:bg-white/30 text-white px-4 py-3 rounded-xl flex items-center shadow-lg transition-all active:scale-95 font-bold"
+                            className="bg-surface border border-border hover:bg-muted/5 text-foreground px-6 py-4 rounded-2xl flex items-center shadow-lg transition-all active:scale-95 font-bold"
                             title="Bulk Create"
                         >
-                            <ListPlus className="w-5 h-5" />
+                            <ListPlus className="w-5 h-5 text-primary" />
                         </button>
                         <button
                             onClick={() => handleOpenModal()}
-                            className="bg-[#0a84ff] hover:bg-blue-600 text-white px-6 py-3 rounded-xl flex items-center shadow-lg shadow-blue-500/30 transition-all active:scale-95 font-medium"
+                            className="bg-primary hover:bg-blue-600 text-white px-8 py-4 rounded-2xl flex items-center shadow-2xl shadow-primary/30 transition-all active:scale-95 font-black uppercase tracking-widest text-xs"
                         >
                             <Plus className="w-5 h-5 mr-2" />
                             {t('log.add')}
@@ -401,17 +409,17 @@ export const Trailers: React.FC = () => {
                 )}
             </div>
 
-            <GlassCard className="mb-6 p-4 !overflow-visible z-50">
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-4">
+            <GlassCard className="mb-8 p-6 !overflow-visible z-50 rounded-[2.5rem]">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
                     {/* General Search */}
-                    <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-gray-500" />
+                    <div className="relative flex-1 group">
+                        <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted transition-colors group-focus-within:text-primary" />
                         <input
                             type="text"
                             placeholder={t('log.searchPlaceholder')}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg pl-9 pr-4 py-2 text-sm text-slate-900 dark:text-white focus:border-blue-500 outline-none"
+                            className="w-full bg-muted/5 border border-border rounded-[1.25rem] pl-14 pr-6 py-4 text-sm text-foreground focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all font-bold"
                         />
                     </div>
 
@@ -436,71 +444,89 @@ export const Trailers: React.FC = () => {
                     </div>
 
                     {/* Location Wildcard Filter */}
-                    <div className="relative flex-1">
-                        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-gray-500" />
+                    <div className="relative flex-1 group">
+                        <MapPin className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted transition-colors group-focus-within:text-primary" />
                         <input
                             type="text"
                             placeholder="Location (e.g. Dock*)"
                             value={locationSearch}
                             onChange={(e) => setLocationSearch(e.target.value)}
-                            className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg pl-9 pr-4 py-2 text-sm text-slate-900 dark:text-white focus:border-blue-500 outline-none"
+                            className="w-full bg-muted/5 border border-border rounded-[1.25rem] pl-14 pr-12 py-4 text-sm text-foreground focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all font-bold"
                         />
                         {locationSearch && (
                             <button
                                 onClick={() => setLocationSearch('')}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-white"
+                                className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 hover:bg-muted/10 rounded-full text-muted hover:text-foreground transition-all"
                             >
-                                <X className="w-3 h-3" />
+                                <X className="w-4 h-4" />
                             </button>
                         )}
                     </div>
                 </div>
 
-                <div className="flex gap-2 w-full overflow-x-auto pb-1 custom-scrollbar">
+                <div className="flex gap-3 w-full overflow-x-auto pb-2 custom-scrollbar">
                     {['All', 'Scheduled', 'GatedIn', 'InYard', 'CheckedIn', 'CheckedOut', 'GatedOut'].map(status => (
                         <button
                             key={status}
                             onClick={() => setStatusFilter(status)}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${statusFilter === status ? 'bg-blue-500 text-white' : 'bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-gray-400 hover:bg-slate-200 dark:hover:bg-white/10'}`}
+                            className={`px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap border-2
+                                ${statusFilter === status
+                                    ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20'
+                                    : 'bg-muted/5 text-muted border-transparent hover:border-border hover:bg-muted/10'}`}
                         >
-                            {status === 'All' ? t('log.statusAll') : status}
+                            {status === 'All' ? t('log.statusAll') : status.replace(/([A-Z])/g, ' $1').trim()}
                         </button>
                     ))}
                 </div>
             </GlassCard>
 
-            <GlassCard className="flex-1 overflow-hidden flex flex-col p-0">
+            <GlassCard className="flex-1 overflow-hidden flex flex-col rounded-[2.5rem] border-none shadow-2xl bg-surface/40">
                 <div className="flex-1 overflow-y-auto custom-scrollbar">
                     {filteredTrailers.length === 0 ? (
-                        <div className="h-64 flex flex-col items-center justify-center text-slate-400 dark:text-gray-500">
-                            <Truck className="w-16 h-16 mb-4 opacity-20" />
+                        <div className="h-64 flex flex-col items-center justify-center text-muted">
+                            <Truck className="w-12 h-12 mb-4 opacity-20" />
                             <p className="text-lg font-medium">{t('log.empty')}</p>
                         </div>
                     ) : (
                         <table className="w-full text-left border-collapse min-w-[1000px]">
-                            <thead className="sticky top-0 bg-slate-50 dark:bg-[#1a1a1a] z-10 text-xs uppercase text-slate-500 dark:text-gray-500 font-bold tracking-wider">
+                            <thead className="sticky top-0 bg-surface/95 backdrop-blur-xl z-10 text-[10px] uppercase text-muted font-black tracking-[0.2em] border-b border-border">
                                 <tr>
-                                    <th className="p-5 border-b border-slate-200 dark:border-white/10 w-2"></th>
-                                    <th onClick={() => handleSort('number')} className="p-5 border-b border-slate-200 dark:border-white/10 cursor-pointer group hover:bg-slate-100 dark:hover:bg-white/5 transition-colors">
-                                        Trailer {getSortIcon('number')}
+                                    <th onClick={() => handleSort('number')} className="p-10 cursor-pointer group hover:bg-primary/5 transition-colors">
+                                        <div className="flex items-center gap-2">
+                                            <Truck className="w-3 h-3" />
+                                            Trailer {getSortIcon('number')}
+                                        </div>
                                     </th>
-                                    <th onClick={() => handleSort('driver')} className="p-5 border-b border-slate-200 dark:border-white/10 cursor-pointer group hover:bg-slate-100 dark:hover:bg-white/5 transition-colors">
-                                        Driver {getSortIcon('driver')}
+                                    <th onClick={() => handleSort('driver')} className="p-8 cursor-pointer group hover:bg-muted/5 transition-colors">
+                                        <div className="flex items-center gap-2">
+                                            <User className="w-3 h-3" />
+                                            Driver {getSortIcon('driver')}
+                                        </div>
                                     </th>
-                                    <th onClick={() => handleSort('carrier')} className="p-5 border-b border-slate-200 dark:border-white/10 cursor-pointer group hover:bg-slate-100 dark:hover:bg-white/5 transition-colors">
-                                        Carrier {getSortIcon('carrier')}
+                                    <th onClick={() => handleSort('carrier')} className="p-8 cursor-pointer group hover:bg-muted/5 transition-colors">
+                                        <div className="flex items-center gap-2">
+                                            <Briefcase className="w-3 h-3" />
+                                            Carrier {getSortIcon('carrier')}
+                                        </div>
                                     </th>
-                                    <th onClick={() => handleSort('location')} className="p-5 border-b border-slate-200 dark:border-white/10 cursor-pointer group hover:bg-slate-100 dark:hover:bg-white/5 transition-colors">
-                                        Location {getSortIcon('location')}
+                                    <th onClick={() => handleSort('location')} className="p-8 cursor-pointer group hover:bg-muted/5 transition-colors">
+                                        <div className="flex items-center gap-2">
+                                            <MapPin className="w-3 h-3" />
+                                            Location {getSortIcon('location')}
+                                        </div>
                                     </th>
-                                    <th onClick={() => handleSort('status')} className="p-5 border-b border-slate-200 dark:border-white/10 cursor-pointer group hover:bg-slate-100 dark:hover:bg-white/5 transition-colors">
-                                        Status {getSortIcon('status')}
+                                    <th onClick={() => handleSort('status')} className="p-8 cursor-pointer group hover:bg-muted/5 transition-colors text-center">
+                                        <div className="flex items-center gap-2 justify-center">
+                                            <Navigation className="w-3 h-3" />
+                                            Status {getSortIcon('status')}
+                                        </div>
                                     </th>
-                                    <th className="p-5 border-b border-slate-200 dark:border-white/10">Documents</th>
-                                    <th className="p-5 border-b border-slate-200 dark:border-white/10 text-right">Actions</th>
+                                    <th className="p-8 text-right pr-12">
+                                        Actions
+                                    </th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-200 dark:divide-white/5">
+                            <tbody className="divide-y divide-border/50 bg-surface/30">
                                 {paginatedTrailers.map(trailer => {
                                     const canInstruct = ['GatedIn', 'MovingToDock', 'ReadyForCheckIn', 'CheckedIn', 'ReadyForCheckOut', 'CheckedOut', 'MovingToYard', 'InYard'].includes(trailer.status);
                                     const driverName = drivers.find(d => d.id === trailer.currentDriverId)?.name || 'Unknown Driver';
@@ -512,125 +538,98 @@ export const Trailers: React.FC = () => {
                                         return c ? c.name : trailer.carrierId;
                                     })();
                                     const locationName = getLocationName(trailer.location);
-                                    const docCount = (trailer.documents?.length || 0) + (trailer.ewayBillNumber ? 1 : 0);
                                     const hasActiveAppt = !!findActiveAppointmentId(trailer);
 
-                                    let statusColor = "bg-slate-500";
-                                    let statusBg = "bg-slate-100 dark:bg-white/5";
-                                    let statusText = "text-slate-500";
-
-                                    if (trailer.status === 'CheckedIn') {
-                                        statusColor = "bg-emerald-500";
-                                        statusBg = "bg-emerald-500/10";
-                                        statusText = "text-emerald-600 dark:text-emerald-400";
-                                    } else if (['GatedIn', 'MovingToDock', 'MovingToYard'].includes(trailer.status)) {
-                                        statusColor = "bg-blue-500";
-                                        statusBg = "bg-blue-500/10";
-                                        statusText = "text-blue-600 dark:text-blue-400";
-                                    } else if (['ReadyForCheckIn', 'ReadyForCheckOut'].includes(trailer.status)) {
-                                        statusColor = "bg-orange-500";
-                                        statusBg = "bg-orange-500/10";
-                                        statusText = "text-orange-600 dark:text-orange-400";
-                                    }
-
                                     return (
-                                        <tr key={trailer.id} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors group relative">
-                                            <td className="p-0 w-2">
-                                                <div className={`w-1 h-full absolute left-0 top-0 bottom-0 ${statusColor}`}></div>
-                                            </td>
-                                            <td className="p-4 pl-6">
-                                                <div className="flex items-center gap-3">
-                                                    <div className={`p-2 rounded-lg bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-gray-400`}>
-                                                        <Truck className="w-4 h-4" />
+                                        <tr
+                                            key={trailer.id}
+                                            className="hover:bg-muted/5 transition-all group cursor-pointer relative border-l-4 border-l-transparent hover:border-l-primary"
+                                            onClick={() => handleOpenModal(trailer)}
+                                        >
+                                            <td className="p-8">
+                                                <div className="flex items-center gap-5">
+                                                    <div className={`p-4 rounded-[1.25rem] transition-all group-hover:scale-110 group-hover:rotate-3 shadow-lg bg-primary/10 text-primary`}>
+                                                        <Truck className="w-6 h-6" />
                                                     </div>
                                                     <div>
-                                                        <div className="font-bold text-slate-900 dark:text-white">{trailer.number}</div>
-                                                        <div className="text-xs text-slate-500 dark:text-gray-500">{trailer.type || 'Unknown'}</div>
+                                                        <div className="font-black text-foreground text-lg tracking-tighter leading-none">{trailer.number}</div>
+                                                        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-muted opacity-60 mt-2">{trailer.type || 'Unknown'}</div>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="p-4">
-                                                <div className="flex items-center gap-2">
-                                                    <User className="w-3.5 h-3.5 text-slate-400" />
-                                                    <span className="text-sm font-medium text-slate-600 dark:text-gray-300">{driverName}</span>
+                                            <td className="p-8">
+                                                <div className="flex items-center gap-3.5">
+                                                    <div className="w-10 h-10 rounded-full bg-muted/5 border border-border flex items-center justify-center group-hover:border-primary/30 transition-colors">
+                                                        <User className="w-5 h-5 text-muted group-hover:text-primary transition-colors" />
+                                                    </div>
+                                                    <span className="text-foreground font-bold text-base tracking-tight">{driverName}</span>
                                                 </div>
                                             </td>
-                                            <td className="p-4">
-                                                <div className="flex items-center gap-2">
-                                                    <Briefcase className="w-3.5 h-3.5 text-slate-400" />
-                                                    <span className="text-sm font-medium text-slate-600 dark:text-gray-300 truncate max-w-[150px]">{carrierName}</span>
-                                                </div>
+                                            <td className="p-8">
+                                                <div className="font-black uppercase tracking-widest text-sm text-primary group-hover:tracking-[0.1em] transition-all duration-300 truncate max-w-[200px]">{carrierName}</div>
                                             </td>
-                                            <td className="p-4">
+                                            <td className="p-8">
                                                 <div className="flex items-center gap-2">
-                                                    <MapPin className={`w-3.5 h-3.5 ${locationName ? 'text-slate-400' : 'text-slate-300 dark:text-slate-600'}`} />
-                                                    <span className={`text-sm font-medium ${locationName ? 'text-slate-600 dark:text-gray-300' : 'text-slate-400 italic'}`}>
+                                                    <MapPin className={`w-4 h-4 ${locationName ? 'text-primary' : 'text-muted/40'}`} />
+                                                    <span className={`text-sm font-black ${locationName ? 'text-foreground' : 'text-muted italic'}`}>
                                                         {locationName || 'Unassigned'}
                                                     </span>
                                                 </div>
                                             </td>
-                                            <td className="p-4">
-                                                <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-transparent ${statusBg} ${statusText}`}>
+                                            <td className="p-8 text-center">
+                                                <span className={`inline-flex items-center px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] border-2
+                                                    ${trailer.status === 'CheckedIn' ? 'bg-emerald-500/5 text-emerald-600 dark:text-emerald-500 border-emerald-500/20' :
+                                                        ['GatedIn', 'MovingToDock', 'MovingToYard'].includes(trailer.status) ? 'bg-primary/5 text-primary border-primary/20' :
+                                                            ['ReadyForCheckIn', 'ReadyForCheckOut'].includes(trailer.status) ? 'bg-orange-500/5 text-orange-600 dark:text-orange-500 border-orange-500/20 shadow-lg shadow-orange-500/10' :
+                                                                'bg-muted/10 text-muted border-border/20'
+                                                    }
+                                                `}>
                                                     {trailer.status.replace(/([A-Z])/g, ' $1').trim()}
                                                 </span>
                                             </td>
-                                            <td className="p-4">
-                                                <div className="flex items-center gap-2">
-                                                    <FileText className="w-3.5 h-3.5 text-slate-400" />
-                                                    <span className="text-sm font-medium text-slate-600 dark:text-gray-300">
-                                                        {docCount > 0 ? `${docCount} Files` : '-'}
-                                                    </span>
-                                                </div>
-                                            </td>
-                                            <td className="p-4 text-right pr-6">
-                                                <div className="flex justify-end gap-2 items-center">
-                                                    {canEditTrailers ? (
-                                                        <>
-                                                            <button
-                                                                onClick={() => handleOpenModal(trailer)}
-                                                                className="p-2 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 rounded-lg text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white transition-colors"
-                                                                title="Edit Trailer"
-                                                            >
-                                                                <Edit2 className="w-4 h-4" />
-                                                            </button>
-                                                            {trailer.status === 'Scheduled' && (
+                                            <td className="p-8 text-right pr-12 whitespace-nowrap overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                                                <div className="flex justify-end gap-3 items-center transition-all duration-300 translate-x-12 group-hover:translate-x-0">
+                                                    <div className="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-all">
+                                                        {canEditTrailers && (
+                                                            <>
                                                                 <button
-                                                                    onClick={async () => {
-                                                                        if (window.confirm(`Are you sure you want to cancel trailer ${trailer.number}?`)) {
-                                                                            try {
-                                                                                await updateTrailer(trailer.id, { status: 'Cancelled' });
-                                                                                addToast('Success', `Trailer ${trailer.number} cancelled.`, 'success');
-                                                                            } catch (e: any) {
-                                                                                addToast('Error', e.message, 'error');
-                                                                            }
-                                                                        }
-                                                                    }}
-                                                                    className="p-2 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 rounded-lg text-red-600 dark:text-red-400 transition-colors"
-                                                                    title="Cancel Trailer"
+                                                                    onClick={() => handleOpenModal(trailer)}
+                                                                    className="w-12 h-12 flex items-center justify-center bg-muted/10 hover:bg-primary hover:text-white rounded-[1rem] text-muted transition-all shadow-lg hover:shadow-primary/30"
+                                                                    title="Edit"
                                                                 >
-                                                                    <X className="w-4 h-4" />
+                                                                    <Edit2 className="w-5 h-5" />
                                                                 </button>
-                                                            )}
-                                                        </>
-                                                    ) : (
-                                                        <button
-                                                            onClick={() => handleOpenModal(trailer)}
-                                                            className="p-2 bg-transparent text-slate-400 cursor-default opacity-50"
-                                                            title="View details"
-                                                        >
-                                                            <Eye className="w-4 h-4" />
-                                                        </button>
-                                                    )}
+                                                                {trailer.status === 'Scheduled' && (
+                                                                    <button
+                                                                        onClick={async () => {
+                                                                            if (window.confirm(`Are you sure you want to cancel trailer ${trailer.number}?`)) {
+                                                                                try {
+                                                                                    await updateTrailer(trailer.id, { status: 'Cancelled' });
+                                                                                    addToast('Success', `Trailer ${trailer.number} cancelled.`, 'success');
+                                                                                } catch (e: any) {
+                                                                                    addToast('Error', e.message, 'error');
+                                                                                }
+                                                                            }
+                                                                        }}
+                                                                        className="w-12 h-12 flex items-center justify-center bg-red-500/10 hover:bg-red-500 hover:text-white rounded-[1rem] text-red-600 transition-all shadow-lg hover:shadow-red-500/30"
+                                                                        title="Cancel"
+                                                                    >
+                                                                        <X className="w-5 h-5" />
+                                                                    </button>
+                                                                )}
+                                                            </>
+                                                        )}
 
-                                                    {canInstruct && hasActiveAppt && canEditTrailers && (
-                                                        <button
-                                                            onClick={() => openActionMenu(trailer)}
-                                                            className="flex items-center gap-2 px-3 py-2 bg-indigo-500 hover:bg-indigo-600 text-white font-bold rounded-lg shadow-sm transition-colors text-xs whitespace-nowrap"
-                                                            title="Driver Instruction"
-                                                        >
-                                                            <Navigation className="w-3.5 h-3.5" /> Instruct Driver
-                                                        </button>
-                                                    )}
+                                                        {canInstruct && hasActiveAppt && canEditTrailers && (
+                                                            <button
+                                                                onClick={() => openActionMenu(trailer)}
+                                                                className="flex items-center gap-2 px-6 py-3 bg-primary hover:bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-primary/20 transition-all active:scale-95"
+                                                                title="Driver Instruction"
+                                                            >
+                                                                <Navigation className="w-4 h-4" /> Instruct
+                                                            </button>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </td>
                                         </tr>
@@ -645,59 +644,59 @@ export const Trailers: React.FC = () => {
             {isModalOpen && (
                 <ModalPortal>
                     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-                        <div className="bg-white dark:bg-[#1e1e1e] w-full max-w-lg rounded-2xl border border-slate-200 dark:border-white/10 p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
-                            <h2 className="text-xl font-bold mb-6 text-slate-900 dark:text-white">{editingTrailer ? (canEditTrailers ? t('common.edit') : 'View') : t('common.add')} Trailer</h2>
-                            <form onSubmit={handleSave} className="space-y-4">
+                        <div className="bg-surface w-full max-w-lg rounded-[2.5rem] border border-border p-8 shadow-2xl overflow-y-auto max-h-[90vh] custom-scrollbar">
+                            <h2 className="text-2xl font-black mb-8 text-foreground tracking-tight">{editingTrailer ? (canEditTrailers ? t('common.edit') : 'View') : t('common.add')} Trailer</h2>
+                            <form onSubmit={handleSave} className="space-y-6">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-1">Trailer Number *</label>
-                                        <input disabled={!canEditTrailers} required value={number} onChange={e => setNumber(e.target.value)} className={`w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-3 text-slate-900 dark:text-white focus:border-blue-500 outline-none ${!canEditTrailers && 'opacity-60 cursor-not-allowed'}`} placeholder="e.g. TR-1234" />
+                                        <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">Trailer Number *</label>
+                                        <input disabled={!canEditTrailers} required value={number} onChange={e => setNumber(e.target.value)} className={`w-full bg-muted/5 border border-border rounded-xl p-4 text-foreground font-bold focus:border-primary outline-none transition-all ${!canEditTrailers && 'opacity-60 cursor-not-allowed'}`} placeholder="e.g. TR-1234" />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-1">Type</label>
-                                        <select disabled={!canEditTrailers} value={type} onChange={e => setType(e.target.value)} className={`w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-3 text-slate-900 dark:text-white focus:border-blue-500 outline-none appearance-none ${!canEditTrailers && 'opacity-60 cursor-not-allowed'}`}>
+                                        <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">Type</label>
+                                        <select disabled={!canEditTrailers} value={type} onChange={e => setType(e.target.value)} className={`w-full bg-muted/5 border border-border rounded-xl p-4 text-foreground font-bold focus:border-primary outline-none appearance-none ${!canEditTrailers && 'opacity-60 cursor-not-allowed'}`}>
                                             {trailerTypes.map(t => <option key={t.id} value={t.name}>{t.name}</option>)}
                                         </select>
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-1">Carrier</label>
+                                    <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">Carrier</label>
                                     <select
                                         value={carrierId}
                                         onChange={e => setCarrierId(e.target.value)}
                                         disabled={isCarrierLocked || !canEditTrailers}
-                                        className={`w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-3 text-slate-900 dark:text-white focus:border-blue-500 outline-none appearance-none ${(isCarrierLocked || !canEditTrailers) ? 'opacity-60 cursor-not-allowed' : ''}`}
+                                        className={`w-full bg-muted/5 border border-border rounded-xl p-4 text-foreground font-bold focus:border-primary outline-none appearance-none transition-all ${(isCarrierLocked || !canEditTrailers) ? 'opacity-60 cursor-not-allowed' : ''}`}
                                     >
                                         <option value="">-- Select Carrier --</option>
                                         {carriers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                                     </select>
-                                    {isCarrierLocked && canEditTrailers && <p className="text-[10px] text-blue-500 mt-1 italic">* Locked to selected Driver's carrier</p>}
+                                    {isCarrierLocked && canEditTrailers && <p className="text-[10px] text-primary mt-2 font-bold italic">* Locked to selected Driver's carrier</p>}
                                 </div>
 
                                 <div>
-                                    <div className="flex justify-between items-center mb-1">
-                                        <label className="block text-xs font-bold text-slate-500 dark:text-gray-400">Current Driver</label>
+                                    <div className="flex justify-between items-center mb-2">
+                                        <label className="block text-[10px] font-black uppercase tracking-widest text-muted">Current Driver</label>
                                         {canEditTrailers && (
                                             <button
                                                 type="button"
                                                 onClick={() => setIsQuickAddDriverOpen(true)}
-                                                className="text-[10px] font-bold text-blue-500 hover:text-blue-400 flex items-center gap-1"
+                                                className="text-[10px] font-black uppercase tracking-widest text-primary hover:text-blue-600 flex items-center gap-1.5"
                                             >
-                                                <Plus className="w-3 h-3" /> Quick Add
+                                                <Plus className="w-3.5 h-3.5" /> Quick Add
                                             </button>
                                         )}
                                     </div>
-                                    <select disabled={!canEditTrailers} value={driverId} onChange={e => handleDriverChange(e.target.value)} className={`w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-3 text-slate-900 dark:text-white focus:border-blue-500 outline-none appearance-none ${!canEditTrailers && 'opacity-60 cursor-not-allowed'}`}>
+                                    <select disabled={!canEditTrailers} value={driverId} onChange={e => handleDriverChange(e.target.value)} className={`w-full bg-muted/5 border border-border rounded-xl p-4 text-foreground font-bold focus:border-primary outline-none appearance-none transition-all ${!canEditTrailers && 'opacity-60 cursor-not-allowed'}`}>
                                         <option value="">-- Select Driver --</option>
                                         {filteredDrivers.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
                                     </select>
                                 </div>
 
-                                <div className="flex justify-end gap-3 pt-4">
-                                    <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white font-bold text-sm">Cancel</button>
+                                <div className="flex justify-end gap-5 pt-8 border-t border-border/50">
+                                    <button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-3 text-sm font-black uppercase tracking-widest text-muted hover:text-foreground transition-colors">{t('common.dismiss')}</button>
                                     {canEditTrailers && (
-                                        <button type="submit" className="px-6 py-2 bg-[#0a84ff] hover:bg-blue-600 text-white rounded-lg font-bold text-sm shadow-lg">Save</button>
+                                        <button type="submit" className="px-10 py-4 bg-primary hover:bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-primary/30 transition-all active:scale-95">Save</button>
                                     )}
                                 </div>
                             </form>

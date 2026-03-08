@@ -100,7 +100,7 @@ export const SetPassword: React.FC = () => {
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-12 pr-12 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#0a84ff]"
+                  className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-12 pr-12 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#3B82F6]"
                   placeholder="Enter password"
                   required
                 />
@@ -122,7 +122,7 @@ export const SetPassword: React.FC = () => {
                   type={showPassword ? "text" : "password"}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-12 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#0a84ff]"
+                  className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-12 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#3B82F6]"
                   placeholder="Confirm password"
                   required
                 />
@@ -132,7 +132,7 @@ export const SetPassword: React.FC = () => {
             <button
               type="submit"
               disabled={loading || !token}
-              className="w-full bg-[#0a84ff] hover:bg-blue-600 disabled:bg-slate-300 text-white font-bold py-4 rounded-xl shadow-lg mt-6"
+              className="w-full bg-[#3B82F6] hover:bg-blue-600 disabled:bg-slate-300 text-white font-bold py-4 rounded-xl shadow-lg mt-6"
             >
               {loading ? 'Setting Password...' : 'Set Password'}
             </button>

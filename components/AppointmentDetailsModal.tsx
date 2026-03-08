@@ -102,7 +102,7 @@ export const AppointmentDetailsModal: React.FC<AppointmentDetailsModalProps> = (
                                     <div className="flex flex-col">
                                         <span className="text-sm font-medium text-slate-700 dark:text-gray-300">{carrierName}</span>
                                         {appt.carrierId && carriers.find(c => c.id === appt.carrierId)?.bufferTimeMinutes !== undefined && (
-                                            <span className="text-[10px] font-bold text-[#0a84ff] flex items-center gap-1 mt-0.5">
+                                            <span className="text-[10px] font-bold text-[#3B82F6] flex items-center gap-1 mt-0.5">
                                                 <Clock className="w-3 h-3" /> Buffer: {carriers.find(c => c.id === appt.carrierId)?.bufferTimeMinutes}m
                                             </span>
                                         )}

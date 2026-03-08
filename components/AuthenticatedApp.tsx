@@ -254,7 +254,7 @@ const YardStaffApp = () => {
                     >
                         <Suspense fallback={
                             <div className="h-full w-full flex flex-col items-center justify-center p-12">
-                                <Loader2 className="w-12 h-12 text-[#0a84ff] animate-spin mb-4" />
+                                <Loader2 className="w-12 h-12 text-[#3B82F6] animate-spin mb-4" />
                                 <p className="text-slate-500 dark:text-gray-400 font-medium">
                                     Loading {currentView.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' ')}...
                                 </p>

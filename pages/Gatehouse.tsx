@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useData } from '../contexts/DataContext';
 import { GlassCard } from '../components/ui/GlassCard';
-import { CheckCircle2, ArrowRightCircle, MapPin, LogOut, Search, Clock, Truck, Calendar, Warehouse, Loader2 } from 'lucide-react';
+import { CheckCircle2, ArrowRightCircle, MapPin, LogOut, Search, Clock, Truck, Calendar, Warehouse, Loader2, X } from 'lucide-react';
 import { Pagination } from '../components/ui/Pagination';
 import { Appointment } from '../types';
 
@@ -126,20 +126,20 @@ export const Gatehouse: React.FC = () => {
   }, [appointments, justProcessed]);
 
   return (
-    <div className="p-8 h-full flex flex-col animate-in zoom-in-95 duration-500">
-      <div className="flex justify-between items-end mb-8">
+    <div className="p-8 h-full flex flex-col animate-in fade-in duration-700">
+      <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-10">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">{t('gate.title')}</h1>
-          <p className="text-slate-500 dark:text-gray-400">{t('gate.subtitle')}</p>
+          <h1 className="text-4xl font-black text-foreground mb-2 tracking-tighter">{t('gate.title')}</h1>
+          <p className="text-muted text-lg opacity-70 font-medium">{t('gate.subtitle')}</p>
         </div>
-        <div className="relative w-64">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-gray-500" />
+        <div className="relative w-80 group">
+          <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted transition-colors group-focus-within:text-primary" />
           <input
             type="text"
             placeholder={t('gate.searchPlaceholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl pl-9 pr-4 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-[#0a84ff]"
+            className="w-full bg-surface border border-border rounded-[1.25rem] pl-14 pr-6 py-4 text-sm text-foreground focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all font-bold placeholder:text-muted/40 shadow-sm"
           />
         </div>
       </div>
@@ -147,40 +147,40 @@ export const Gatehouse: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full overflow-hidden">
 
         {/* Left Col: Arrivals */}
-        <div className="flex flex-col gap-4 h-full overflow-hidden">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-slate-700 dark:text-gray-300">{t('gate.arrivals')}</h2>
-            <span className="text-xs bg-slate-200 dark:bg-white/10 px-2 py-1 rounded-full text-slate-600 dark:text-gray-400">{incoming.length} {t('gate.pending')}</span>
+        <div className="flex flex-col gap-6 h-full overflow-hidden">
+          <div className="flex items-center justify-between px-2">
+            <h2 className="text-xl font-black text-foreground tracking-tighter uppercase">{t('gate.arrivals')}</h2>
+            <span className="text-[10px] bg-primary/10 px-4 py-1.5 rounded-full text-primary font-black uppercase tracking-widest">{incoming.length} {t('gate.pending')}</span>
           </div>
 
           <div className="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
             {incoming.length === 0 ? (
-              <div className="h-40 flex flex-col items-center justify-center text-slate-400 dark:text-gray-500 border-2 border-dashed border-slate-200 dark:border-white/5 rounded-2xl">
-                <p>{t('gate.emptyArrivals')}</p>
+              <div className="h-64 flex flex-col items-center justify-center text-muted border-2 border-dashed border-border rounded-[2.5rem] bg-muted/5 opacity-50">
+                <Truck className="w-12 h-12 mb-4 opacity-20" />
+                <p className="font-black uppercase tracking-widest text-[10px]">{t('gate.emptyArrivals')}</p>
               </div>
             ) : (
               paginatedIncoming.map(appt => {
-                const isReady = appt.status === 'ReadyForCheckIn';
-
                 return (
-                  <GlassCard key={appt.id} className="p-4 flex items-center justify-between group border-2 border-emerald-500/50 bg-emerald-500/5">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs bg-emerald-500 text-white animate-pulse">
+                  <GlassCard key={appt.id} className="p-8 flex items-center justify-between group border-none shadow-xl rounded-[2.5rem] hover:scale-[1.02] transition-all bg-emerald-500/5 ring-1 ring-emerald-500/20">
+                    <div className="flex items-center gap-6">
+                      <div className="w-16 h-16 rounded-[1.5rem] flex items-center justify-center font-black text-xs bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 animate-pulse uppercase tracking-widest">
                         ARR
                       </div>
                       <div>
-                        <h3 className="font-bold text-slate-900 dark:text-white">{appt.isBobtail ? 'Bobtail' : appt.trailerNumber}</h3>
-                        <div className="flex gap-2 text-xs text-slate-500 dark:text-gray-400">
-                          <span>{appt.driverName}</span>
-                          <span className="text-emerald-600 dark:text-emerald-400 font-bold">Arrived at Dock</span>
+                        <h3 className="text-2xl font-black text-foreground tracking-tighter leading-tight">{appt.isBobtail ? 'Bobtail' : appt.trailerNumber}</h3>
+                        <div className="flex items-center gap-3 mt-2">
+                          <span className="text-sm font-black text-muted opacity-60 tracking-tight">{appt.driverName}</span>
+                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                          <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">At Dock Gate</span>
                         </div>
                       </div>
                     </div>
                     <button
                       onClick={() => initiateCheckIn(appt)}
-                      className="px-4 py-2 rounded-lg text-sm font-medium shadow-lg transition-all flex items-center bg-emerald-600 hover:bg-emerald-500 text-white"
+                      className="px-8 py-4 rounded-xl text-xs font-black uppercase tracking-widest shadow-xl transition-all flex items-center bg-emerald-600 hover:bg-emerald-500 text-white active:scale-95"
                     >
-                      {t('gate.checkIn')} <ArrowRightCircle className="ml-2 w-4 h-4" />
+                      {t('gate.checkIn')} <ArrowRightCircle className="ml-2 w-5 h-5" />
                     </button>
                   </GlassCard>
                 )
@@ -201,44 +201,47 @@ export const Gatehouse: React.FC = () => {
         </div>
 
         {/* Right Col: Active Inventory */}
-        <div className="flex flex-col gap-4 h-full overflow-hidden">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-slate-700 dark:text-gray-300">{t('gate.inventory')}</h2>
-            <span className="text-xs bg-emerald-500/10 px-2 py-1 rounded-full text-emerald-600 dark:text-emerald-500">{active.length} {t('gate.onsite')}</span>
+        <div className="flex flex-col gap-6 h-full overflow-hidden">
+          <div className="flex items-center justify-between px-2">
+            <h2 className="text-xl font-black text-foreground tracking-tighter uppercase">{t('gate.inventory')}</h2>
+            <span className="text-[10px] bg-emerald-500/10 px-4 py-1.5 rounded-full text-emerald-600 dark:text-emerald-400 font-black uppercase tracking-widest">{active.length} {t('gate.onsite')}</span>
           </div>
 
           <div className="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
             {active.length === 0 ? (
-              <div className="h-40 flex flex-col items-center justify-center text-slate-400 dark:text-gray-500 border-2 border-dashed border-slate-200 dark:border-white/5 rounded-2xl">
-                <p>{t('gate.emptyInventory')}</p>
+              <div className="h-64 flex flex-col items-center justify-center text-muted border-2 border-dashed border-border rounded-[2.5rem] bg-muted/5 opacity-50">
+                <Warehouse className="w-12 h-12 mb-4 opacity-20" />
+                <p className="font-black uppercase tracking-widest text-[10px]">{t('gate.emptyInventory')}</p>
               </div>
             ) : (
               paginatedActive.map(appt => {
                 const isDeparting = appt.status === 'ReadyForCheckOut';
                 return (
-                  <GlassCard key={appt.id} className={`p-4 flex items-center justify-between group ${isDeparting ? 'border-orange-500/50 bg-orange-500/5' : 'hover:border-emerald-500/30'}`}>
-                    <div className="flex items-center gap-4">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs ${isDeparting ? 'bg-orange-500 text-white animate-pulse' : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-500'}`}>
+                  <GlassCard key={appt.id} className={`p-8 flex items-center justify-between group border-none shadow-xl rounded-[2.5rem] hover:scale-[1.02] transition-all bg-surface/50 border-l-4 ${isDeparting ? 'border-l-orange-500 bg-orange-500/[0.03]' : 'border-l-primary'}`}>
+                    <div className="flex items-center gap-6">
+                      <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center font-black text-xs shadow-lg uppercase tracking-widest ${isDeparting ? 'bg-orange-500 text-white shadow-orange-500/20 animate-pulse' : 'bg-primary/10 text-primary shadow-primary/10'}`}>
                         {isDeparting ? 'DEP' : 'YARD'}
                       </div>
                       <div>
-                        <h3 className="font-bold text-slate-900 dark:text-white">{appt.isBobtail ? 'Bobtail' : appt.trailerNumber}</h3>
-                        <div className="flex gap-2 text-xs text-slate-500 dark:text-gray-400 items-center">
-                          <MapPin className="w-3 h-3 text-emerald-500" />
-                          <span className="text-emerald-600 dark:text-emerald-400 font-medium">{getLocationName(appt.assignedResourceId)}</span>
-                          <span>• {appt.driverName}</span>
+                        <h3 className="text-2xl font-black text-foreground tracking-tighter leading-tight">{appt.isBobtail ? 'Bobtail' : appt.trailerNumber}</h3>
+                        <div className="flex items-center gap-4 mt-2">
+                          <div className="flex items-center gap-1.5 px-3 py-1 bg-muted/10 rounded-lg">
+                            <MapPin className="w-3.5 h-3.5 text-primary" />
+                            <span className="text-xs font-black text-primary uppercase tracking-tight">{getLocationName(appt.assignedResourceId)}</span>
+                          </div>
+                          <span className="text-sm font-black text-muted opacity-60 tracking-tight">{appt.driverName}</span>
                         </div>
-                        {isDeparting && <p className="text-[10px] text-orange-500 font-bold mt-1">Waiting for Departure...</p>}
+                        {isDeparting && <p className="text-[10px] text-orange-500 font-black uppercase tracking-[0.2em] mt-3 animate-pulse">Confirmation Required</p>}
                       </div>
                     </div>
                     <button
                       onClick={() => handleCheckOut(appt.id)}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all flex items-center ${isDeparting
-                        ? 'bg-orange-600 hover:bg-orange-500 text-white border-orange-600'
-                        : 'bg-slate-100 dark:bg-white/5 hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-500 text-slate-500 dark:text-gray-400 border-slate-200 dark:border-white/10 hover:border-red-500/30'
+                      className={`px-8 py-4 rounded-xl text-xs font-black uppercase tracking-widest border-2 transition-all flex items-center active:scale-95 shadow-xl ${isDeparting
+                        ? 'bg-orange-600 border-orange-600 text-white shadow-orange-500/20 hover:bg-orange-500'
+                        : 'bg-surface border-border hover:bg-muted/5 text-muted hover:text-foreground'
                         }`}
                     >
-                      {isDeparting ? 'Confirm Departure' : t('gate.checkOut')} {isDeparting ? <CheckCircle2 className="ml-2 w-4 h-4" /> : <LogOut className="ml-2 w-4 h-4" />}
+                      {isDeparting ? 'Confirm Departure' : t('gate.checkOut')} {isDeparting ? <CheckCircle2 className="ml-2 w-5 h-5" /> : <LogOut className="ml-2 w-5 h-5" />}
                     </button>
                   </GlassCard>
                 )
@@ -262,68 +265,79 @@ export const Gatehouse: React.FC = () => {
 
       {/* Check In Confirmation Modal */}
       {checkInTarget && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-[#1e1e1e] w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 dark:border-white/10 overflow-hidden">
-            <div className="p-5 border-b border-slate-200 dark:border-white/10 flex items-center gap-3 bg-slate-50 dark:bg-[#1a1a1a]">
-              <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500">
-                <Truck className="w-5 h-5" />
+        <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/70 backdrop-blur-md p-4 animate-in fade-in duration-200">
+          <div className="bg-surface w-full max-w-2xl rounded-[3rem] border border-border p-12 flex flex-col shadow-2xl relative">
+            <div className="flex justify-between items-start mb-10">
+              <div className="flex items-center gap-6">
+                <div className="w-20 h-20 bg-primary/10 rounded-[2.5rem] flex items-center justify-center text-primary">
+                  <Truck className="w-10 h-10" />
+                </div>
+                <div>
+                  <h2 className="text-4xl font-black text-foreground tracking-tighter">{t('gate.modalTitle')}</h2>
+                  <p className="text-lg text-muted font-medium opacity-60">{checkInTarget.isBobtail ? 'Bobtail Unit' : `Trailer ${checkInTarget.trailerNumber}`}</p>
+                </div>
               </div>
-              <div>
-                <h2 className="text-lg font-bold text-slate-900 dark:text-white">{t('gate.modalTitle')}</h2>
-                <p className="text-xs text-slate-500 dark:text-gray-400">{checkInTarget.isBobtail ? 'Bobtail' : checkInTarget.trailerNumber}</p>
-              </div>
+              <button onClick={() => setCheckInTarget(null)} className="w-14 h-14 hover:bg-muted/10 rounded-2xl flex items-center justify-center transition-all group"><X className="w-8 h-8 text-muted group-hover:text-foreground" /></button>
             </div>
 
-            <div className="p-6 space-y-4">
-              <div className="bg-blue-500/5 rounded-lg p-3 border border-blue-500/10">
-                <p className="text-xs text-blue-600 dark:text-blue-300 mb-1">{t('gate.modalOriginal')}</p>
-                <div className="flex items-center gap-2 text-blue-800 dark:text-blue-100 font-medium">
-                  <Calendar className="w-4 h-4" />
+            <div className="space-y-10">
+              <div className="p-8 bg-primary/5 rounded-[2rem] border border-primary/10">
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-3">{t('gate.modalOriginal')}</p>
+                <div className="flex items-center gap-3 text-3xl font-black text-foreground tracking-tighter">
+                  <Calendar className="w-8 h-8 text-primary" />
                   {formatDateTime(checkInTarget.startTime)}
                 </div>
               </div>
 
-              <div>
-                <label className="text-sm font-medium text-slate-500 dark:text-gray-400 block mb-2">
-                  {t('gate.modalActual')} *
-                </label>
-                <div className="relative">
-                  <Clock className="absolute left-3 top-3 w-5 h-5 text-slate-400 dark:text-gray-500" />
-                  <input
-                    type="datetime-local"
-                    value={checkInTime}
-                    onChange={(e) => setCheckInTime(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-black/30 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-3 text-slate-900 dark:text-white focus:border-[#0a84ff] outline-none"
-                  />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-3 px-1">
+                    {t('gate.modalActual')} *
+                  </label>
+                  <div className="relative group">
+                    <Clock className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-muted group-focus-within:text-primary transition-colors" />
+                    <input
+                      type="datetime-local"
+                      value={checkInTime}
+                      onChange={(e) => setCheckInTime(e.target.value)}
+                      className="w-full bg-muted/5 border border-border rounded-2xl pl-16 pr-6 py-5 text-lg font-black tracking-tighter text-foreground focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-3 px-1">
+                    Assigned Dock / Slot
+                  </label>
+                  <div className="relative">
+                    <Warehouse className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-emerald-500" />
+                    <div className="w-full bg-emerald-500/5 border border-emerald-500/20 rounded-2xl pl-16 pr-6 py-5 text-lg font-black tracking-tighter text-emerald-600 dark:text-emerald-400">
+                      {getLocationName(assignedLocationId) || 'Ready for Allocation'}
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <div>
-                <label className="text-sm font-medium text-slate-500 dark:text-gray-400 block mb-2">
-                  {t('gate.modalAssign')}
-                </label>
-                <div className="relative border border-slate-200 dark:border-white/10 rounded-xl bg-slate-50 dark:bg-black/30 overflow-hidden">
-                  <Warehouse className="absolute left-3 top-3 w-5 h-5 text-slate-400 dark:text-gray-500" />
-                  <div className="pl-10 pr-4 py-3 text-slate-900 dark:text-white font-medium select-none cursor-not-allowed">
-                    {getLocationName(assignedLocationId) || 'Unassigned (Auto)'}
-                  </div>
+              <div className="p-6 bg-muted/5 rounded-2xl border border-border/50 flex items-center gap-4">
+                <div className="w-10 h-10 bg-surface rounded-xl flex items-center justify-center shadow-sm">
+                  <MapPin className="w-5 h-5 text-primary" />
                 </div>
-                <p className="text-xs text-slate-500 dark:text-gray-500 mt-2">
-                  System detects trailer is physically placed here.
+                <p className="text-xs font-black text-muted uppercase tracking-widest leading-relaxed">
+                  System validates physical arrival at identified gate location.
                 </p>
               </div>
             </div>
 
-            <div className="p-4 bg-slate-50 dark:bg-[#151515] border-t border-slate-200 dark:border-white/5 flex justify-end gap-3">
+            <div className="flex justify-end gap-6 pt-12 mt-4 border-t border-border/50">
               <button
                 onClick={() => setCheckInTarget(null)}
-                className="px-4 py-2 text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white font-medium text-sm"
+                className="px-10 py-5 text-xs font-black uppercase tracking-widest text-muted hover:text-foreground transition-colors"
               >
                 {t('common.cancel')}
               </button>
               <button
                 onClick={confirmCheckIn}
-                className="px-6 py-2 bg-[#0a84ff] hover:bg-blue-600 text-white rounded-lg font-medium text-sm flex items-center shadow-lg shadow-blue-500/20"
+                className="px-16 py-5 bg-primary hover:bg-blue-600 text-white rounded-3xl font-black uppercase tracking-widest text-xs shadow-2xl shadow-primary/30 transition-all active:scale-95"
               >
                 {t('gate.confirmBtn')}
               </button>
@@ -334,23 +348,24 @@ export const Gatehouse: React.FC = () => {
 
       {/* Success Modal Overlay */}
       {justProcessed && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <GlassCard className="max-w-sm w-full p-8 flex flex-col items-center text-center bg-white dark:bg-white/10">
-            <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${justProcessed.type === 'in' ? 'bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.4)]' : 'bg-gray-700'}`}>
-              {justProcessed.type === 'in' ? <CheckCircle2 className="w-8 h-8 text-white" /> : <LogOut className="w-8 h-8 text-white" />}
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-xl p-4 animate-in fade-in duration-300">
+          <GlassCard className="max-w-xl w-full p-12 flex flex-col items-center text-center bg-surface border-none shadow-[0_0_100px_rgba(0,0,0,0.5)] rounded-[4rem]">
+            <div className={`w-32 h-32 rounded-[3.5rem] flex items-center justify-center mb-10 shadow-2xl ${justProcessed.type === 'in' ? 'bg-emerald-500 shadow-emerald-500/40 text-white' : 'bg-orange-500 shadow-orange-500/40 text-white'}`}>
+              {justProcessed.type === 'in' ? <CheckCircle2 className="w-16 h-16" /> : <LogOut className="w-16 h-16" />}
             </div>
-            <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">{justProcessed.message}</h3>
+            <h3 className="text-4xl font-black text-foreground mb-4 tracking-tighter uppercase">{justProcessed.message}</h3>
+            <p className="text-muted font-medium text-lg opacity-60 mb-10">Gate operation logged successfully.</p>
 
             {justProcessed.type === 'in' && (
-              <div className="bg-slate-100 dark:bg-white/5 rounded-xl p-4 w-full border border-slate-200 dark:border-white/10 mt-4">
-                <p className="text-xs uppercase tracking-widest text-slate-500 dark:text-gray-500 font-bold mb-1">{t('gate.assignedLoc')}</p>
-                <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 animate-pulse">{assignedLoc}</p>
+              <div className="bg-emerald-500/5 rounded-[2.5rem] p-10 w-full border border-emerald-500/10 shadow-inner">
+                <p className="text-[11px] uppercase tracking-[0.3em] text-emerald-600 dark:text-emerald-400 font-black mb-4">{t('gate.assignedLoc')}</p>
+                <p className="text-6xl font-black text-emerald-600 dark:text-emerald-400 tracking-tighter animate-pulse">{assignedLoc}</p>
               </div>
             )}
 
             <button
               onClick={() => setJustProcessed(null)}
-              className="mt-8 bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 text-slate-900 dark:text-white px-6 py-2 rounded-lg font-medium transition-colors"
+              className="mt-12 bg-primary hover:bg-blue-600 text-white px-16 py-6 rounded-3xl font-black uppercase tracking-widest text-sm shadow-2xl shadow-primary/30 transition-all active:scale-95"
             >
               {t('gate.close')}
             </button>

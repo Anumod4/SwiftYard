@@ -68,53 +68,66 @@ export const AdminFacilities: React.FC = () => {
 
   return (
     <div className="p-8 h-full flex flex-col animate-in fade-in duration-500">
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-12">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Facilities</h1>
-          <p className="text-slate-500 dark:text-gray-400">Manage physical locations and yards.</p>
+          <h1 className="text-5xl font-black text-foreground mb-3 tracking-tighter leading-tight">Asset Logistics</h1>
+          <p className="text-muted text-lg opacity-70 font-medium">Configure operational facilities and regional nodes.</p>
         </div>
         <button
           onClick={() => handleOpenModal()}
-          className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl flex items-center shadow-lg shadow-purple-500/30 transition-all active:scale-95 font-medium"
+          className="bg-primary hover:bg-blue-600 text-white px-8 py-4 rounded-2xl flex items-center shadow-2xl shadow-primary/30 transition-all font-black uppercase tracking-widest text-xs active:scale-95"
         >
           <Plus className="w-5 h-5 mr-2" />
           Add Facility
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {paginatedFacilities.map(fac => (
-          <GlassCard key={fac.id} className="p-6 group relative">
-            <div className="absolute top-4 right-4 flex items-center gap-2 z-10 transition-all duration-300 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto translate-x-2 group-hover:translate-x-0">
+          <GlassCard key={fac.id} className="p-8 group relative border-none shadow-xl hover:scale-[1.02] transition-all bg-surface/50 rounded-[2.5rem]">
+            <div className="absolute top-6 right-6 flex items-center gap-2 z-10 transition-all duration-500 opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0">
               <button
                 onClick={() => handleOpenModal(fac)}
-                className="w-8 h-8 flex items-center justify-center bg-muted/10 hover:bg-primary hover:text-white rounded-lg transition-colors text-muted"
+                className="w-10 h-10 flex items-center justify-center bg-surface hover:bg-primary hover:text-white rounded-xl shadow-lg transition-all text-muted"
                 title="Edit"
               >
-                <Edit2 className="w-4 h-4" />
+                <Edit2 className="w-4.5 h-4.5" />
               </button>
               <button
                 onClick={() => handleDeleteClick(fac.id)}
-                className="w-8 h-8 flex items-center justify-center bg-red-500/10 hover:bg-red-500 hover:text-white rounded-lg transition-colors text-red-600 dark:text-red-500"
+                className="w-10 h-10 flex items-center justify-center bg-surface hover:bg-red-500 hover:text-white rounded-xl shadow-lg transition-all text-red-600"
                 title="Delete"
               >
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="w-4.5 h-4.5" />
               </button>
             </div>
 
-            <div className="flex items-center gap-4 mb-4">
-              <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-600 dark:text-purple-400">
-                <Building className="w-6 h-6" />
+            <div className="flex items-center gap-6 mb-8">
+              <div className="w-16 h-16 rounded-[1.5rem] bg-indigo-500/10 flex items-center justify-center text-indigo-600 shadow-lg shadow-indigo-500/5 group-hover:rotate-3 transition-transform">
+                <Building className="w-8 h-8" />
               </div>
-              <div>
-                <h3 className="font-bold text-slate-900 dark:text-white text-lg">{fac.name}</h3>
-                <p className="text-xs text-slate-500">{fac.id}</p>
+              <div className="overflow-hidden">
+                <h3 className="font-black text-foreground text-xl tracking-tighter truncate leading-tight">{fac.name}</h3>
+                <p className="text-[10px] font-black uppercase tracking-widest text-muted opacity-40 truncate">{fac.id.slice(0, 8)}</p>
               </div>
             </div>
 
-            <div className="space-y-2 text-sm text-slate-600 dark:text-gray-300">
-              {fac.address && <div className="flex items-center gap-2"><MapPin className="w-4 h-4 text-slate-400" /> {fac.address}</div>}
-              {fac.code && <div className="flex items-center gap-2"><Hash className="w-4 h-4 text-slate-400" /> {fac.code}</div>}
+            <div className="space-y-4 text-sm">
+              {fac.address && (
+                <div className="flex items-center gap-4 p-4 bg-muted/5 rounded-2xl border border-border/30">
+                  <MapPin className="w-4 h-4 text-primary shrink-0" />
+                  <span className="text-foreground font-bold tracking-tight truncate">{fac.address}</span>
+                </div>
+              )}
+              {fac.code && (
+                <div className="flex items-center justify-between p-4 bg-muted/5 rounded-2xl border border-border/30">
+                  <div className="flex items-center gap-4">
+                    <Hash className="w-4 h-4 text-indigo-500 shrink-0" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-muted">Internal Code</span>
+                  </div>
+                  <span className="font-black text-indigo-600 dark:text-indigo-400">{fac.code}</span>
+                </div>
+              )}
             </div>
           </GlassCard>
         ))}
@@ -130,26 +143,26 @@ export const AdminFacilities: React.FC = () => {
 
       {isModalOpen && (
         <ModalPortal>
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-            <div className="bg-white dark:bg-[#1e1e1e] w-full max-w-md rounded-2xl border border-slate-200 dark:border-white/10 p-6 shadow-2xl">
-              <h2 className="text-xl font-bold mb-6 text-slate-900 dark:text-white">{editingFacility ? 'Edit Facility' : 'New Facility'}</h2>
-              <form onSubmit={handleSave} className="space-y-4">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-md p-4 animate-in fade-in duration-200">
+            <div className="bg-surface w-full max-w-lg rounded-[3.5rem] border border-border p-12 shadow-2xl">
+              <h2 className="text-4xl font-black mb-10 text-foreground tracking-tighter">{editingFacility ? 'Edit Facility' : 'New Facility Portal'}</h2>
+              <form onSubmit={handleSave} className="space-y-8">
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 mb-1">Facility Name *</label>
-                  <input required value={name} onChange={e => setName(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-2.5 outline-none focus:border-purple-500 text-slate-900 dark:text-white" />
+                  <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-3 px-1">Facility Designation *</label>
+                  <input required value={name} onChange={e => setName(e.target.value)} className="w-full bg-muted/5 border border-border rounded-2xl p-4 outline-none text-foreground font-black tracking-tighter text-lg focus:border-primary transition-all shadow-sm" placeholder="e.g. Northeast Logistics Center" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 mb-1">Address</label>
-                  <input value={address} onChange={e => setAddress(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-2.5 outline-none focus:border-purple-500 text-slate-900 dark:text-white" />
+                  <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-3 px-1">Physical Address</label>
+                  <input value={address} onChange={e => setAddress(e.target.value)} className="w-full bg-muted/5 border border-border rounded-2xl p-4 outline-none text-foreground font-black tracking-tighter text-lg focus:border-primary transition-all shadow-sm" placeholder="123 Industrial Way..." />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 mb-1">Facility Code</label>
-                  <input value={code} onChange={e => setCode(e.target.value)} className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-2.5 outline-none focus:border-purple-500 text-slate-900 dark:text-white" placeholder="e.g. YARD-01" />
+                  <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-3 px-1">Routing Code</label>
+                  <input value={code} onChange={e => setCode(e.target.value)} className="w-full bg-muted/5 border border-border rounded-2xl p-4 outline-none text-foreground font-black tracking-tighter text-lg focus:border-primary transition-all shadow-sm" placeholder="e.g. YARD-01" />
                 </div>
 
-                <div className="flex justify-end gap-3 pt-4">
-                  <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white font-bold text-sm">Cancel</button>
-                  <button type="submit" className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-bold text-sm shadow-lg">Save</button>
+                <div className="flex justify-end gap-6 pt-10 mt-6 border-t border-border/50">
+                  <button type="button" onClick={() => setIsModalOpen(false)} className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-muted hover:text-foreground transition-colors">Dismiss</button>
+                  <button type="submit" className="px-12 py-5 bg-primary hover:bg-blue-600 text-white rounded-3xl font-black uppercase tracking-widest text-xs shadow-2xl shadow-primary/30 transition-all active:scale-95">Commit Designation</button>
                 </div>
               </form>
             </div>

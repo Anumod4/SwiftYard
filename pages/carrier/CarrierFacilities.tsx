@@ -36,7 +36,7 @@ export const CarrierFacilities: React.FC<CarrierFacilitiesProps> = ({
                 {paginatedFacilities.map(fac => (
                     <GlassCard key={fac.id} className="p-8 space-y-6">
                         <div className="flex items-center gap-4">
-                            <div className="w-14 h-14 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500">
+                            <div className="w-14 h-14 rounded-2xl bg-[#3B82F6]/10 flex items-center justify-center text-[#3B82F6]">
                                 <Building2 className="w-8 h-8" />
                             </div>
                             <div>

@@ -148,7 +148,7 @@ export const DateTimePicker: React.FC<DateTimePickerProps> = ({
                 <button
                     type="button"
                     onClick={() => setIsOpen(!isOpen)}
-                    className={`w-full text-left pl-10 pr-4 py-3 bg-slate-100 dark:bg-black/20 border ${isInvalid ? 'border-red-500' : 'border-slate-200 dark:border-white/10'} rounded-xl text-sm transition-all focus:outline-none focus:border-[#0a84ff] ${!value ? 'text-slate-400 dark:text-gray-500' : 'text-slate-900 dark:text-white font-medium'}`}
+                    className={`w-full text-left pl-10 pr-4 py-3 bg-slate-100 dark:bg-black/20 border ${isInvalid ? 'border-red-500' : 'border-slate-200 dark:border-white/10'} rounded-xl text-sm transition-all focus:outline-none focus:border-[#3B82F6] ${!value ? 'text-slate-400 dark:text-gray-500' : 'text-slate-900 dark:text-white font-medium'}`}
                 >
                     {value ? formatDisplay(value) : placeholder}
                 </button>
@@ -182,7 +182,7 @@ export const DateTimePicker: React.FC<DateTimePickerProps> = ({
                                         onClick={() => handleDateSelect(item.date)}
                                         className={`h-7 w-7 rounded-lg flex items-center justify-center text-[11px] transition-all 
                                     ${!item.isCurrentMonth ? 'text-slate-300 dark:text-gray-600' : 'text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white'} 
-                                    ${isSameDay(item.date, value) ? '!bg-[#0a84ff] !text-white font-bold shadow-md' : ''}
+                                    ${isSameDay(item.date, value) ? '!bg-[#3B82F6] !text-white font-bold shadow-md' : ''}
                                 `}
                                     >
                                         {item.day}

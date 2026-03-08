@@ -113,3 +113,23 @@ textarea,
   background-color: hsl(var(--primary));
   color: white;
 }
+
+/* Global Button Overrides for #3B82F6 consistency */
+.btn-primary {
+  background-color: #3B82F6 !important;
+  color: white !important;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-primary:hover {
+  background-color: #2563EB !important;
+}
+
+.dark .btn-primary {
+  background-color: #3B82F6 !important;
+  /* User explicitly asked for #3B82F6 */
+}
+
+.dark .btn-primary:hover {
+  background-color: #2563EB !important;
+}

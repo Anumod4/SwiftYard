@@ -36,7 +36,7 @@ export const CarrierAppointments: React.FC<CarrierAppointmentsProps> = ({
                     <button className="px-4 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-xs font-bold text-slate-600 dark:text-gray-300 flex items-center gap-2 hover:bg-slate-200 transition-all">
                         <Filter className="w-3.5 h-3.5" /> Filter Results
                     </button>
-                    <div className="px-4 py-2 bg-blue-500/10 text-blue-500 rounded-xl text-xs font-black uppercase tracking-widest border border-blue-500/20">
+                    <div className="px-4 py-2 bg-[#3B82F6]/10 text-[#3B82F6] rounded-xl text-xs font-black uppercase tracking-widest border border-[#3B82F6]/20">
                         Total: {carrierAppointments.length}
                     </div>
                 </div>
@@ -58,7 +58,7 @@ export const CarrierAppointments: React.FC<CarrierAppointmentsProps> = ({
                             <div className="flex items-center gap-5 md:min-w-[250px]">
                                 <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 ${['Completed', 'Departed'].includes(appt.status) ? 'bg-emerald-500/10 text-emerald-500' :
                                     ['Cancelled', 'Rejected'].includes(appt.status) ? 'bg-red-500/10 text-red-500' :
-                                        'bg-blue-500/10 text-blue-500'
+                                        'bg-[#3B82F6]/10 text-[#3B82F6]'
                                     }`}>
                                     <Calendar className="w-7 h-7" />
                                 </div>
@@ -79,7 +79,7 @@ export const CarrierAppointments: React.FC<CarrierAppointmentsProps> = ({
                                         <Truck className="w-4 h-4 text-slate-400" />
                                         <p className="text-slate-900 dark:text-white font-bold text-sm tracking-tight">{appt.trailerNumber || 'TBA'}</p>
                                         {appt.loadType && (
-                                            <span className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded ${appt.loadType === 'Inbound' ? 'bg-blue-500 text-white' : 'bg-emerald-500 text-white'}`}>
+                                            <span className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded ${appt.loadType === 'Inbound' ? 'bg-[#3B82F6] text-white' : 'bg-emerald-500 text-white'}`}>
                                                 {appt.loadType}
                                             </span>
                                         )}
@@ -99,15 +99,15 @@ export const CarrierAppointments: React.FC<CarrierAppointmentsProps> = ({
 
                             <div className="flex items-center justify-between md:justify-end gap-6 border-t md:border-t-0 pt-4 md:pt-0 border-slate-100 dark:border-white/5">
                                 <div className="text-right flex flex-col items-end">
-                                    <span className={`text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-tighter border ${appt.acknowledgementStatus === 'RescheduleSuggested' ? 'bg-blue-500 text-white border-blue-500/20 shadow-lg shadow-blue-500/20' :
+                                    <span className={`text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-tighter border ${appt.acknowledgementStatus === 'RescheduleSuggested' ? 'bg-[#3B82F6] text-white border-[#3B82F6]/20 shadow-lg shadow-[#3B82F6]/20' :
                                             appt.status === 'Completed' || appt.status === 'Departed' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
                                                 appt.status === 'Cancelled' || appt.status === 'Rejected' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
-                                                    'bg-blue-500/10 text-blue-500 border-blue-500/20'
+                                                    'bg-[#3B82F6]/10 text-[#3B82F6] border-[#3B82F6]/20'
                                         }`}>
                                         {appt.acknowledgementStatus === 'RescheduleSuggested' ? 'Re-schedule Offered' : appt.status.replace(/([A-Z])/g, ' $1').trim()}
                                     </span>
                                 </div>
-                                <ChevronRight className="w-5 h-5 text-slate-300 dark:text-gray-700 group-hover:text-blue-500 transition-colors" />
+                                <ChevronRight className="w-5 h-5 text-slate-300 dark:text-gray-700 group-hover:text-[#3B82F6] transition-colors" />
                             </div>
                         </GlassCard>
                     ))

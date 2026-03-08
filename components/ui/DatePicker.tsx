@@ -144,7 +144,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                         onClick={() => handleSelect(item.date)}
                         className={`h-8 w-8 rounded-full flex items-center justify-center text-xs transition-all 
                             ${!item.isCurrentMonth ? 'text-slate-300 dark:text-gray-600' : 'text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white'} 
-                            ${isSameDay(item.date, value) ? '!bg-[#0a84ff] !text-white font-bold shadow-lg' : ''}
+                            ${isSameDay(item.date, value) ? '!bg-[#3B82F6] !text-white font-bold shadow-lg' : ''}
                         `}
                     >
                         {item.day}

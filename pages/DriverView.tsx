@@ -381,7 +381,7 @@ export const DriverView: React.FC = () => {
   if (!currentDriver) return null;
 
   return (
-    <div className="min-h-screen bg-[#121212] text-white flex flex-col font-sans selection:bg-[#0a84ff] overflow-hidden">
+    <div className="min-h-screen bg-[#121212] text-white flex flex-col font-sans selection:bg-[#3B82F6] overflow-hidden">
       {isRefreshing && <LoadingIndicator fullScreen message="Updating Data..." />}
       {/* Top Bar */}
       <div className="p-4 flex justify-between items-center border-b border-white/10 bg-[#1e1e1e] safe-area-inset-top">
@@ -420,7 +420,7 @@ export const DriverView: React.FC = () => {
             />
           </button>
 
-          <div className="w-9 h-9 rounded-full bg-[#0a84ff] flex items-center justify-center font-bold text-sm shadow-md shrink-0">
+          <div className="w-9 h-9 rounded-full bg-[#3B82F6] flex items-center justify-center font-bold text-sm shadow-md shrink-0">
             {currentDriver.name.charAt(0)}
           </div>
           <button
@@ -434,9 +434,9 @@ export const DriverView: React.FC = () => {
 
       {/* Main Content */}
       <div className="flex-1 relative flex flex-col overflow-y-auto">
-        <div className="bg-[#0a84ff]/10 border-b border-[#0a84ff]/20 py-2 px-4 flex items-center justify-center gap-2">
-          <Warehouse className="w-4 h-4 text-[#0a84ff]" />
-          <span className="text-sm font-bold text-[#0a84ff] tracking-wide uppercase">
+        <div className="bg-[#3B82F6]/10 border-b border-[#3B82F6]/20 py-2 px-4 flex items-center justify-center gap-2">
+          <Warehouse className="w-4 h-4 text-[#3B82F6]" />
+          <span className="text-sm font-bold text-[#3B82F6] tracking-wide uppercase">
             {driverFacility ? driverFacility.name : "Facility Access"}
           </span>
         </div>

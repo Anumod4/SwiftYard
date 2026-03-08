@@ -94,7 +94,7 @@ const AppContent: React.FC = () => {
   if (authLoading)
     return (
       <div className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-50 dark:bg-[#121212]">
-        <Loader2 className="w-12 h-12 text-[#0a84ff] animate-spin mb-4" />
+        <Loader2 className="w-12 h-12 text-[#3B82F6] animate-spin mb-4" />
         <p className="text-slate-500 dark:text-gray-400 font-medium">
           Authenticating...
         </p>
@@ -124,7 +124,7 @@ const AppContent: React.FC = () => {
   if (appState === "loading")
     return (
       <div className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-50 dark:bg-[#121212]">
-        <Loader2 className="w-12 h-12 text-[#0a84ff] animate-spin mb-4" />
+        <Loader2 className="w-12 h-12 text-[#3B82F6] animate-spin mb-4" />
         <p className="text-slate-500 dark:text-gray-400 font-medium">
           Initializing SwiftYard...
         </p>
@@ -144,7 +144,7 @@ const AppContent: React.FC = () => {
           </p>
           <button
             onClick={() => signOut()}
-            className="px-6 py-2 bg-[#0a84ff] hover:bg-blue-600 text-white rounded-xl font-bold flex items-center justify-center mx-auto transition-colors"
+            className="px-6 py-2 bg-[#3B82F6] hover:bg-blue-600 text-white rounded-xl font-bold flex items-center justify-center mx-auto transition-colors"
           >
             Accept
           </button>

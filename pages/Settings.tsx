@@ -48,7 +48,7 @@ const ShiftCard: React.FC<{
                         value={name}
                         onChange={e => setName(e.target.value)}
                         onBlur={handleBlur}
-                        className="w-full bg-transparent text-slate-900 dark:text-white font-bold border-b border-transparent focus:border-[#0a84ff] outline-none"
+                        className="w-full bg-transparent text-slate-900 dark:text-white font-bold border-b border-transparent focus:border-[#3B82F6] outline-none"
                         placeholder="e.g. Day Shift"
                     />
                 </div>
@@ -60,7 +60,7 @@ const ShiftCard: React.FC<{
                             value={startTime}
                             onChange={e => setStartTime(e.target.value)}
                             onBlur={handleBlur}
-                            className="w-full bg-white dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-3 py-2 text-sm font-mono text-slate-900 dark:text-white focus:border-[#0a84ff] outline-none"
+                            className="w-full bg-white dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-3 py-2 text-sm font-mono text-slate-900 dark:text-white focus:border-[#3B82F6] outline-none"
                         />
                     </div>
                     <div>
@@ -70,7 +70,7 @@ const ShiftCard: React.FC<{
                             value={endTime}
                             onChange={e => setEndTime(e.target.value)}
                             onBlur={handleBlur}
-                            className="w-full bg-white dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-3 py-2 text-sm font-mono text-slate-900 dark:text-white focus:border-[#0a84ff] outline-none"
+                            className="w-full bg-white dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl px-3 py-2 text-sm font-mono text-slate-900 dark:text-white focus:border-[#3B82F6] outline-none"
                         />
                     </div>
                 </div>
@@ -1113,7 +1113,7 @@ export const Settings: React.FC = () => {
                             <button
                                 key={day}
                                 onClick={() => setActiveDay(day)}
-                                className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all whitespace-nowrap ${activeDay === day ? 'bg-white dark:bg-white/10 text-[#0a84ff] shadow-sm' : 'text-slate-500 hover:text-slate-800 dark:hover:text-white'}`}
+                                className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all whitespace-nowrap ${activeDay === day ? 'bg-white dark:bg-white/10 text-[#3B82F6] shadow-sm' : 'text-slate-500 hover:text-slate-800 dark:hover:text-white'}`}
                             >
                                 {day}
                             </button>
@@ -1125,7 +1125,7 @@ export const Settings: React.FC = () => {
                             <h3 className="text-sm font-black uppercase tracking-widest text-slate-400 dark:text-gray-500">{activeDay} {t('settings.shifts')}</h3>
                             <button
                                 onClick={() => addShift(activeDay)}
-                                className="text-[11px] font-black uppercase tracking-widest flex items-center gap-1 text-[#0a84ff] hover:text-blue-400"
+                                className="text-[11px] font-black uppercase tracking-widest flex items-center gap-1 text-[#3B82F6] hover:text-blue-400"
                             >
                                 <Plus className="w-3.5 h-3.5" /> {t('settings.addShift')}
                             </button>
@@ -1151,7 +1151,7 @@ export const Settings: React.FC = () => {
                     </div>
 
                     <div className="mt-8 flex items-center gap-3 bg-blue-500/10 p-4 rounded-2xl border border-blue-500/20">
-                        <AlertTriangle className="w-5 h-5 text-[#0a84ff]" />
+                        <AlertTriangle className="w-5 h-5 text-[#3B82F6]" />
                         <p className="text-xs text-blue-600 dark:text-blue-400 font-medium leading-relaxed">
                             Note: The Appointment Calendar will automatically scale its view to match the earliest start and latest end times defined here.
                         </p>

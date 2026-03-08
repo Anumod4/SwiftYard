@@ -71,7 +71,7 @@ export const GateOut: React.FC = () => {
               placeholder={t('gateout.searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl pl-9 pr-4 py-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-[#0a84ff] transition-all"
+              className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl pl-9 pr-4 py-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-[#3B82F6] transition-all"
             />
           </div>
         </div>
@@ -79,9 +79,9 @@ export const GateOut: React.FC = () => {
 
       {processedId && (
         <div className="mb-6 animate-in fade-in slide-in-from-top-4">
-          <div className="bg-[#0a84ff]/10 border border-[#0a84ff]/30 rounded-2xl p-4 flex items-center justify-between shadow-lg shadow-blue-500/10">
+          <div className="bg-[#3B82F6]/10 border border-[#3B82F6]/30 rounded-2xl p-4 flex items-center justify-between shadow-lg shadow-blue-500/10">
              <div className="flex items-center gap-3">
-                <CheckCircle2 className="w-6 h-6 text-[#0a84ff]" />
+                <CheckCircle2 className="w-6 h-6 text-[#3B82F6]" />
                 <span className="text-slate-900 dark:text-white font-medium text-lg">{t('gateout.success')}</span>
              </div>
              <button onClick={() => setProcessedId(null)} className="text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white">
@@ -103,11 +103,11 @@ export const GateOut: React.FC = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {yardInventory.map(appt => (
-              <GlassCard key={appt.id} className={`p-6 flex flex-col justify-between transition-all group overflow-visible ${appt.status === 'Completed' ? 'border-orange-500/50 bg-orange-500/5' : 'hover:border-[#0a84ff]/50'}`}>
+              <GlassCard key={appt.id} className={`p-6 flex flex-col justify-between transition-all group overflow-visible ${appt.status === 'Completed' ? 'border-orange-500/50 bg-orange-500/5' : 'hover:border-[#3B82F6]/50'}`}>
                 <div className="space-y-4">
                   <div className="flex justify-between items-start">
                     <div className="flex items-center gap-4">
-                      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${appt.status === 'Completed' ? 'bg-orange-500/10 text-orange-500' : 'bg-[#0a84ff]/10 text-[#0a84ff]'}`}>
+                      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${appt.status === 'Completed' ? 'bg-orange-500/10 text-orange-500' : 'bg-[#3B82F6]/10 text-[#3B82F6]'}`}>
                         <Truck className="w-7 h-7" />
                       </div>
                       <div>
@@ -126,7 +126,7 @@ export const GateOut: React.FC = () => {
                     <div>
                       <p className="text-[10px] text-slate-400 dark:text-gray-500 uppercase font-black tracking-widest mb-2">{t('gateout.location')}</p>
                       <div className="flex items-center gap-2 text-slate-900 dark:text-white">
-                        <MapPin className="w-4 h-4 text-[#0a84ff]" />
+                        <MapPin className="w-4 h-4 text-[#3B82F6]" />
                         <span className="text-lg font-bold">{getLocationName(appt.assignedResourceId)}</span>
                       </div>
                     </div>
@@ -153,7 +153,7 @@ export const GateOut: React.FC = () => {
 
                 <button 
                   onClick={() => handleGateOut(appt.id)}
-                  className="mt-8 w-full bg-[#0a84ff] hover:bg-blue-600 text-white py-4 rounded-2xl font-black text-lg shadow-xl shadow-blue-500/20 flex items-center justify-center gap-3 active:scale-[0.98] transition-all"
+                  className="mt-8 w-full bg-[#3B82F6] hover:bg-blue-600 text-white py-4 rounded-2xl font-black text-lg shadow-xl shadow-blue-500/20 flex items-center justify-center gap-3 active:scale-[0.98] transition-all"
                 >
                   <LogOut className="w-6 h-6" /> {t('gateout.checkoutBtn')}
                 </button>
