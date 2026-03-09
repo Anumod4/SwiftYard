@@ -183,6 +183,19 @@ export const runMigrations = async () => {
   try {
     await turso.execute("ALTER TABLE appointments ADD COLUMN suggestedStartTime TEXT");
   } catch (e: any) { /* Ignore */ }
+
+  // Phase 22: Facility Contacts
+  try {
+    await turso.execute("ALTER TABLE facilities ADD COLUMN mobile TEXT");
+  } catch (e: any) { /* Ignore */ }
+
+  try {
+    await turso.execute("ALTER TABLE facilities ADD COLUMN phone TEXT");
+  } catch (e: any) { /* Ignore */ }
+
+  try {
+    await turso.execute("ALTER TABLE facilities ADD COLUMN email TEXT");
+  } catch (e: any) { /* Ignore */ }
 };
 
 export const initializeSchema = async () => {
@@ -195,7 +208,10 @@ export const initializeSchema = async () => {
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
         address TEXT,
-        code TEXT
+        code TEXT,
+        mobile TEXT,
+        phone TEXT,
+        email TEXT
       );
     `);
 
