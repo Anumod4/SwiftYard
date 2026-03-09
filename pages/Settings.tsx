@@ -1240,7 +1240,7 @@ export const Settings: React.FC = () => {
                 </GlassCard>
             </section>
 
-            <section>
+            <section className="mt-10">
                 <GlassCard className="p-6 space-y-6">
                     <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-start gap-3">
                         <AlertTriangle className="w-6 h-6 text-red-500 shrink-0" />
