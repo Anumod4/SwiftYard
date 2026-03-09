@@ -315,10 +315,10 @@ export const Schedule: React.FC = () => {
                     <button
                         onClick={() => setIsAiModalOpen(true)}
                         className="bg-surface border border-border hover:bg-muted/5 text-foreground px-6 py-4 rounded-2xl flex items-center shadow-lg transition-all active:scale-95 font-bold"
-                        title="AI Automation"
+                        title="Smart Schedule"
                     >
                         <Sparkles className="w-5 h-5 mr-3 text-primary animate-pulse" />
-                        AI Optimizer
+                        Smart Schedule
                     </button>
                     {canEditSchedule && (
                         <button
