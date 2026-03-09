@@ -114,6 +114,12 @@ export const remove = async (tableName: string, id: string, idColumn: string = '
   });
 };
 
+// Clear all records from a table
+export const clearTable = async (tableName: string): Promise<void> => {
+  console.log(`[DB] Clearing all records from ${tableName}`);
+  await turso.execute(`DELETE FROM ${tableName}`);
+};
+
 // Execute raw query (for complex operations)
 export const executeQuery = async (sql: string, args: any[] = []): Promise<any[]> => {
   const result = await turso.execute({ sql, args });

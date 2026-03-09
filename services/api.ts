@@ -726,6 +726,20 @@ export const adminApi = {
       method: "DELETE",
     });
   },
+
+  // Factory Reset
+  factoryReset: async (options: {
+    deleteCarriers?: boolean;
+    deleteDrivers?: boolean;
+    deleteResources?: boolean;
+    deleteTrailerTypes?: boolean;
+    deleteActivityLogs?: boolean;
+  }): Promise<ApiResponse<void>> => {
+    return request("/admin/factory-reset", {
+      method: "POST",
+      body: JSON.stringify(options),
+    });
+  },
 };
 
 // ==================== SETTINGS API ====================

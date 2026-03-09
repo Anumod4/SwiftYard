@@ -6,6 +6,7 @@ import { Shift, WhatsAppRecipient, AppSettings } from '../types';
 import { Pagination } from '../components/ui/Pagination';
 import { DatePicker } from '../components/ui/DatePicker';
 import { DeleteConfirmationModal } from '../components/ui/DeleteConfirmationModal';
+import { FactoryResetModal } from '../components/ui/FactoryResetModal';
 import { DollarSign } from 'lucide-react';
 
 // Inner component to handle input state locally and save on blur
@@ -365,8 +366,8 @@ export const Settings: React.FC = () => {
         setIsResetModalOpen(true);
     };
 
-    const handleConfirmReset = () => {
-        resetData();
+    const handleConfirmReset = (options: any) => {
+        resetData(options);
     };
 
     const handleResetEfficiency = async () => {
@@ -1098,12 +1099,10 @@ export const Settings: React.FC = () => {
                 </div>
             </div>
 
-            <DeleteConfirmationModal
+            <FactoryResetModal
                 isOpen={isResetModalOpen}
                 onClose={() => setIsResetModalOpen(false)}
                 onConfirm={handleConfirmReset}
-                title="WIPE ALL DATA"
-                message="Are you sure you want to delete ALL data? This includes all appointments, drivers, and resource configurations. This action cannot be undone and will reset the system to its initial state."
             />
 
             <DeleteConfirmationModal

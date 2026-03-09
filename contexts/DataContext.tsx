@@ -174,7 +174,13 @@ interface DataContextType {
   deleteFacility: (id: string) => Promise<void>;
 
   updateSettings: (newSettings: AppSettings) => Promise<void>;
-  resetData: () => Promise<void>;
+  resetData: (options?: {
+    deleteCarriers?: boolean;
+    deleteDrivers?: boolean;
+    deleteResources?: boolean;
+    deleteTrailerTypes?: boolean;
+    deleteActivityLogs?: boolean;
+  }) => Promise<void>;
   resetEfficiencyStats: () => Promise<void>;
   performHousekeeping: () => Promise<void>;
 
@@ -1178,8 +1184,25 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  const resetData = async () => {
-    addToast("Reset", "Data reset initiated", "info");
+  const resetData = async (options: {
+    deleteCarriers?: boolean;
+    deleteDrivers?: boolean;
+    deleteResources?: boolean;
+    deleteTrailerTypes?: boolean;
+    deleteActivityLogs?: boolean;
+  } = {}) => {
+    try {
+      addToast("Reset", "Data reset initiated", "info");
+      const response = await api.admin.factoryReset(options);
+      if (response.success) {
+        addToast("Success", "Factory reset completed", "success");
+        await refreshData();
+      } else {
+        throw new Error(response.error?.message || "Reset failed");
+      }
+    } catch (error: any) {
+      addToast("Error", error.message, "error");
+    }
   };
 
   const resetEfficiencyStats = async () => {

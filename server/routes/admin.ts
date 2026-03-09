@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { fetchAll, fetchById, fetchByFacility, insert, update, remove } from '../db';
+import { fetchAll, fetchById, fetchByFacility, insert, update, remove, clearTable, transaction } from '../db';
 import bcrypt from 'bcryptjs';
 import { AuthenticatedRequest, CreateUserDTO, UpdateUserDTO, CreateRoleDTO, UpdateRoleDTO, CreateFacilityDTO, UpdateFacilityDTO } from '../types';
 import { createClerkClient } from "@clerk/backend";
@@ -488,6 +488,34 @@ router.delete('/facilities/:id', async (req: AuthenticatedRequest, res) => {
     res.json({ success: true, message: 'Facility deleted' });
   } catch (error: any) {
     console.error('Delete facility error:', error);
+    res.status(500).json({ success: false, error: { message: error.message } });
+  }
+});
+
+// Factory Reset
+router.post('/factory-reset', async (req: AuthenticatedRequest, res) => {
+  try {
+    const { deleteCarriers, deleteDrivers, deleteResources, deleteTrailerTypes, deleteActivityLogs } = req.body;
+
+    await transaction(async () => {
+      // Mandatory transactional data
+      await clearTable('appointments');
+      await clearTable('trailers');
+
+      // Optional/Related data
+      if (deleteActivityLogs) await clearTable('activity_logs');
+      if (deleteCarriers) await clearTable('carriers');
+      if (deleteDrivers) await clearTable('drivers');
+      if (deleteResources) await clearTable('resources');
+      if (deleteTrailerTypes) await clearTable('trailer_types');
+
+      // Always clear webhook logs
+      await clearTable('webhook_logs');
+    });
+
+    res.json({ success: true, message: 'Factory reset completed successfully' });
+  } catch (error: any) {
+    console.error('Factory reset error:', error);
     res.status(500).json({ success: false, error: { message: error.message } });
   }
 });
