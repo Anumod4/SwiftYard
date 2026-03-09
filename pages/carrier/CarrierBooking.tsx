@@ -150,15 +150,12 @@ export const CarrierBooking: React.FC<CarrierBookingProps> = ({
             <header className="mb-10 text-center relative">
                 <div className="flex flex-col items-center gap-4">
                     <div className="flex items-center gap-3">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#3B82F6]/10 text-[#3B82F6] rounded-full text-[10px] font-black uppercase tracking-widest border border-[#3B82F6]/20 shadow-sm">
-                            <Calendar className="w-3 h-3" /> New Appointment
-                        </div>
                         <div className={`inline-flex items-center gap-2 px-3 py-1 ${tierColors[tier]} rounded-full text-[10px] font-black uppercase tracking-widest border shadow-sm`}>
                             <TierIcon className="w-3 h-3" /> {tier} Status
                         </div>
                     </div>
                     <div>
-                        <h1 className="text-3xl font-bold text-foreground tracking-tighter mb-1">Reserve Your Slot</h1>
+                        <h1 className="text-3xl font-bold text-foreground tracking-tighter mb-1">Reserve Your Appointment Slot</h1>
                         <p className="text-slate-500 dark:text-gray-400 font-medium">Your Excellence Tier grants you <span className="text-primary font-black">{bookingPrivilege}h</span> advance booking privilege.</p>
                     </div>
                 </div>
@@ -183,16 +180,19 @@ export const CarrierBooking: React.FC<CarrierBookingProps> = ({
                             <div className="space-y-2">
                                 <label className="block text-[10px] font-black text-slate-400 dark:text-gray-500 uppercase tracking-widest ml-1">Destination Facility</label>
                                 <select
-                                    required
+                                    disabled
                                     value={bookingFacilityId}
                                     onChange={e => setBookingFacilityId(e.target.value)}
-                                    className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-2xl p-4 text-slate-900 dark:text-white font-bold focus:border-[#3B82F6] focus:ring-4 focus:ring-[#3B82F6]/5 outline-none transition-all appearance-none cursor-pointer"
+                                    className="w-full bg-slate-200 dark:bg-white/10 border border-slate-300 dark:border-white/10 rounded-2xl p-4 text-slate-500 dark:text-gray-400 font-bold outline-none transition-all appearance-none cursor-not-allowed"
                                 >
                                     <option value="">Choose a Location...</option>
                                     {facilities.filter(f => userProfile?.assignedFacilities.includes(f.id)).map(f => (
                                         <option key={f.id} value={f.id}>{f.name}</option>
                                     ))}
                                 </select>
+                                <p className="text-[10px] text-primary font-bold mt-2 flex items-center gap-1 uppercase tracking-tight">
+                                    <Lock className="w-3 h-3" /> Facility selection is managed in portal header
+                                </p>
                             </div>
                             <div className="space-y-2">
                                 <label className="block text-[10px] font-black text-slate-400 dark:text-gray-500 uppercase tracking-widest ml-1">Traffic Direction</label>
@@ -234,6 +234,7 @@ export const CarrierBooking: React.FC<CarrierBookingProps> = ({
                                 onChange={setBookingStartTime}
                                 isInvalid={!isWithinOperationalHours}
                                 hint={bookingStartTime ? operationalHint : null}
+                                maxDate={new Date(Date.now() + bookingPrivilege * 60 * 60 * 1000).toISOString()}
                             />
                         </div>
                     </section>

@@ -48,6 +48,11 @@ export const CarrierPortal: React.FC = () => {
         return '';
     });
 
+    // Update booking facility when parent selection changes
+    React.useEffect(() => {
+        setBookingFacilityId(selectedFacilityId);
+    }, [selectedFacilityId]);
+
     // Modal State
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
     const [selectedApptId, setSelectedApptId] = useState<string | null>(null);
@@ -375,6 +380,18 @@ export const CarrierPortal: React.FC = () => {
                             </button>
                         </div>
                         <div className="flex items-center gap-3">
+                            <div className="hidden md:flex items-center gap-2 mr-4 bg-white dark:bg-black/40 backdrop-blur-md px-4 py-2 rounded-xl border border-white/20 shadow-sm">
+                                <Building2 className="w-4 h-4 text-primary" />
+                                <select
+                                    value={selectedFacilityId}
+                                    onChange={(e) => setSelectedFacilityId(e.target.value)}
+                                    className="bg-transparent border-none text-xs font-bold text-slate-700 dark:text-gray-300 outline-none focus:ring-0 cursor-pointer"
+                                >
+                                    {facilities.filter(f => userProfile?.assignedFacilities.includes(f.id)).map(f => (
+                                        <option key={f.id} value={f.id} className="dark:bg-[#1e1e1e]">{f.name}</option>
+                                    ))}
+                                </select>
+                            </div>
                             <button onClick={handleRefresh} disabled={isRefreshing} className="p-2.5 rounded-full bg-white dark:bg-white/10 shadow-sm border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-white/20 transition-all"><RefreshCw className={`w-5 h-5 text-slate-600 dark:text-white ${isRefreshing ? 'animate-spin' : ''}`} /></button>
                             <UserProfile />
                         </div>

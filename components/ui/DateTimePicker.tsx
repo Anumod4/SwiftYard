@@ -11,6 +11,7 @@ interface DateTimePickerProps {
     required?: boolean;
     isInvalid?: boolean;
     hint?: string | null;
+    maxDate?: string | null;
 }
 
 export const DateTimePicker: React.FC<DateTimePickerProps> = ({
@@ -20,7 +21,8 @@ export const DateTimePicker: React.FC<DateTimePickerProps> = ({
     placeholder = "Select Date & Time",
     required = false,
     isInvalid = false,
-    hint = null
+    hint = null,
+    maxDate = null
 }) => {
     const { formatDate } = useData();
     const [isOpen, setIsOpen] = useState(false);
@@ -67,23 +69,28 @@ export const DateTimePicker: React.FC<DateTimePickerProps> = ({
         const [hours, minutes] = selectedTime.split(':').map(Number);
         const newDateTime = new Date(date);
         newDateTime.setHours(hours, minutes, 0, 0);
+
+        if (maxDate && newDateTime > new Date(maxDate)) {
+            // If the selected date + current time exceeds maxDate, try setting to maxDate's date but maybe it's better to just block.
+            // For now, if date selection itself is at or before maxDate but time makes it over, we'll handle in time picker.
+            // But if the whole date is after maxDate, we shouldn't even be able to click it.
+            return;
+        }
+
         onChange(newDateTime.toISOString());
     };
 
     const handleTimeChange = (time: string) => {
         setSelectedTime(time);
-        if (value) {
-            const date = new Date(value);
-            const [hours, minutes] = time.split(':').map(Number);
-            date.setHours(hours, minutes, 0, 0);
-            onChange(date.toISOString());
-        } else {
-            // If no date selected yet, use today
-            const date = new Date();
-            const [hours, minutes] = time.split(':').map(Number);
-            date.setHours(hours, minutes, 0, 0);
-            onChange(date.toISOString());
+        let date = value ? new Date(value) : new Date();
+        const [hours, minutes] = time.split(':').map(Number);
+        date.setHours(hours, minutes, 0, 0);
+
+        if (maxDate && date > new Date(maxDate)) {
+            return;
         }
+
+        onChange(date.toISOString());
     };
 
     // Generate Grid
@@ -103,18 +110,22 @@ export const DateTimePicker: React.FC<DateTimePickerProps> = ({
             });
         }
         for (let i = 1; i <= daysInMonth; i++) {
+            const date = new Date(year, month, i);
             grid.push({
                 day: i,
-                date: new Date(year, month, i),
-                isCurrentMonth: true
+                date: date,
+                isCurrentMonth: true,
+                isDisabled: maxDate ? new Date(date.setHours(0, 0, 0, 0)) > new Date(new Date(maxDate).setHours(0, 0, 0, 0)) : false
             });
         }
         const remaining = 42 - grid.length;
         for (let i = 1; i <= remaining; i++) {
+            const date = new Date(year, month + 1, i);
             grid.push({
                 day: i,
-                date: new Date(year, month + 1, i),
-                isCurrentMonth: false
+                date: date,
+                isCurrentMonth: false,
+                isDisabled: maxDate ? new Date(date.setHours(0, 0, 0, 0)) > new Date(new Date(maxDate).setHours(0, 0, 0, 0)) : false
             });
         }
         return grid;
@@ -179,9 +190,11 @@ export const DateTimePicker: React.FC<DateTimePickerProps> = ({
                                     <button
                                         key={idx}
                                         type="button"
+                                        disabled={(item as any).isDisabled}
                                         onClick={() => handleDateSelect(item.date)}
                                         className={`h-7 w-7 rounded-lg flex items-center justify-center text-[11px] transition-all 
-                                    ${!item.isCurrentMonth ? 'text-slate-300 dark:text-gray-600' : 'text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white'} 
+                                    ${(item as any).isDisabled ? 'opacity-20 cursor-not-allowed' :
+                                                !item.isCurrentMonth ? 'text-slate-300 dark:text-gray-600' : 'text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white'} 
                                     ${isSameDay(item.date, value) ? '!bg-[#3B82F6] !text-white font-bold shadow-md' : ''}
                                 `}
                                     >
@@ -203,12 +216,18 @@ export const DateTimePicker: React.FC<DateTimePickerProps> = ({
                                     const m = (i % 4) * 15;
                                     const t = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
                                     const isSelected = selectedTime === t;
+
+                                    const timeDate = value ? new Date(value) : new Date();
+                                    timeDate.setHours(h, m, 0, 0);
+                                    const isPastMax = maxDate ? timeDate > new Date(maxDate) : false;
+
                                     return (
                                         <button
                                             key={t}
                                             type="button"
+                                            disabled={isPastMax}
                                             onClick={() => handleTimeChange(t)}
-                                            className={`py-1.5 px-2 rounded-lg text-[11px] font-medium text-center transition-all ${isSelected ? 'bg-blue-500 text-white font-bold shadow-sm' : 'text-slate-500 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-white/5'}`}
+                                            className={`py-1.5 px-2 rounded-lg text-[11px] font-medium text-center transition-all ${isPastMax ? 'opacity-20 cursor-not-allowed' : isSelected ? 'bg-blue-500 text-white font-bold shadow-sm' : 'text-slate-500 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-white/5'}`}
                                         >
                                             {t}
                                         </button>
