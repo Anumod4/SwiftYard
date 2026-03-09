@@ -144,6 +144,9 @@ interface DataContextType {
   addDriver: (driver: Partial<Driver>) => Promise<string>;
   updateDriver: (driver: Driver) => Promise<void>;
   deleteDriver: (id: string) => Promise<void>;
+  rewardDriverPoints: (driverName: string, points: number, isViolation?: boolean) => Promise<void>;
+  incrementDriverViolations: (driverName: string) => Promise<void>;
+  revertDriverViolation: (driverName: string) => Promise<void>;
 
   addResource: (res: Partial<Resource>) => Promise<void>;
   updateResource: (res: Partial<Resource>) => Promise<void>;
@@ -766,42 +769,65 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     if (response.success) {
       // Calculate Gamification Score
       try {
-        const appointment = appointments.find(a => a.id === id);
-        if (appointment && appointment.carrierId) {
-          const carrier = carriers.find(c => c.id === appointment.carrierId);
-          if (carrier) {
-            const fid = appointment.facilityId || currentFacilityId || '';
-            if (!fid) return;
+        if (settings.enableCarrierGamification !== false) {
+          const appointment = appointments.find(a => a.id === id);
+          if (appointment && appointment.carrierId) {
+            const carrier = carriers.find(c => c.id === appointment.carrierId);
+            if (carrier) {
+              const fid = appointment.facilityId || currentFacilityId || '';
+              if (!fid) return;
 
+              const sched = new Date(appointment.startTime);
+              const actual = new Date(actualTime);
+              const diffInMinutes = Math.abs((actual.getTime() - sched.getTime()) / (1000 * 60));
+
+              // Score decays by 1 point for every 3 minutes of deviation
+              const currentTripScore = Math.max(0, 100 - (diffInMinutes / 3));
+
+              // Current performance for this facility
+              const currentPerf = carrier.performance?.[fid] || { systemScore: 100 };
+
+              // Simple moving average to smooth the score (90% old, 10% new)
+              const oldScore = currentPerf.systemScore;
+              const newSystemScore = Math.round((oldScore * 0.9) + (currentTripScore * 0.1));
+
+              // Update carrier with updated performance map
+              await updateCarrier({
+                ...carrier,
+                performance: {
+                  ...(carrier.performance || {}),
+                  [fid]: {
+                    ...currentPerf,
+                    systemScore: newSystemScore
+                  }
+                }
+              });
+            }
+          }
+        }
+
+        // SwiftScore Integration
+        if (settings.enableDriverGamification !== false) {
+          const appointment = appointments.find(a => a.id === id);
+          if (appointment && appointment.driverName) {
             const sched = new Date(appointment.startTime);
             const actual = new Date(actualTime);
             const diffInMinutes = Math.abs((actual.getTime() - sched.getTime()) / (1000 * 60));
 
-            // Score decays by 1 point for every 3 minutes of deviation
-            const currentTripScore = Math.max(0, 100 - (diffInMinutes / 3));
+            const onTimeReward = settings.swiftScoreConfig?.onTimePoints || 50;
+            const onTimeWindow = settings.swiftScoreConfig?.onTimeWindowMinutes || 15;
+            const arrivalPenalty = settings.swiftScoreConfig?.delayedArrivalPenalty || 20;
 
-            // Current performance for this facility
-            const currentPerf = carrier.performance?.[fid] || { systemScore: 100 };
-
-            // Simple moving average to smooth the score (90% old, 10% new)
-            const oldScore = currentPerf.systemScore;
-            const newSystemScore = Math.round((oldScore * 0.9) + (currentTripScore * 0.1));
-
-            // Update carrier with updated performance map
-            await updateCarrier({
-              ...carrier,
-              performance: {
-                ...(carrier.performance || {}),
-                [fid]: {
-                  ...currentPerf,
-                  systemScore: newSystemScore
-                }
-              }
-            });
+            if (diffInMinutes <= onTimeWindow) {
+              await rewardDriverPoints(appointment.driverName, onTimeReward);
+            } else if (actual.getTime() > sched.getTime()) {
+              // Delayed Arrival: only penalize if LATE (actual > sched)
+              await rewardDriverPoints(appointment.driverName, -arrivalPenalty, true);
+            }
           }
         }
       } catch (err) {
-        console.error("Failed to update carrier score:", err);
+        console.error("Failed to update gamification scores:", err);
       }
 
       await fetchData();
@@ -843,8 +869,38 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     setActionLoading(true);
     setActionLoadingMessage('Updating trailer...');
     try {
+      const trailer = trailers.find(t => t.id === id);
       const response = await api.trailers.update(id, updates);
       if (response.success) {
+        // SwiftScore Integration for Instruction Completion
+        if (settings.enableDriverGamification !== false && trailer && trailer.instructionTimestamp && (
+          (trailer.status === 'MovingToDock' && updates.status === 'ReadyForCheckIn') ||
+          (trailer.status === 'ReadyForCheckOut' && updates.status === 'CheckedOut')
+        )) {
+          const start = new Date(trailer.instructionTimestamp).getTime();
+          const now = new Date().getTime();
+          const diffMin = (now - start) / (1000 * 60);
+
+          let durationLimit = 15;
+          if (trailer.status === 'MovingToDock') durationLimit = settings.instructionDurations?.moveToDock || 15;
+          if (trailer.status === 'ReadyForCheckOut') durationLimit = settings.instructionDurations?.checkOut || 15;
+
+          // Find associated appointment to get driver name
+          const appt = appointments.find(a => a.id === trailer.currentAppointmentId);
+          const driverName = appt?.driverName;
+
+          if (driverName) {
+            const reward = settings.swiftScoreConfig?.instructionPoints || 30;
+            const penalty = settings.swiftScoreConfig?.penaltyPoints || 20;
+
+            if (diffMin <= durationLimit) {
+              await rewardDriverPoints(driverName, reward);
+            } else {
+              await rewardDriverPoints(driverName, -penalty, true);
+            }
+          }
+        }
+
         await fetchData();
         logActivity('Update Trailer', `Updated trailer ${id}`, { trailerId: id });
       } else {
@@ -888,8 +944,32 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     setActionLoading(true);
     setActionLoadingMessage('Moving trailer to yard...');
     try {
+      const trailer = trailers.find(t => t.id === trailerId);
       const response = await api.trailers.moveToYard(trailerId, slotId, apptId);
       if (response.success) {
+        // SwiftScore Integration for Move to Yard Perfect
+        if (settings.enableDriverGamification !== false && trailer && trailer.status === 'MovingToYard' && trailer.instructionTimestamp) {
+          const start = new Date(trailer.instructionTimestamp).getTime();
+          const now = new Date().getTime();
+          const diffMin = (now - start) / (1000 * 60);
+          const durationLimit = settings.instructionDurations?.moveToYard || 15;
+
+          const apptIdToUse = apptId || trailer.currentAppointmentId;
+          const appt = appointments.find(a => a.id === apptIdToUse);
+          const driverName = appt?.driverName;
+
+          if (driverName) {
+            const reward = settings.swiftScoreConfig?.instructionPoints || 30;
+            const penalty = settings.swiftScoreConfig?.penaltyPoints || 20;
+
+            if (diffMin <= durationLimit) {
+              await rewardDriverPoints(driverName, reward);
+            } else {
+              await rewardDriverPoints(driverName, -penalty, true);
+            }
+          }
+        }
+
         await fetchData();
         logActivity('Move to Yard', `Moved trailer ${trailerId} to slot ${slotId}`, { trailerId: trailerId, locationName: slotId, appointmentId: apptId });
       } else {
@@ -936,6 +1016,98 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     }
     setActionLoading(false);
     setActionLoadingMessage('');
+  };
+
+  const getDriverLevel = (points: number): number => {
+    if (points >= 2000) return 5;
+    if (points >= 1500) return 4;
+    if (points >= 1000) return 3;
+    if (points >= 500) return 2;
+    return 1;
+  };
+
+  const rewardDriverPoints = async (driverName: string, points: number, isViolation: boolean = false) => {
+    const driver = drivers.find(d => d.name.toLowerCase() === driverName.toLowerCase());
+    if (!driver) return;
+
+    const perf = driver.performance || { points: 0, level: 1, violations: 0, streakCount: 0 };
+    const newPoints = Math.max(0, perf.points + points);
+    const newStreak = isViolation ? 0 : (perf.streakCount + 1);
+
+    // Check for safety streak bonus
+    let finalPoints = newPoints;
+    let finalStreak = newStreak;
+    const streakThreshold = settings.swiftScoreConfig?.safetyStreakThreshold || 5;
+    const streakBonus = settings.swiftScoreConfig?.safetyStreakPoints || 100;
+
+    if (!isViolation && finalStreak >= streakThreshold) {
+      finalPoints += streakBonus;
+      finalStreak = 0; // Reset streak after bonus
+      addToast('Safety Streak Bonus!', `${driverName} earned ${streakBonus} bonus points for ${streakThreshold} safe operations.`, 'success');
+    }
+
+    const updatedDriver: Driver = {
+      ...driver,
+      performance: {
+        ...perf,
+        points: finalPoints,
+        level: getDriverLevel(finalPoints),
+        streakCount: finalStreak
+      }
+    };
+
+    const response = await api.drivers.update(updatedDriver.id, updatedDriver);
+    if (response.success) {
+      await fetchData();
+    }
+  };
+
+  const incrementDriverViolations = async (driverName: string) => {
+    const driver = drivers.find(d => d.name.toLowerCase() === driverName.toLowerCase());
+    if (!driver) return;
+
+    const perf = driver.performance || { points: 0, level: 1, violations: 0, streakCount: 0 };
+    const penalty = settings.swiftScoreConfig?.yardViolationPenalty || 50;
+    const newPoints = Math.max(0, perf.points - penalty);
+
+    const updatedDriver: Driver = {
+      ...driver,
+      performance: {
+        ...perf,
+        points: newPoints,
+        level: getDriverLevel(newPoints),
+        violations: perf.violations + 1,
+        streakCount: 0
+      }
+    };
+
+    const response = await api.drivers.update(updatedDriver.id, updatedDriver);
+    if (response.success) {
+      await fetchData();
+      logActivity('Driver Violation', `Safety violation recorded for ${driverName}`, { driverName });
+    }
+  };
+
+  const revertDriverViolation = async (driverName: string) => {
+    const driver = drivers.find(d => d.name.toLowerCase() === driverName.toLowerCase());
+    if (!driver) return;
+
+    const perf = driver.performance || { points: 0, level: 1, violations: 0, streakCount: 0 };
+    if (perf.violations <= 0) return;
+
+    const updatedDriver: Driver = {
+      ...driver,
+      performance: {
+        ...perf,
+        violations: perf.violations - 1
+      }
+    };
+
+    const response = await api.drivers.update(updatedDriver.id, updatedDriver);
+    if (response.success) {
+      await fetchData();
+      addToast('Violation Reverted', `Safety violation removed for ${driverName}.`, 'info');
+    }
   };
 
   const addResource = async (res: Partial<Resource>) => {
@@ -1380,6 +1552,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     deleteTrailer,
     gateOutTrailer,
     moveTrailerToYard,
+    rewardDriverPoints,
+    incrementDriverViolations,
+    revertDriverViolation,
     addDriver,
     updateDriver,
     deleteDriver,

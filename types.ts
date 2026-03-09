@@ -74,6 +74,12 @@ export interface Driver {
   phone: string;
   carrierId?: string;
   status: 'Away' | 'On Site';
+  performance?: {
+    points: number;
+    level: number;
+    violations: number;
+    streakCount: number;
+  };
 }
 
 export interface TrailerHistory {
@@ -236,6 +242,18 @@ export interface AppSettings {
     goldBookingOffset: number;
     platinumBookingOffset: number;
   };
+  swiftScoreConfig?: {
+    onTimePoints: number;
+    onTimeWindowMinutes: number;
+    instructionPoints: number;
+    safetyStreakPoints: number;
+    safetyStreakThreshold: number;
+    penaltyPoints: number; // For instruction delay
+    delayedArrivalPenalty: number;
+    yardViolationPenalty: number;
+  };
+  enableCarrierGamification?: boolean;
+  enableDriverGamification?: boolean;
 }
 
 export interface Activity {

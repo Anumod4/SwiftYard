@@ -4,7 +4,7 @@ import { useDebounce } from '../hooks/useDebounce';
 import { useData } from '../contexts/DataContext';
 import { GlassCard } from '../components/ui/GlassCard';
 import { Driver } from '../types';
-import { Plus, Edit2, Trash2, User, CheckCircle2, XCircle, Briefcase, ListPlus, Search, Phone, ChevronDown, Filter } from 'lucide-react';
+import { Plus, Edit2, Trash2, User, CheckCircle2, XCircle, Briefcase, ListPlus, Search, Phone, ChevronDown, Filter, Shield, AlertCircle, RotateCcw } from 'lucide-react';
 import { ModalPortal } from '../components/ui/ModalPortal';
 import { Modal } from '../components/ui/Modal';
 import { Pagination } from '../components/ui/Pagination';
@@ -13,7 +13,7 @@ import { DeleteConfirmationModal } from '../components/ui/DeleteConfirmationModa
 import { VIEW_IDS } from '../constants';
 
 export const Drivers: React.FC = () => {
-  const { drivers, addDriver, updateDriver, deleteDriver, trailers, carriers, t, addToast, canEdit } = useData();
+  const { drivers, addDriver, updateDriver, deleteDriver, trailers, carriers, t, addToast, canEdit, rewardDriverPoints, incrementDriverViolations, revertDriverViolation } = useData();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [driverToDelete, setDriverToDelete] = useState<string | null>(null);
@@ -337,6 +337,8 @@ export const Drivers: React.FC = () => {
                   <th onClick={() => handleSort('status')} className="p-8 cursor-pointer group hover:bg-muted/5 transition-colors text-center">
                     Status {getSortIcon('status')}
                   </th>
+                  <th className="p-8 text-center">SwiftScore</th>
+                  <th className="p-8 text-center">Violations</th>
                   <th className="p-8 text-right pr-12">Actions</th>
                 </tr>
               </thead>
@@ -383,6 +385,48 @@ export const Drivers: React.FC = () => {
                         ) : (
                           <span className="inline-flex px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] text-muted bg-muted/10 border-2 border-border/20">{t('drv.statusAway') || 'Away'}</span>
                         )}
+                      </td>
+                      <td className="p-8 text-center">
+                        <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border-2 font-black text-[10px] uppercase tracking-tighter ${(driver.performance?.level || 1) === 5 ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-400' :
+                            (driver.performance?.level || 1) === 4 ? 'bg-amber-500/10 border-amber-500/30 text-amber-400' :
+                              (driver.performance?.level || 1) === 3 ? 'bg-slate-400/10 border-slate-400/30 text-slate-400' :
+                                (driver.performance?.level || 1) === 2 ? 'bg-orange-600/10 border-orange-600/30 text-orange-400' :
+                                  'bg-slate-500/10 border-slate-500/30 text-slate-500'
+                          }`}>
+                          <Shield className="w-3 h-3" />
+                          <span>Level {driver.performance?.level || 1}</span>
+                        </div>
+                      </td>
+                      <td className="p-8 text-center">
+                        <div className="flex flex-col items-center gap-1">
+                          <span className={`text-base font-black ${(driver.performance?.violations || 0) > 0 ? 'text-red-500' : 'text-emerald-500'}`}>
+                            {driver.performance?.violations || 0}
+                          </span>
+                          {canEditDrivers && (
+                            <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (confirm(`Increment violations for ${driver.name}?`)) incrementDriverViolations(driver.name);
+                                }}
+                                className="p-1.5 hover:bg-red-500/10 text-red-500 rounded-lg transition-colors"
+                                title="Add Violation"
+                              >
+                                <AlertCircle className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (confirm(`Remove violation for ${driver.name}?`)) revertDriverViolation(driver.name);
+                                }}
+                                className="p-1.5 hover:bg-emerald-500/10 text-emerald-500 rounded-lg transition-colors"
+                                title="Revert Violation"
+                              >
+                                <RotateCcw className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </td>
                       <td className="p-8 text-right pr-12 whitespace-nowrap overflow-hidden" onClick={(e) => e.stopPropagation()}>
                         <div className="flex justify-end gap-3 items-center transition-all duration-300 translate-x-12 group-hover:translate-x-0">

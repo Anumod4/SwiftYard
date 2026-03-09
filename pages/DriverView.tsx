@@ -16,6 +16,7 @@ import {
   PlayCircle,
   Timer,
   RefreshCw,
+  Shield,
 } from "lucide-react";
 import { Logo } from "../components/Logo";
 import { setFacilityContext } from "../services/api";
@@ -35,11 +36,21 @@ export const DriverView: React.FC = () => {
     setCurrentFacilityId,
     settings,
     refreshData,
+    drivers,
+    incrementDriverViolations,
   } = useData();
 
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [activeTrailer, setActiveTrailer] = useState<any | null>(null);
+
+  // Sync with live driver data for performance/level
+  const liveDriver = useMemo(() => {
+    if (!currentDriver) return null;
+    return drivers.find(d => d.id === currentDriver.id || d.name === currentDriver.name);
+  }, [drivers, currentDriver]);
+
+  const driverPerformance = liveDriver?.performance || { points: 0, level: 1, violations: 0, streakCount: 0 };
 
   // Refresh data on mount and when driver changes
   useEffect(() => {
@@ -399,7 +410,7 @@ export const DriverView: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <div className="text-right hidden sm:block">
             <p className="text-sm font-bold text-white leading-none">
               {currentDriver.name}
@@ -409,27 +420,46 @@ export const DriverView: React.FC = () => {
             </p>
           </div>
 
-          {/* Refresh Button */}
-          <button
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-            className="p-2 bg-white/10 rounded-full hover:bg-white/20 transition-colors shrink-0"
-          >
-            <RefreshCw
-              className={`w-4 h-4 text-white ${isRefreshing ? "animate-spin" : ""}`}
-            />
-          </button>
-
-          <div className="w-9 h-9 rounded-full bg-[#3B82F6] flex items-center justify-center font-bold text-sm shadow-md shrink-0">
-            {currentDriver.name.charAt(0)}
+          {/* Level Badge */}
+          <div className={`px-2 py-1 rounded-lg border flex items-center gap-1.5 ${driverPerformance.level === 5 ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-400' :
+            driverPerformance.level === 4 ? 'bg-amber-500/10 border-amber-500/30 text-amber-400' :
+              driverPerformance.level === 3 ? 'bg-slate-400/10 border-slate-400/30 text-slate-400' :
+                driverPerformance.level === 2 ? 'bg-orange-600/10 border-orange-600/30 text-orange-400' :
+                  'bg-slate-500/10 border-slate-500/30 text-slate-500'
+            }`}>
+            <Shield className="w-3 h-3" />
+            <div className="flex flex-col leading-none">
+              <span className="text-[8px] font-black uppercase tracking-tighter opacity-60">Level {driverPerformance.level}</span>
+              <span className="text-[10px] font-black uppercase tracking-tighter">
+                {driverPerformance.level === 5 ? 'Legend' :
+                  driverPerformance.level === 4 ? 'Yard Master' :
+                    driverPerformance.level === 3 ? 'Elite' :
+                      driverPerformance.level === 2 ? 'Pro' : 'Rookie'}
+              </span>
+            </div>
           </div>
-          <button
-            onClick={() => signOut()}
-            className="p-2 bg-white/10 rounded-full hover:bg-red-500/20 hover:text-red-500 transition-colors shrink-0"
-          >
-            <LogOut className="w-4 h-4" />
-          </button>
         </div>
+
+        {/* Refresh Button */}
+        <button
+          onClick={handleRefresh}
+          disabled={isRefreshing}
+          className="p-2 bg-white/10 rounded-full hover:bg-white/20 transition-colors shrink-0"
+        >
+          <RefreshCw
+            className={`w-4 h-4 text-white ${isRefreshing ? "animate-spin" : ""}`}
+          />
+        </button>
+
+        <div className="w-9 h-9 rounded-full bg-[#3B82F6] flex items-center justify-center font-bold text-sm shadow-md shrink-0">
+          {currentDriver.name.charAt(0)}
+        </div>
+        <button
+          onClick={() => signOut()}
+          className="p-2 bg-white/10 rounded-full hover:bg-red-500/20 hover:text-red-500 transition-colors shrink-0"
+        >
+          <LogOut className="w-4 h-4" />
+        </button>
       </div>
 
       {/* Main Content */}
@@ -597,7 +627,22 @@ export const DriverView: React.FC = () => {
             <p className="text-lg text-gray-400">{subTitle}</p>
           </div>
         )}
+        {/* Yard Assistance Button */}
+        <div className="mt-auto p-6 border-t border-white/5 bg-white/[0.02]">
+          <button
+            onClick={() => {
+              if (confirm("Are you sure you need assistance? This will be recorded as a safety event.")) {
+                incrementDriverViolations(currentDriver.name);
+                addToast("Assistance Requested", "Yard staff have been notified. Please stay in your vehicle.", "info");
+              }
+            }}
+            className="w-full py-4 rounded-2xl border-2 border-dashed border-red-500/30 text-red-500/70 hover:bg-red-500/5 hover:text-red-500 hover:border-red-500/50 transition-all flex items-center justify-center gap-2 group"
+          >
+            <AlertTriangle className="w-5 h-5 group-hover:animate-pulse" />
+            <span className="text-sm font-black uppercase tracking-widest">Need Yard Assistance?</span>
+          </button>
+        </div>
       </div>
-    </div>
+    </div >
   );
 };

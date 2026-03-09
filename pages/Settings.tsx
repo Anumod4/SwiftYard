@@ -108,6 +108,13 @@ export const Settings: React.FC = () => {
     useEffect(() => {
         setLocalYardName(settings.yardName || 'SwiftYard');
         setLocalLanguage(settings.language || 'en');
+        // SwiftScore
+        setLocalOnTimePoints(String(settings.swiftScoreConfig?.onTimePoints || 50));
+        setLocalOnTimeWindow(String(settings.swiftScoreConfig?.onTimeWindowMinutes || 15));
+        setLocalInstructionPoints(String(settings.swiftScoreConfig?.instructionPoints || 30));
+        setLocalSafetyStreakPoints(String(settings.swiftScoreConfig?.safetyStreakPoints || 100));
+        setLocalSafetyStreakThreshold(String(settings.swiftScoreConfig?.safetyStreakThreshold || 5));
+        setLocalPenaltyPoints(String(settings.swiftScoreConfig?.penaltyPoints || 20));
         setLocalYardThresh(String(settings.dwellThresholds?.yard || 4));
         setLocalDockThresh(String(settings.dwellThresholds?.dock || 2));
         setLocalCountry(settings.country || '');
@@ -115,6 +122,11 @@ export const Settings: React.FC = () => {
         setLocalCurrency(settings.currency || 'USD');
         setLocalDateFormat(settings.dateFormat || 'MM/DD/YYYY');
         setLocalTimeFormat(settings.timeFormat || '12h');
+        // SwiftScore Extensions
+        setLocalDelayedArrivalPenalty(String(settings.swiftScoreConfig?.delayedArrivalPenalty || 20));
+        setLocalYardViolationPenalty(String(settings.swiftScoreConfig?.yardViolationPenalty || 50));
+        setLocalEnableCarrierGamification(settings.enableCarrierGamification !== false);
+        setLocalEnableDriverGamification(settings.enableDriverGamification !== false);
     }, [
         settings.yardName, settings.language, settings.dwellThresholds,
         settings.country, settings.timezone, settings.currency, settings.dateFormat, settings.timeFormat
@@ -221,6 +233,18 @@ export const Settings: React.FC = () => {
     const [localGoldOffset, setLocalGoldOffset] = useState(String(settings.gamification?.goldBookingOffset || 48));
     const [localPlatinumOffset, setLocalPlatinumOffset] = useState(String(settings.gamification?.platinumBookingOffset || 72));
 
+    // SwiftScore Local State
+    const [localOnTimePoints, setLocalOnTimePoints] = useState(String(settings.swiftScoreConfig?.onTimePoints || 50));
+    const [localOnTimeWindow, setLocalOnTimeWindow] = useState(String(settings.swiftScoreConfig?.onTimeWindowMinutes || 15));
+    const [localInstructionPoints, setLocalInstructionPoints] = useState(String(settings.swiftScoreConfig?.instructionPoints || 30));
+    const [localSafetyStreakPoints, setLocalSafetyStreakPoints] = useState(String(settings.swiftScoreConfig?.safetyStreakPoints || 100));
+    const [localSafetyStreakThreshold, setLocalSafetyStreakThreshold] = useState(String(settings.swiftScoreConfig?.safetyStreakThreshold || 5));
+    const [localPenaltyPoints, setLocalPenaltyPoints] = useState(String(settings.swiftScoreConfig?.penaltyPoints || 20));
+    const [localDelayedArrivalPenalty, setLocalDelayedArrivalPenalty] = useState(String(settings.swiftScoreConfig?.delayedArrivalPenalty || 20));
+    const [localYardViolationPenalty, setLocalYardViolationPenalty] = useState(String(settings.swiftScoreConfig?.yardViolationPenalty || 50));
+    const [localEnableCarrierGamification, setLocalEnableCarrierGamification] = useState(settings.enableCarrierGamification !== false);
+    const [localEnableDriverGamification, setLocalEnableDriverGamification] = useState(settings.enableDriverGamification !== false);
+
     const handleGamificationBlur = () => {
         updateSettings({
             ...settings,
@@ -231,6 +255,34 @@ export const Settings: React.FC = () => {
                 platinumBookingOffset: Number(localPlatinumOffset) || 72
             }
         });
+    };
+
+    const handleSwiftScoreBlur = () => {
+        updateSettings({
+            ...settings,
+            swiftScoreConfig: {
+                onTimePoints: Number(localOnTimePoints) || 50,
+                onTimeWindowMinutes: Number(localOnTimeWindow) || 15,
+                instructionPoints: Number(localInstructionPoints) || 30,
+                safetyStreakPoints: Number(localSafetyStreakPoints) || 100,
+                safetyStreakThreshold: Number(localSafetyStreakThreshold) || 5,
+                penaltyPoints: Number(localPenaltyPoints) || 20,
+                delayedArrivalPenalty: Number(localDelayedArrivalPenalty) || 20,
+                yardViolationPenalty: Number(localYardViolationPenalty) || 50
+            }
+        });
+    };
+
+    const handleCarrierGamificationToggle = () => {
+        const newVal = !localEnableCarrierGamification;
+        setLocalEnableCarrierGamification(newVal);
+        updateSettings({ ...settings, enableCarrierGamification: newVal });
+    };
+
+    const handleDriverGamificationToggle = () => {
+        const newVal = !localEnableDriverGamification;
+        setLocalEnableDriverGamification(newVal);
+        updateSettings({ ...settings, enableDriverGamification: newVal });
     };
 
     // Gate In Workflow handlers
@@ -1186,10 +1238,21 @@ export const Settings: React.FC = () => {
                     <Activity className="w-5 h-5 mr-2 text-blue-500" /> Carrier Gamification & Priority
                 </h2>
                 <GlassCard className="p-6 space-y-6">
-                    <p className="text-xs text-slate-500 dark:text-gray-400">
-                        Configure the default booking advance hours and the additional priority hours granted to carriers based on their Excellence Tier.
-                    </p>
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="flex items-center justify-between mb-4 pb-4 border-b border-slate-200 dark:border-white/5">
+                        <p className="text-xs text-slate-500 dark:text-gray-400 max-w-[70%]">
+                            Configure the default booking advance hours and the additional priority hours granted to carriers based on their Excellence Tier.
+                        </p>
+                        <div className="flex items-center gap-3 shrink-0 bg-slate-100 dark:bg-black/20 p-2 rounded-xl">
+                            <span className="text-xs font-bold uppercase text-slate-500 dark:text-gray-400">Status</span>
+                            <button
+                                onClick={handleCarrierGamificationToggle}
+                                className={`w-10 h-5 rounded-full relative cursor-pointer transition-colors ${localEnableCarrierGamification ? 'bg-blue-500' : 'bg-slate-300 dark:bg-slate-600'}`}
+                            >
+                                <div className={`absolute top-1 left-1 w-3 h-3 bg-white rounded-full transition-transform shadow-sm ${localEnableCarrierGamification ? 'translate-x-5' : ''}`} />
+                            </button>
+                        </div>
+                    </div>
+                    <div className={`grid grid-cols-2 gap-6 transition-opacity duration-300 ${!localEnableCarrierGamification ? 'opacity-50 pointer-events-none grayscale' : ''}`}>
                         <div>
                             <label className="block text-xs font-bold uppercase text-slate-500 dark:text-gray-400 mb-2">Default Advance (Hours)</label>
                             <input
@@ -1233,6 +1296,173 @@ export const Settings: React.FC = () => {
                                         onBlur={handleGamificationBlur}
                                         className="w-20 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-2 text-right text-sm text-slate-900 dark:text-white focus:border-blue-500 outline-none transition-all"
                                     />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </GlassCard>
+            </section>
+
+            <section className="mt-8">
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center">
+                    <Sparkles className="w-5 h-5 mr-2 text-amber-500" /> Driver Gamification
+                </h2>
+                <GlassCard className="p-6 space-y-6">
+                    <div className="flex items-center justify-between mb-4 pb-4 border-b border-slate-200 dark:border-white/5">
+                        <p className="text-xs text-slate-500 dark:text-gray-400">
+                            Configure safety streaks, on-time rewards, and penalties to drive driver excellence and precision.
+                        </p>
+                        <div className="flex items-center gap-3 shrink-0 bg-slate-100 dark:bg-black/20 p-2 rounded-xl">
+                            <span className="text-xs font-bold uppercase text-slate-500 dark:text-gray-400">Status</span>
+                            <button
+                                onClick={handleDriverGamificationToggle}
+                                className={`w-10 h-5 rounded-full relative cursor-pointer transition-colors ${localEnableDriverGamification ? 'bg-amber-500' : 'bg-slate-300 dark:bg-slate-600'}`}
+                            >
+                                <div className={`absolute top-1 left-1 w-3 h-3 bg-white rounded-full transition-transform shadow-sm ${localEnableDriverGamification ? 'translate-x-5' : ''}`} />
+                            </button>
+                        </div>
+                    </div>
+                    <div className={`grid grid-cols-2 gap-8 transition-opacity duration-300 ${!localEnableDriverGamification ? 'opacity-50 pointer-events-none grayscale' : ''}`}>
+                        <div className="space-y-6">
+                            <div>
+                                <h3 className="text-xs font-bold text-slate-400 dark:text-gray-500 uppercase tracking-wider mb-4">Positive Reinforcement</h3>
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between gap-4">
+                                        <div className="flex flex-col">
+                                            <span className="text-sm font-bold text-slate-700 dark:text-gray-300">On-Time Arrival</span>
+                                            <span className="text-[10px] text-slate-500">Points for arrival within window</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <input
+                                                type="number"
+                                                value={localOnTimePoints}
+                                                onChange={e => setLocalOnTimePoints(e.target.value)}
+                                                onBlur={handleSwiftScoreBlur}
+                                                className="w-16 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-2 text-right text-sm text-slate-900 dark:text-white focus:border-amber-500 outline-none"
+                                            />
+                                            <span className="text-xs text-slate-400">pts</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-between gap-4">
+                                        <div className="flex flex-col">
+                                            <span className="text-sm font-bold text-slate-700 dark:text-gray-300">Arrival Window</span>
+                                            <span className="text-[10px] text-slate-500">Minutes before/after schedule</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <input
+                                                type="number"
+                                                value={localOnTimeWindow}
+                                                onChange={e => setLocalOnTimeWindow(e.target.value)}
+                                                onBlur={handleSwiftScoreBlur}
+                                                className="w-16 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-2 text-right text-sm text-slate-900 dark:text-white focus:border-amber-500 outline-none"
+                                            />
+                                            <span className="text-xs text-slate-400">min</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-between gap-4">
+                                        <div className="flex flex-col">
+                                            <span className="text-sm font-bold text-slate-700 dark:text-gray-300">Instruction Perfect</span>
+                                            <span className="text-[10px] text-slate-500">Completing moves within timer</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <input
+                                                type="number"
+                                                value={localInstructionPoints}
+                                                onChange={e => setLocalInstructionPoints(e.target.value)}
+                                                onBlur={handleSwiftScoreBlur}
+                                                className="w-16 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-2 text-right text-sm text-slate-900 dark:text-white focus:border-amber-500 outline-none"
+                                            />
+                                            <span className="text-xs text-slate-400">pts</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="space-y-6">
+                            <div>
+                                <h3 className="text-xs font-bold text-slate-400 dark:text-gray-500 uppercase tracking-wider mb-4">Safety & Penalties</h3>
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between gap-4">
+                                        <div className="flex flex-col">
+                                            <span className="text-sm font-bold text-slate-700 dark:text-gray-300">Safety Streak</span>
+                                            <span className="text-[10px] text-slate-500">Points for consecutive safe ops</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <input
+                                                type="number"
+                                                value={localSafetyStreakPoints}
+                                                onChange={e => setLocalSafetyStreakPoints(e.target.value)}
+                                                onBlur={handleSwiftScoreBlur}
+                                                className="w-16 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-2 text-right text-sm text-slate-900 dark:text-white focus:border-amber-500 outline-none"
+                                            />
+                                            <span className="text-xs text-slate-400">pts</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-between gap-4">
+                                        <div className="flex flex-col">
+                                            <span className="text-sm font-bold text-slate-700 dark:text-gray-300">Streak Target</span>
+                                            <span className="text-[10px] text-slate-500">Ops with zero violations</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <input
+                                                type="number"
+                                                value={localSafetyStreakThreshold}
+                                                onChange={e => setLocalSafetyStreakThreshold(e.target.value)}
+                                                onBlur={handleSwiftScoreBlur}
+                                                className="w-16 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-2 text-right text-sm text-slate-900 dark:text-white focus:border-amber-500 outline-none"
+                                            />
+                                            <span className="text-xs text-slate-400">ops</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-between gap-4 border-t border-slate-100 dark:border-white/5 pt-4">
+                                        <div className="flex flex-col">
+                                            <span className="text-sm font-bold text-red-600 dark:text-red-400">Late Arrival Penalty</span>
+                                            <span className="text-[10px] text-slate-500">Deduction for delayed arrival</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <input
+                                                type="number"
+                                                value={localDelayedArrivalPenalty}
+                                                onChange={e => setLocalDelayedArrivalPenalty(e.target.value)}
+                                                onBlur={handleSwiftScoreBlur}
+                                                className="w-16 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-2 text-right text-sm text-red-600 dark:text-red-400 focus:border-red-500 outline-none"
+                                            />
+                                            <span className="text-xs text-slate-400">pts</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-between gap-4">
+                                        <div className="flex flex-col">
+                                            <span className="text-sm font-bold text-red-600 dark:text-red-400">Yard Violation Penalty</span>
+                                            <span className="text-[10px] text-slate-500">Deduction for safety violations</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <input
+                                                type="number"
+                                                value={localYardViolationPenalty}
+                                                onChange={e => setLocalYardViolationPenalty(e.target.value)}
+                                                onBlur={handleSwiftScoreBlur}
+                                                className="w-16 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-2 text-right text-sm text-red-600 dark:text-red-400 focus:border-red-500 outline-none"
+                                            />
+                                            <span className="text-xs text-slate-400">pts</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-between gap-4">
+                                        <div className="flex flex-col">
+                                            <span className="text-sm font-bold text-red-600 dark:text-red-400">Instruction Delay</span>
+                                            <span className="text-[10px] text-slate-500">Deduction for exceeding timers</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <input
+                                                type="number"
+                                                value={localPenaltyPoints}
+                                                onChange={e => setLocalPenaltyPoints(e.target.value)}
+                                                onBlur={handleSwiftScoreBlur}
+                                                className="w-16 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-2 text-right text-sm text-red-600 dark:text-red-400 focus:border-red-500 outline-none"
+                                            />
+                                            <span className="text-xs text-slate-400">pts</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

@@ -2,22 +2,23 @@
 import React, { useState, useEffect } from 'react';
 import { useData } from '../contexts/DataContext';
 import { Trailer, Appointment } from '../types';
-import { Truck, Clock, ArrowRight, Play, CheckCircle2, AlertTriangle, MapPin, StopCircle, Timer, Calendar, RefreshCw, CheckSquare, MousePointerClick, MonitorPlay } from 'lucide-react';
+import { Truck, Clock, ArrowRight, Play, CheckCircle2, AlertTriangle, MapPin, StopCircle, Timer, Calendar, RefreshCw, CheckSquare, MousePointerClick, MonitorPlay, Shield } from 'lucide-react';
 
 export const PublicDriverBoard: React.FC = () => {
     const {
         trailers,
         appointments,
         docks,
-        yardSlots,
-        settings,
         allResources,
         refreshData,
         updateAppointment,
         updateTrailer,
         moveTrailerToYard,
         addToast,
-        theme
+        theme,
+        drivers,
+        settings,
+        yardSlots
     } = useData();
 
     const [currentTime, setCurrentTime] = useState(new Date());
@@ -299,8 +300,16 @@ export const PublicDriverBoard: React.FC = () => {
                                         <div className={`text-3xl font-black truncate ${isDark ? 'text-white' : 'text-slate-900'}`} title={trailer.number}>
                                             {trailer.number}
                                         </div>
-                                        <div className={`mt-2 text-xs font-medium truncate flex items-center gap-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                                        <div className={`mt-2 text-xs font-medium truncate flex items-center gap-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
                                             {trailer.owner}
+                                            {appt?.driverName && (
+                                                <>
+                                                    <span className="opacity-30">•</span>
+                                                    <div className={`px-1 rounded-[4px] border border-blue-500/20 text-blue-500 text-[8px] font-black uppercase font-mono tracking-tighter`}>
+                                                        {drivers.find(d => d.name.toLowerCase() === appt.driverName?.toLowerCase())?.performance?.level ? `LVL ${drivers.find(d => d.name.toLowerCase() === appt.driverName?.toLowerCase())?.performance?.level}` : 'ROOKIE'}
+                                                    </div>
+                                                </>
+                                            )}
                                         </div>
                                     </div>
 
@@ -356,6 +365,46 @@ export const PublicDriverBoard: React.FC = () => {
                         })}
                     </div>
                 )}
+                {/* Top Drivers Ticker */}
+                <div className={`mt-auto -mx-4 md:-mx-8 border-t px-8 py-3 flex items-center gap-6 overflow-hidden whitespace-nowrap ${isDark ? 'bg-[#1e1e1e] border-white/5' : 'bg-slate-50 border-slate-200'}`}>
+                    <div className="flex items-center gap-2 shrink-0">
+                        <Shield className="w-4 h-4 text-blue-500" />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-blue-500">Top Drivers</span>
+                    </div>
+                    <div className="flex gap-12 animate-marquee hover:pause-marquee">
+                        {[...drivers]
+                            .sort((a, b) => (b.performance?.points || 0) - (a.performance?.points || 0))
+                            .slice(0, 10)
+                            .map((d, i) => (
+                                <div key={d.id} className="flex items-center gap-2">
+                                    <span className="text-slate-500 font-bold text-xs">{i + 1}.</span>
+                                    <span className={`text-sm font-black ${isDark ? 'text-white' : 'text-slate-900'}`}>{d.name}</span>
+                                    <div className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-tighter border ${(d.performance?.level || 1) === 5 ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-400' :
+                                        (d.performance?.level || 1) === 4 ? 'bg-amber-500/10 border-amber-500/30 text-amber-400' :
+                                            (d.performance?.level || 1) === 3 ? 'bg-slate-400/10 border-slate-400/30 text-slate-400' :
+                                                (d.performance?.level || 1) === 2 ? 'bg-orange-600/10 border-orange-600/30 text-orange-400' :
+                                                    'bg-slate-500/10 border-slate-500/30 text-slate-500'
+                                        }`}>
+                                        LVL {d.performance?.level || 1}
+                                    </div>
+                                </div>
+                            ))}
+                    </div>
+                </div>
+
+                <style dangerouslySetInnerHTML={{
+                    __html: `
+                @keyframes marquee {
+                    0% { transform: translateX(0); }
+                    100% { transform: translateX(-50%); }
+                }
+                .animate-marquee {
+                    animation: marquee 30s linear infinite;
+                }
+                .pause-marquee:hover {
+                    animation-play-state: paused;
+                }
+            ` }} />
             </div>
         </div>
     );

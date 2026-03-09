@@ -196,6 +196,11 @@ export const runMigrations = async () => {
   try {
     await turso.execute("ALTER TABLE facilities ADD COLUMN email TEXT");
   } catch (e: any) { /* Ignore */ }
+
+  try {
+    await turso.execute("ALTER TABLE drivers ADD COLUMN performance TEXT");
+    console.log("Migration: 'performance' column added to 'drivers' table.");
+  } catch (e: any) { /* Ignore */ }
 };
 
 export const initializeSchema = async () => {
@@ -287,7 +292,8 @@ export const initializeSchema = async () => {
         licenseNumber TEXT,
         phone TEXT,
         carrierId TEXT,
-        status TEXT DEFAULT 'Away'
+        status TEXT DEFAULT 'Away',
+        performance TEXT
       );
     `);
 
