@@ -21,13 +21,28 @@ export const Gatehouse: React.FC = () => {
   const [activePage, setActivePage] = useState(1);
   const pageSize = 10;
 
-  // Filter lists - Updated to strictly show only ReadyForCheckIn as requested
-  const incoming = appointments.filter(a =>
-    ['ReadyForCheckIn'].includes(a.status) &&
-    (a.trailerNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      a.driverName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      a.id.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  // Filter lists - Updated to show today's scheduled arrivals sorted by tier
+  const incoming = React.useMemo(() => {
+    const today = new Date();
+    const sorted = appointments
+      .filter(a =>
+        (['ReadyForCheckIn', 'Scheduled'].includes(a.status)) &&
+        isSameDay(new Date(a.startTime), today) &&
+        (a.trailerNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          a.driverName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          a.id.toLowerCase().includes(searchTerm.toLowerCase()))
+      )
+      .sort((a, b) => {
+        const carrierA = carriers.find(c => c.id === a.carrierId || c.name.toLowerCase() === a.carrierId?.toLowerCase());
+        const carrierB = carriers.find(c => c.id === b.carrierId || c.name.toLowerCase() === b.carrierId?.toLowerCase());
+        const tierA = carrierA ? getCarrierTier(carrierA) : 'Bronze';
+        const tierB = carrierB ? getCarrierTier(carrierB) : 'Bronze';
+
+        const weights: Record<string, number> = { 'Platinum': 0, 'Gold': 1, 'Silver': 2, 'Bronze': 3 };
+        return weights[tierA] - weights[tierB];
+      });
+    return sorted;
+  }, [appointments, searchTerm, carriers, getCarrierTier]);
 
   const active = appointments.filter(a =>
     ['CheckedIn', 'ReadyForCheckOut'].includes(a.status) &&
@@ -235,26 +250,53 @@ export const Gatehouse: React.FC = () => {
               </div>
             ) : (
               paginatedIncoming.map(appt => {
+                const carrier = carriers.find(c => c.id === appt.carrierId || c.name.toLowerCase() === appt.carrierId?.toLowerCase());
+                const tier = carrier ? getCarrierTier(carrier) : 'Bronze';
+                const isHighTier = tier === 'Gold' || tier === 'Platinum';
+                const tierColors: Record<string, string> = {
+                  'Platinum': 'text-indigo-500 bg-indigo-500/10 border-indigo-500/20',
+                  'Gold': 'text-amber-500 bg-amber-500/10 border-amber-500/20',
+                  'Silver': 'text-slate-400 bg-slate-400/10 border-slate-400/20',
+                  'Bronze': 'text-orange-600 bg-orange-600/10 border-orange-600/20',
+                };
+                const TierIcon = tier === 'Platinum' ? Trophy : tier === 'Gold' ? Medal : tier === 'Silver' ? Shield : Star;
+
                 return (
-                  <GlassCard key={appt.id} className="p-8 flex items-center justify-between group border-none shadow-xl rounded-[2.5rem] hover:scale-[1.02] transition-all bg-emerald-500/5 ring-1 ring-emerald-500/20">
+                  <GlassCard key={appt.id} className={`p-8 flex items-center justify-between group border-none shadow-xl rounded-[2.5rem] hover:scale-[1.02] transition-all ${isHighTier ? 'bg-indigo-500/5 ring-1 ring-indigo-500/20' : 'bg-surface/50'}`}>
                     <div className="flex items-center gap-6">
-                      <div className="w-16 h-16 rounded-[1.5rem] flex items-center justify-center font-black text-xs bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 animate-pulse uppercase tracking-widest">
-                        ARR
+                      <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center font-black text-xs shadow-lg uppercase tracking-widest ${appt.status === 'ReadyForCheckIn' ? 'bg-emerald-500 text-white shadow-emerald-500/20 animate-pulse' : 'bg-primary/10 text-primary'}`}>
+                        {appt.status === 'ReadyForCheckIn' ? 'ARR' : 'SCH'}
                       </div>
                       <div>
-                        <h3 className="text-2xl font-black text-foreground tracking-tighter leading-tight">{appt.isBobtail ? 'Bobtail' : appt.trailerNumber}</h3>
-                        <div className="flex items-center gap-3 mt-2">
-                          <span className="text-sm font-black text-muted opacity-60 tracking-tight">{appt.driverName}</span>
-                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
-                          <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">At Dock Gate</span>
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="text-2xl font-black text-foreground tracking-tighter leading-tight">{appt.isBobtail ? 'Bobtail' : appt.trailerNumber || 'TBA'}</h3>
+                          <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full ${tierColors[tier]} border scale-[0.7] -ml-2 origin-left`}>
+                            <TierIcon className="w-3 h-3" />
+                            <span className="text-[10px] font-black uppercase tracking-tighter">{tier}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-sm font-black text-muted opacity-60 tracking-tight">{carrier?.name || appt.carrierId}</span>
+                          {appt.status === 'ReadyForCheckIn' && (
+                            <>
+                              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                              <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">At Gate</span>
+                            </>
+                          )}
+                          {appt.status === 'Scheduled' && (
+                            <>
+                              <div className="w-1.5 h-1.5 rounded-full bg-primary/40"></div>
+                              <span className="text-xs font-black text-muted uppercase tracking-widest">ETA {new Date(appt.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                            </>
+                          )}
                         </div>
                       </div>
                     </div>
                     <button
                       onClick={() => initiateCheckIn(appt)}
-                      className="px-8 py-4 rounded-xl text-xs font-black uppercase tracking-widest shadow-xl transition-all flex items-center bg-emerald-600 hover:bg-emerald-500 text-white active:scale-95"
+                      className={`px-8 py-4 rounded-xl text-xs font-black uppercase tracking-widest shadow-xl transition-all flex items-center active:scale-95 ${isHighTier ? 'bg-indigo-600 hover:bg-indigo-500 text-white' : 'bg-emerald-600 hover:bg-emerald-500 text-white'}`}
                     >
-                      {t('gate.checkIn')} <ArrowRightCircle className="ml-2 w-5 h-5" />
+                      {isHighTier ? 'Bypass' : t('gate.checkIn')} <ArrowRightCircle className="ml-2 w-5 h-5" />
                     </button>
                   </GlassCard>
                 )

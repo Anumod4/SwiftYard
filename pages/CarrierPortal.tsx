@@ -36,7 +36,7 @@ const CarrierFacilities = lazy(() => import('./carrier/CarrierFacilities').then(
 
 export const CarrierPortal: React.FC = () => {
     const { userProfile, signOut, currentCarrier } = useAuth();
-    const { facilities, appointments, addAppointment, trailerTypes, addToast, refreshData, canEdit, theme, actionLoading, actionLoadingMessage, drivers, addDriver, carriers, settings, addTrailerType, allTrailers, getCarrierTier } = useData();
+    const { facilities, appointments, addAppointment, trailerTypes, addToast, refreshData, canEdit, theme, actionLoading, actionLoadingMessage, drivers, addDriver, carriers, settings, addTrailerType, allTrailers, getCarrierTier, cancelAppointment, docks, yardSlots } = useData();
     const [currentView, setCurrentView] = useState(VIEW_IDS.CARRIER_DASHBOARD);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -431,6 +431,9 @@ export const CarrierPortal: React.FC = () => {
                                     onSetSelectedApptId={setSelectedApptId}
                                     onSetIsDetailsModalOpen={setIsDetailsModalOpen}
                                     facilities={facilities}
+                                    cancelAppointment={cancelAppointment}
+                                    docks={docks}
+                                    yardSlots={yardSlots}
                                 />
                             )}
                             {currentView === VIEW_IDS.CARRIER_FACILITIES && (

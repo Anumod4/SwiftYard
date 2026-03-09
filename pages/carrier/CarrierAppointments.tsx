@@ -1,14 +1,17 @@
 import React from 'react';
 import { GlassCard } from '../../components/ui/GlassCard';
 import { Pagination } from '../../components/ui/Pagination';
-import { Calendar, Clock, MapPin, Truck, ChevronRight, Filter, Search } from 'lucide-react';
-import { Appointment, Facility } from '../../types';
+import { Calendar, Clock, MapPin, Truck, ChevronRight, Filter, Search, X } from 'lucide-react';
+import { Appointment, Facility, Resource } from '../../types';
 
 interface CarrierAppointmentsProps {
     carrierAppointments: Appointment[];
     onSetSelectedApptId: (id: string) => void;
     onSetIsDetailsModalOpen: (open: boolean) => void;
     facilities: Facility[];
+    cancelAppointment: (id: string) => Promise<void>;
+    docks: Resource[];
+    yardSlots: Resource[];
 }
 
 export const CarrierAppointments: React.FC<CarrierAppointmentsProps> = ({
@@ -16,6 +19,9 @@ export const CarrierAppointments: React.FC<CarrierAppointmentsProps> = ({
     onSetSelectedApptId,
     onSetIsDetailsModalOpen,
     facilities,
+    cancelAppointment,
+    docks,
+    yardSlots,
 }) => {
     const [currentPage, setCurrentPage] = React.useState(1);
     const [searchTerm, setSearchTerm] = React.useState('');
@@ -50,6 +56,19 @@ export const CarrierAppointments: React.FC<CarrierAppointmentsProps> = ({
     const clearFilters = () => {
         setSearchTerm('');
         setStatusFilter('All');
+    };
+
+    const getLocationName = (resId?: string) => {
+        if (!resId) return null;
+        const res = [...docks, ...yardSlots].find(r => r.id === resId);
+        return res ? res.name : resId;
+    };
+
+    const handleCancel = async (e: React.MouseEvent, id: string) => {
+        e.stopPropagation();
+        if (window.confirm('Are you sure you want to cancel this appointment? This action cannot be undone.')) {
+            await cancelAppointment(id);
+        }
     };
 
     return (
@@ -143,13 +162,21 @@ export const CarrierAppointments: React.FC<CarrierAppointmentsProps> = ({
                             <div className="grid grid-cols-2 md:flex md:items-center gap-6 flex-1">
                                 <div className="space-y-1">
                                     <p className="text-[10px] font-black text-slate-400 dark:text-gray-500 uppercase tracking-widest leading-none">Resource</p>
-                                    <div className="flex items-center gap-2">
-                                        <Truck className="w-4 h-4 text-slate-400" />
-                                        <p className="text-slate-900 dark:text-white font-bold text-sm tracking-tight">{appt.trailerNumber || 'TBA'}</p>
-                                        {appt.loadType && (
-                                            <span className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded ${appt.loadType === 'Inbound' ? 'bg-[#3B82F6] text-white' : 'bg-emerald-500 text-white'}`}>
-                                                {appt.loadType}
-                                            </span>
+                                    <div className="flex flex-col gap-1">
+                                        <div className="flex items-center gap-2">
+                                            <Truck className="w-4 h-4 text-slate-400" />
+                                            <p className="text-slate-900 dark:text-white font-bold text-sm tracking-tight">{appt.trailerNumber || 'TBA'}</p>
+                                            {appt.loadType && (
+                                                <span className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded ${appt.loadType === 'Inbound' ? 'bg-[#3B82F6] text-white' : 'bg-emerald-500 text-white'}`}>
+                                                    {appt.loadType}
+                                                </span>
+                                            )}
+                                        </div>
+                                        {appt.assignedResourceId && (
+                                            <div className="flex items-center gap-1.5 px-2 py-0.5 bg-primary/10 rounded-md w-fit">
+                                                <MapPin className="w-3 h-3 text-primary" />
+                                                <span className="text-[9px] font-black text-primary uppercase tracking-tight">Dock: {getLocationName(appt.assignedResourceId)}</span>
+                                            </div>
                                         )}
                                     </div>
                                 </div>
@@ -165,8 +192,17 @@ export const CarrierAppointments: React.FC<CarrierAppointmentsProps> = ({
                                 </div>
                             </div>
 
-                            <div className="flex items-center justify-between md:justify-end gap-6 border-t md:border-t-0 pt-4 md:pt-0 border-slate-100 dark:border-white/5">
-                                <div className="text-right flex flex-col items-end">
+                            <div className="flex items-center justify-between md:justify-end gap-4 border-t md:border-t-0 pt-4 md:pt-0 border-slate-100 dark:border-white/5">
+                                <div className="text-right flex items-center gap-3">
+                                    {['PendingApproval', 'Scheduled'].includes(appt.status) && (
+                                        <button
+                                            onClick={(e) => handleCancel(e, appt.id)}
+                                            className="p-2 hover:bg-red-500/10 text-slate-400 hover:text-red-500 rounded-xl transition-all"
+                                            title="Cancel Mission"
+                                        >
+                                            <X className="w-5 h-5" />
+                                        </button>
+                                    )}
                                     <span className={`text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-tighter border ${appt.acknowledgementStatus === 'RescheduleSuggested' ? 'bg-[#3B82F6] text-white border-[#3B82F6]/20 shadow-lg shadow-[#3B82F6]/20' :
                                         appt.status === 'Completed' || appt.status === 'Departed' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
                                             appt.status === 'Cancelled' || appt.status === 'Rejected' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
@@ -175,7 +211,7 @@ export const CarrierAppointments: React.FC<CarrierAppointmentsProps> = ({
                                         {appt.acknowledgementStatus === 'RescheduleSuggested' ? 'Re-schedule Offered' : appt.status.replace(/([A-Z])/g, ' $1').trim()}
                                     </span>
                                 </div>
-                                <ChevronRight className="w-5 h-5 text-slate-300 dark:text-gray-700 group-hover:text-[#3B82F6] transition-colors" />
+                                <ChevronRight className="w-5 h-5 text-slate-300 dark:text-gray-700 group-hover:text-[#3B82F6] transition-colors shrink-0" />
                             </div>
                         </GlassCard>
                     ))
