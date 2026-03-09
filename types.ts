@@ -104,6 +104,12 @@ export interface Trailer {
   instructionTimestamp?: string;
 }
 
+export interface CarrierPerformance {
+  systemScore: number;
+  manualScore?: number;
+  bookingAdvanceHours?: number;
+}
+
 export interface Carrier {
   id: string;
   facilityId: string;
@@ -117,6 +123,7 @@ export interface Carrier {
     dockRatePerHour?: number;
   };
   bufferTimeMinutes?: number;
+  performance?: Record<string, CarrierPerformance>; // Map of facilityId -> Performance metrics
 }
 
 export interface Appointment {
@@ -219,6 +226,12 @@ export interface AppSettings {
     freeDockHours: number;
     yardRatePerDay: number;
     dockRatePerHour: number;
+  };
+  gamification?: {
+    defaultBookingAdvanceHours: number;
+    silverBookingOffset: number; // additional hours for tier
+    goldBookingOffset: number;
+    platinumBookingOffset: number;
   };
 }
 

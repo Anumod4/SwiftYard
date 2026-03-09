@@ -2,12 +2,13 @@
 import React, { useState } from 'react';
 import { useData } from '../contexts/DataContext';
 import { GlassCard } from '../components/ui/GlassCard';
-import { CheckCircle2, ArrowRightCircle, MapPin, LogOut, Search, Clock, Truck, Calendar, Warehouse, Loader2, X } from 'lucide-react';
+import { CheckCircle2, ArrowRightCircle, MapPin, LogOut, Search, Clock, Truck, Calendar, Warehouse, Loader2, X, Zap, Trophy, Medal, Star, Shield } from 'lucide-react';
 import { Pagination } from '../components/ui/Pagination';
-import { Appointment } from '../types';
+import { Appointment, Carrier } from '../types';
+import { isSameDay } from 'date-fns';
 
 export const Gatehouse: React.FC = () => {
-  const { appointments, trailers, checkInAppointment, checkOutAppointment, updateAppointment, updateTrailer, docks, yardSlots, t, formatDateTime, addToast } = useData();
+  const { appointments, trailers, checkInAppointment, checkOutAppointment, updateAppointment, updateTrailer, docks, yardSlots, t, formatDateTime, addToast, carriers, getCarrierTier } = useData();
   const [justProcessed, setJustProcessed] = useState<{ id: string, message: string, type: 'in' | 'out' } | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -34,6 +35,23 @@ export const Gatehouse: React.FC = () => {
       a.driverName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       a.id.toLowerCase().includes(searchTerm.toLowerCase()))
   );
+
+  const fastTrack = React.useMemo(() => {
+    return appointments.filter(a => {
+      if (!['Scheduled', 'ReadyForCheckIn'].includes(a.status)) return false;
+      const carrier = carriers.find(c => c.id === a.carrierId || c.name.toLowerCase() === a.carrierId?.toLowerCase());
+      if (!carrier) return false;
+      const tier = getCarrierTier(carrier);
+      const isHighTier = tier === 'Gold' || tier === 'Platinum';
+      const isToday = isSameDay(new Date(a.startTime), new Date());
+
+      const searchMatch = (a.trailerNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        a.driverName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        a.id.toLowerCase().includes(searchTerm.toLowerCase()));
+
+      return isHighTier && isToday && searchMatch;
+    });
+  }, [appointments, carriers, getCarrierTier, searchTerm]);
 
   const paginatedIncoming = React.useMemo(() => {
     const start = (incomingPage - 1) * pageSize;
@@ -143,6 +161,62 @@ export const Gatehouse: React.FC = () => {
           />
         </div>
       </div>
+
+      {fastTrack.length > 0 && (
+        <section className="mb-10 animate-in slide-in-from-top-4 duration-500">
+          <div className="flex items-center gap-3 mb-6 px-4">
+            <div className="w-10 h-10 rounded-2xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center animate-pulse shadow-lg shadow-indigo-500/10">
+              <Zap className="w-6 h-6 fill-current" />
+            </div>
+            <div>
+              <h2 className="text-xl font-black text-foreground tracking-tighter uppercase leading-none">Fast-Track Gate</h2>
+              <p className="text-[10px] text-muted font-black uppercase tracking-widest mt-1 opacity-60">Priority Processing for Excellence Tier Partners</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {fastTrack.map(appt => {
+              const carrier = carriers.find(c => c.id === appt.carrierId || c.name.toLowerCase() === appt.carrierId?.toLowerCase());
+              const tier = carrier ? getCarrierTier(carrier) : 'Bronze';
+              const tierColor = tier === 'Platinum' ? 'from-indigo-500 to-purple-600' : 'from-amber-400 to-amber-600';
+              const Icon = tier === 'Platinum' ? Trophy : Medal;
+
+              return (
+                <GlassCard key={appt.id} className="p-6 relative group overflow-hidden border-none shadow-2xl bg-surface/50 rounded-[2.5rem] hover:scale-[1.02] transition-all">
+                  <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${tierColor} opacity-5 rounded-full -mr-16 -mt-16 blur-2xl group-hover:scale-150 transition-transform duration-700`} />
+                  <div className="flex justify-between items-start mb-4 relative z-10">
+                    <div className={`px-3 py-1 rounded-full bg-gradient-to-r ${tierColor} text-white text-[8px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-current/20`}>
+                      <Icon className="w-3 h-3" />
+                      {tier} Priority
+                    </div>
+                    <div className="text-[10px] font-black font-mono text-muted bg-muted/5 px-2 py-1 rounded-lg">ETA {new Date(appt.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                  </div>
+                  <div className="flex items-center gap-4 mb-6 relative z-10">
+                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center bg-gradient-to-br ${tierColor} text-white shadow-xl`}>
+                      <Truck className="w-7 h-7" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-black text-foreground tracking-tighter leading-none">{appt.trailerNumber || 'TBA'}</h3>
+                      <p className="text-xs font-bold text-muted mt-1 uppercase tracking-tight">{carrier?.name || appt.carrierId}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-4 relative z-10">
+                    <div className="flex flex-col">
+                      <span className="text-[8px] font-black uppercase text-muted tracking-widest opacity-60">Assigned</span>
+                      <span className="text-xs font-black text-primary uppercase">{getLocationName(appt.assignedResourceId)}</span>
+                    </div>
+                    <button
+                      onClick={() => initiateCheckIn(appt)}
+                      className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-white shadow-lg bg-gradient-to-r ${tierColor} hover:brightness-110 active:scale-95 transition-all flex items-center gap-2`}
+                    >
+                      Bypass <ArrowRightCircle className="w-4 h-4" />
+                    </button>
+                  </div>
+                </GlassCard>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full overflow-hidden">
 

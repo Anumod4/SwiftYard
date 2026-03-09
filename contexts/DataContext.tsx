@@ -195,6 +195,7 @@ interface DataContextType {
   formatDate: (dateStr: string) => string;
   formatDateTime: (dateStr: string) => string;
   formatCurrency: (amount: number) => string;
+  getCarrierTier: (carrier: Carrier) => 'Bronze' | 'Silver' | 'Gold' | 'Platinum';
 }
 
 const DataStateContext = createContext<any>(undefined);
@@ -757,6 +758,46 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     setActionLoadingMessage('Checking in...');
     const response = await api.appointments.checkIn(id, actualTime, dockId);
     if (response.success) {
+      // Calculate Gamification Score
+      try {
+        const appointment = appointments.find(a => a.id === id);
+        if (appointment && appointment.carrierId) {
+          const carrier = carriers.find(c => c.id === appointment.carrierId);
+          if (carrier) {
+            const fid = appointment.facilityId || currentFacilityId || '';
+            if (!fid) return;
+
+            const sched = new Date(appointment.startTime);
+            const actual = new Date(actualTime);
+            const diffInMinutes = Math.abs((actual.getTime() - sched.getTime()) / (1000 * 60));
+
+            // Score decays by 1 point for every 3 minutes of deviation
+            const currentTripScore = Math.max(0, 100 - (diffInMinutes / 3));
+
+            // Current performance for this facility
+            const currentPerf = carrier.performance?.[fid] || { systemScore: 100 };
+
+            // Simple moving average to smooth the score (90% old, 10% new)
+            const oldScore = currentPerf.systemScore;
+            const newSystemScore = Math.round((oldScore * 0.9) + (currentTripScore * 0.1));
+
+            // Update carrier with updated performance map
+            await updateCarrier({
+              ...carrier,
+              performance: {
+                ...(carrier.performance || {}),
+                [fid]: {
+                  ...currentPerf,
+                  systemScore: newSystemScore
+                }
+              }
+            });
+          }
+        }
+      } catch (err) {
+        console.error("Failed to update carrier score:", err);
+      }
+
       await fetchData();
       logActivity('Check In', `Checked in appointment ${id} to dock ${dockId}`, { appointmentId: id, locationName: dockId });
     }
@@ -1245,6 +1286,26 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  const getCarrierTier = useCallback((carrier: Carrier, facilityId?: string): 'Bronze' | 'Silver' | 'Gold' | 'Platinum' => {
+    const fid = facilityId || currentFacilityId;
+    if (!fid || !carrier.performance || !carrier.performance[fid]) {
+      // If we're at a new facility or one not tracked, use base Bronze
+      return 'Bronze';
+    }
+
+    const perf = carrier.performance[fid];
+    const sys = perf.systemScore || 0;
+    const man = perf.manualScore || 0;
+
+    // Decision: If manualScore is set, use it. If not, just system. 
+    const effective = perf.manualScore !== undefined ? perf.manualScore : sys;
+
+    if (effective >= 95) return 'Platinum';
+    if (effective >= 85) return 'Gold';
+    if (effective >= 75) return 'Silver';
+    return 'Bronze';
+  }, [currentFacilityId]);
+
   const stateValue = useMemo(() => ({
     appointments,
     allAppointments: state.rawAppointments,
@@ -1331,6 +1392,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     formatDateTime,
     formatCurrency,
     logActivity,
+    getCarrierTier,
   }), [
     toggleTheme, handleSetCurrentFacilityId, refreshData, canEdit, addAppointment,
     updateAppointment, bulkUpdateAppointments, cancelAppointment, deleteAppointment, checkInAppointment,

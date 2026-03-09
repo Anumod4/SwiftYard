@@ -36,11 +36,17 @@ const CarrierFacilities = lazy(() => import('./carrier/CarrierFacilities').then(
 
 export const CarrierPortal: React.FC = () => {
     const { userProfile, signOut, currentCarrier } = useAuth();
-    const { facilities, appointments, addAppointment, trailerTypes, addToast, refreshData, canEdit, theme, actionLoading, actionLoadingMessage, drivers, addDriver, carriers, settings, addTrailerType, allTrailers } = useData();
+    const { facilities, appointments, addAppointment, trailerTypes, addToast, refreshData, canEdit, theme, actionLoading, actionLoadingMessage, drivers, addDriver, carriers, settings, addTrailerType, allTrailers, getCarrierTier } = useData();
     const [currentView, setCurrentView] = useState(VIEW_IDS.CARRIER_DASHBOARD);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [selectedFacilityId, setSelectedFacilityId] = useState<string>(() => {
+        if (userProfile?.assignedFacilities && userProfile.assignedFacilities.length > 0) {
+            return userProfile.assignedFacilities[0];
+        }
+        return '';
+    });
 
     // Modal State
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
@@ -382,6 +388,10 @@ export const CarrierPortal: React.FC = () => {
                                     pastAppointments={pastAppointments}
                                     onSetSelectedApptId={setSelectedApptId}
                                     onSetIsDetailsModalOpen={setIsDetailsModalOpen}
+                                    carrier={currentCarrier || undefined}
+                                    settings={settings}
+                                    getCarrierTier={getCarrierTier}
+                                    facilityId={selectedFacilityId}
                                 />
                             )}
                             {currentView === VIEW_IDS.CARRIER_BOOKING && (
@@ -410,6 +420,9 @@ export const CarrierPortal: React.FC = () => {
                                     isSubmitting={isSubmitting}
                                     isWithinOperationalHours={isWithinOperationalHours}
                                     operationalHint={operationalHint}
+                                    carrier={currentCarrier || undefined}
+                                    settings={settings}
+                                    getCarrierTier={getCarrierTier}
                                 />
                             )}
                             {currentView === VIEW_IDS.CARRIER_APPOINTMENTS && (

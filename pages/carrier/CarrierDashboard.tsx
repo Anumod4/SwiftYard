@@ -1,8 +1,8 @@
 import React from 'react';
 import { GlassCard } from '../../components/ui/GlassCard';
 import { Pagination } from '../../components/ui/Pagination';
-import { Truck, Activity, CheckCircle2, Clock, BarChart3, TrendingUp, AlertCircle, MapPin, Calendar, Timer, Package, ArrowRight } from 'lucide-react';
-import { Appointment } from '../../types';
+import { Truck, Activity, CheckCircle2, Clock, BarChart3, TrendingUp, AlertCircle, MapPin, Calendar, Timer, Package, ArrowRight, Star, Trophy, Shield, Medal, ChevronRight } from 'lucide-react';
+import { Appointment, Carrier, AppSettings } from '../../types';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 interface CarrierDashboardProps {
@@ -10,6 +10,10 @@ interface CarrierDashboardProps {
     pastAppointments: Appointment[];
     onSetSelectedApptId: (id: string) => void;
     onSetIsDetailsModalOpen: (open: boolean) => void;
+    carrier?: Carrier;
+    settings: AppSettings;
+    getCarrierTier: (c: Carrier, fid?: string) => string;
+    facilityId?: string;
 }
 
 const KPICard = React.memo<{ title: string; value: string | number; icon: React.FC<any>; color: string; subText?: string }>(({ title, value, icon: Icon, color, subText }) => (
@@ -31,6 +35,10 @@ export const CarrierDashboard: React.FC<CarrierDashboardProps> = ({
     pastAppointments,
     onSetSelectedApptId,
     onSetIsDetailsModalOpen,
+    carrier,
+    settings,
+    getCarrierTier,
+    facilityId,
 }) => {
     const [currentPage, setCurrentPage] = React.useState(1);
     const pageSize = 10;
@@ -75,6 +83,25 @@ export const CarrierDashboard: React.FC<CarrierDashboardProps> = ({
         };
     }, [activeAppointments, pastAppointments, allAppointments]);
 
+    const perf = (carrier?.performance?.[facilityId || ''] || { systemScore: 100 }) as any;
+    const tier = carrier ? getCarrierTier(carrier, facilityId) : 'Bronze';
+    const score = perf.manualScore !== undefined ? perf.manualScore : perf.systemScore;
+
+    const nextTierInfo = React.useMemo(() => {
+        if (tier === 'Platinum') return null;
+        if (tier === 'Gold') return { next: 'Platinum', target: 95, icon: Trophy, color: 'text-indigo-500' };
+        if (tier === 'Silver') return { next: 'Gold', target: 85, icon: Medal, color: 'text-amber-500' };
+        return { next: 'Silver', target: 75, icon: Shield, color: 'text-slate-400' };
+    }, [tier]);
+
+    const tierColors: Record<string, string> = {
+        'Platinum': 'from-indigo-600 to-purple-600 shadow-indigo-500/20',
+        'Gold': 'from-amber-400 to-amber-600 shadow-amber-500/20',
+        'Silver': 'from-slate-300 to-slate-500 shadow-slate-400/20',
+        'Bronze': 'from-orange-400 to-orange-600 shadow-orange-500/20',
+    };
+    const TierIcon = tier === 'Platinum' ? Trophy : tier === 'Gold' ? Medal : tier === 'Silver' ? Shield : Star;
+
     const pieData = [
         { name: 'Inbound', value: metrics.inboundCount || 0, color: '#3B82F6' },
         { name: 'Outbound', value: metrics.outboundCount || 0, color: '#10b981' },
@@ -87,14 +114,35 @@ export const CarrierDashboard: React.FC<CarrierDashboardProps> = ({
 
     return (
         <div className="space-y-8 animate-in fade-in duration-500 pb-12">
-            <header className="flex justify-between items-center bg-white/40 dark:bg-white/5 p-6 rounded-[2rem] border border-slate-200 dark:border-white/10 backdrop-blur-md">
-                <div>
-                    <h1 className="text-3xl font-bold text-foreground tracking-tight">Carrier Hub</h1>
-                    <p className="text-slate-500 dark:text-gray-400 text-sm font-medium">Real-time load performance & analytics</p>
+            <header className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white/40 dark:bg-white/5 p-6 md:p-10 rounded-[2.5rem] border border-slate-200 dark:border-white/10 backdrop-blur-md gap-6 overflow-hidden relative group">
+                <div className={`absolute top-0 right-0 w-64 h-64 bg-gradient-to-br ${tierColors[tier]} opacity-10 rounded-full -mr-32 -mt-32 blur-3xl`} />
+                <div className="z-10">
+                    <div className="flex items-center gap-3 mb-2">
+                        <h1 className="text-3xl md:text-4xl font-black text-foreground tracking-tighter">Carrier Hub</h1>
+                        <div className={`px-4 py-1 rounded-full bg-gradient-to-r ${tierColors[tier]} text-white text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 shadow-lg`}>
+                            <TierIcon className="w-3.5 h-3.5" />
+                            {tier} Excellence
+                        </div>
+                    </div>
+                    <p className="text-slate-500 dark:text-gray-400 text-base font-medium">Partner Performance & Priority Control Center</p>
                 </div>
-                <div className="flex items-center gap-3">
-                    <div className="bg-emerald-500/10 text-emerald-500 px-4 py-2 rounded-2xl text-xs font-bold border border-emerald-500/20 flex items-center gap-2 shadow-sm">
-                        <TrendingUp className="w-4 h-4" /> Operational Peak
+                <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 z-10 w-full md:w-auto">
+                    {nextTierInfo && (
+                        <div className="bg-white/60 dark:bg-black/40 p-4 rounded-3xl border border-white/20 dark:border-white/5 shadow-xl min-w-[240px]">
+                            <div className="flex justify-between items-center mb-2">
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Progress to {nextTierInfo.next}</span>
+                                <span className="text-[10px] font-black text-primary uppercase">{Math.round(score)} / {nextTierInfo.target}</span>
+                            </div>
+                            <div className="w-full h-2 bg-slate-200 dark:bg-white/10 rounded-full overflow-hidden">
+                                <div
+                                    className={`h-full bg-gradient-to-r ${tierColors[nextTierInfo.next]} transition-all duration-1000`}
+                                    style={{ width: `${Math.min(100, (score / nextTierInfo.target) * 100)}%` }}
+                                />
+                            </div>
+                        </div>
+                    )}
+                    <div className="bg-emerald-500/10 text-emerald-500 px-6 py-4 rounded-2xl text-xs font-black border border-emerald-500/20 flex items-center justify-center gap-3 shadow-lg shadow-emerald-500/5 uppercase tracking-widest">
+                        <TrendingUp className="w-5 h-5" /> Operational Peak
                     </div>
                 </div>
             </header>

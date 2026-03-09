@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { GlassCard } from '../../components/ui/GlassCard';
-import { Lock, MapPin, Truck, Calendar, Clock, User, ArrowRight, CheckCircle2, AlertCircle, Activity, Search, X } from 'lucide-react';
-import { Facility, TrailerTypeDefinition, Driver } from '../../types';
+import { Lock, MapPin, Truck, Calendar, Clock, User, ArrowRight, CheckCircle2, AlertCircle, Activity, Search, X, Star, Trophy, Shield, Medal, Zap } from 'lucide-react';
+import { Facility, TrailerTypeDefinition, Driver, Carrier, AppSettings } from '../../types';
 import { DateTimePicker } from '../../components/ui/DateTimePicker';
 
 interface CarrierBookingProps {
@@ -29,6 +29,9 @@ interface CarrierBookingProps {
     isSubmitting: boolean;
     isWithinOperationalHours: boolean;
     operationalHint: string | null;
+    carrier?: Carrier;
+    settings: AppSettings;
+    getCarrierTier: (c: Carrier, fid?: string) => string;
 }
 
 export const CarrierBooking: React.FC<CarrierBookingProps> = ({
@@ -56,6 +59,9 @@ export const CarrierBooking: React.FC<CarrierBookingProps> = ({
     isSubmitting,
     isWithinOperationalHours,
     operationalHint,
+    carrier,
+    settings,
+    getCarrierTier,
 }) => {
     if (!canEditBooking) {
         return (
@@ -100,6 +106,27 @@ export const CarrierBooking: React.FC<CarrierBookingProps> = ({
         return trailerTypes.filter(t => t.name.toLowerCase().includes(trailerTypeSearch.toLowerCase()));
     }, [trailerTypes, trailerTypeSearch]);
 
+    const tier = carrier ? getCarrierTier(carrier, bookingFacilityId) : 'Bronze';
+    const tierColors: Record<string, string> = {
+        'Platinum': 'text-indigo-500 bg-indigo-500/10 border-indigo-500/20',
+        'Gold': 'text-amber-500 bg-amber-500/10 border-amber-500/20',
+        'Silver': 'text-slate-400 bg-slate-400/10 border-slate-400/20',
+        'Bronze': 'text-orange-600 bg-orange-600/10 border-orange-600/20',
+    };
+    const TierIcon = tier === 'Platinum' ? Trophy : tier === 'Gold' ? Medal : tier === 'Silver' ? Shield : Star;
+
+    const bookingPrivilege = React.useMemo(() => {
+        const gSettings = settings.gamification;
+        let offset = 0;
+        if (tier === 'Platinum') offset = gSettings.platinumBookingOffset;
+        else if (tier === 'Gold') offset = gSettings.goldBookingOffset;
+        else if (tier === 'Silver') offset = gSettings.silverBookingOffset;
+
+        const perf = (carrier?.performance?.[bookingFacilityId] || {}) as any;
+        const base = perf.bookingAdvanceHours || gSettings.defaultBookingAdvanceHours;
+        return base + offset;
+    }, [tier, carrier, settings, bookingFacilityId]);
+
     useEffect(() => {
         if (bookingDriverId) {
             const driver = availableDrivers.find(d => d.id === bookingDriverId);
@@ -120,12 +147,21 @@ export const CarrierBooking: React.FC<CarrierBookingProps> = ({
 
     return (
         <div className="max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
-            <header className="mb-10 text-center">
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#3B82F6]/10 text-[#3B82F6] rounded-full text-[10px] font-black uppercase tracking-widest mb-4 border border-[#3B82F6]/20 shadow-sm">
-                    <Calendar className="w-3 h-3" /> New Appointment
+            <header className="mb-10 text-center relative">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="flex items-center gap-3">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#3B82F6]/10 text-[#3B82F6] rounded-full text-[10px] font-black uppercase tracking-widest border border-[#3B82F6]/20 shadow-sm">
+                            <Calendar className="w-3 h-3" /> New Appointment
+                        </div>
+                        <div className={`inline-flex items-center gap-2 px-3 py-1 ${tierColors[tier]} rounded-full text-[10px] font-black uppercase tracking-widest border shadow-sm`}>
+                            <TierIcon className="w-3 h-3" /> {tier} Status
+                        </div>
+                    </div>
+                    <div>
+                        <h1 className="text-3xl font-bold text-foreground tracking-tighter mb-1">Reserve Your Slot</h1>
+                        <p className="text-slate-500 dark:text-gray-400 font-medium">Your Excellence Tier grants you <span className="text-primary font-black">{bookingPrivilege}h</span> advance booking privilege.</p>
+                    </div>
                 </div>
-                <h1 className="text-3xl font-bold text-foreground tracking-tighter mb-2">Reserve Your Slot</h1>
-                <p className="text-slate-500 dark:text-gray-400 font-medium">Schedule your next Mission today.</p>
             </header>
 
             <GlassCard className="p-1 md:p-10 relative overflow-hidden bg-white/40 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-xl">

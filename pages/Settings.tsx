@@ -203,11 +203,34 @@ export const Settings: React.FC = () => {
         setLocalAiScheduleEnabled(settings.enableAiSchedule !== false);
         setLocalMetricStart(settings.metricsRange?.start || '');
         setLocalMetricEnd(settings.metricsRange?.end || '');
-        setLocalFreeYardHours(String(settings.defaultBillingRules?.freeYardHours || 48));
         setLocalFreeDockHours(String(settings.defaultBillingRules?.freeDockHours || 2));
         setLocalYardRatePerDay(String(settings.defaultBillingRules?.yardRatePerDay || 50));
         setLocalDockRatePerHour(String(settings.defaultBillingRules?.dockRatePerHour || 100));
+
+        // Gamification
+        setLocalDefaultBookingAdvance(String(settings.gamification?.defaultBookingAdvanceHours || 48));
+        setLocalSilverOffset(String(settings.gamification?.silverBookingOffset || 24));
+        setLocalGoldOffset(String(settings.gamification?.goldBookingOffset || 48));
+        setLocalPlatinumOffset(String(settings.gamification?.platinumBookingOffset || 72));
     }, [settings]);
+
+    // Gamification Local State
+    const [localDefaultBookingAdvance, setLocalDefaultBookingAdvance] = useState(String(settings.gamification?.defaultBookingAdvanceHours || 48));
+    const [localSilverOffset, setLocalSilverOffset] = useState(String(settings.gamification?.silverBookingOffset || 24));
+    const [localGoldOffset, setLocalGoldOffset] = useState(String(settings.gamification?.goldBookingOffset || 48));
+    const [localPlatinumOffset, setLocalPlatinumOffset] = useState(String(settings.gamification?.platinumBookingOffset || 72));
+
+    const handleGamificationBlur = () => {
+        updateSettings({
+            ...settings,
+            gamification: {
+                defaultBookingAdvanceHours: Number(localDefaultBookingAdvance) || 48,
+                silverBookingOffset: Number(localSilverOffset) || 24,
+                goldBookingOffset: Number(localGoldOffset) || 48,
+                platinumBookingOffset: Number(localPlatinumOffset) || 72
+            }
+        });
+    };
 
     // Gate In Workflow handlers
     const handleGateInFlowChange = (flow: 'YardDefault' | 'DockDirect') => {
@@ -1155,6 +1178,65 @@ export const Settings: React.FC = () => {
                         <p className="text-xs text-blue-600 dark:text-blue-400 font-medium leading-relaxed">
                             Note: The Appointment Calendar will automatically scale its view to match the earliest start and latest end times defined here.
                         </p>
+                    </div>
+                </GlassCard>
+            </section>
+
+            <section>
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center">
+                    <Activity className="w-5 h-5 mr-2 text-blue-500" /> Carrier Gamification & Priority
+                </h2>
+                <GlassCard className="p-6 space-y-6">
+                    <p className="text-xs text-slate-500 dark:text-gray-400">
+                        Configure the default booking advance hours and the additional priority hours granted to carriers based on their Excellence Tier.
+                    </p>
+                    <div className="grid grid-cols-2 gap-6">
+                        <div>
+                            <label className="block text-xs font-bold uppercase text-slate-500 dark:text-gray-400 mb-2">Default Advance (Hours)</label>
+                            <input
+                                type="number"
+                                min="0"
+                                value={localDefaultBookingAdvance}
+                                onChange={e => setLocalDefaultBookingAdvance(e.target.value)}
+                                onBlur={handleGamificationBlur}
+                                className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-3 text-slate-900 dark:text-white focus:border-blue-500 outline-none transition-all"
+                            />
+                        </div>
+                        <div className="space-y-4">
+                            <h3 className="text-xs font-bold text-slate-400 dark:text-gray-500 uppercase tracking-wider">Tiered Priority Offsets</h3>
+                            <div className="space-y-3">
+                                <div className="flex items-center justify-between gap-4">
+                                    <span className="text-xs font-bold text-slate-600 dark:text-gray-400">Platinum Offset</span>
+                                    <input
+                                        type="number"
+                                        value={localPlatinumOffset}
+                                        onChange={e => setLocalPlatinumOffset(e.target.value)}
+                                        onBlur={handleGamificationBlur}
+                                        className="w-20 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-2 text-right text-sm text-slate-900 dark:text-white focus:border-blue-500 outline-none transition-all"
+                                    />
+                                </div>
+                                <div className="flex items-center justify-between gap-4">
+                                    <span className="text-xs font-bold text-slate-600 dark:text-gray-400">Gold Offset</span>
+                                    <input
+                                        type="number"
+                                        value={localGoldOffset}
+                                        onChange={e => setLocalGoldOffset(e.target.value)}
+                                        onBlur={handleGamificationBlur}
+                                        className="w-20 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-2 text-right text-sm text-slate-900 dark:text-white focus:border-blue-500 outline-none transition-all"
+                                    />
+                                </div>
+                                <div className="flex items-center justify-between gap-4">
+                                    <span className="text-xs font-bold text-slate-600 dark:text-gray-400">Silver Offset</span>
+                                    <input
+                                        type="number"
+                                        value={localSilverOffset}
+                                        onChange={e => setLocalSilverOffset(e.target.value)}
+                                        onBlur={handleGamificationBlur}
+                                        className="w-20 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg p-2 text-right text-sm text-slate-900 dark:text-white focus:border-blue-500 outline-none transition-all"
+                                    />
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </GlassCard>
             </section>
