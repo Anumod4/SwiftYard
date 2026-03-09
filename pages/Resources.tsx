@@ -5,6 +5,7 @@ import { GlassCard } from '../components/ui/GlassCard';
 import { Resource, UnavailabilityPeriod } from '../types';
 import { Plus, Edit2, Trash2, Warehouse, Container, Clock, AlertTriangle, X, RefreshCcw, Settings2, ShieldCheck, ShieldAlert, Check, Briefcase, Truck, ListPlus, ArrowRightFromLine, ArrowLeftToLine, ArrowRightLeft, Users, Search, ChevronDown, Filter } from 'lucide-react';
 import { ModalPortal } from '../components/ui/ModalPortal';
+import { Modal } from '../components/ui/Modal';
 import { Pagination } from '../components/ui/Pagination';
 import { BulkCreatorModal, BulkColumn } from '../components/BulkCreatorModal';
 import { DeleteConfirmationModal } from '../components/ui/DeleteConfirmationModal';
@@ -48,6 +49,24 @@ export const Resources: React.FC = () => {
   };
 
   const canEditResources = canEdit(VIEW_IDS.RESOURCES);
+
+  const isDirty = React.useMemo(() => {
+    if (!isModalOpen) return false;
+    if (editingResource) {
+      return name !== editingResource.name ||
+        status !== editingResource.status ||
+        operationMode !== (editingResource.operationMode || 'Both') ||
+        capacity !== (editingResource.capacity || 1) ||
+        JSON.stringify(allowedTrailerTypes) !== JSON.stringify(editingResource.allowedTrailerTypes || []) ||
+        JSON.stringify(allowedCarrierIds) !== JSON.stringify(editingResource.allowedCarrierIds || []);
+    }
+    return name !== '' ||
+      status !== 'Available' ||
+      operationMode !== 'Both' ||
+      capacity !== 1 ||
+      allowedTrailerTypes.length > 0 ||
+      allowedCarrierIds.length > 0;
+  }, [isModalOpen, editingResource, name, status, operationMode, capacity, allowedTrailerTypes, allowedCarrierIds]);
 
   const handleOpenModal = (res?: Resource) => {
     if (res) {
@@ -487,160 +506,147 @@ export const Resources: React.FC = () => {
         pageSize={pageSize}
       />
 
-      {isModalOpen && (
-        <ModalPortal>
-          <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/70 backdrop-blur-md p-4 animate-in fade-in duration-200">
-            <div className="bg-surface w-full max-w-5xl rounded-[3rem] border border-border p-12 max-h-[90vh] overflow-y-auto custom-scrollbar flex flex-col shadow-2xl relative">
-              <div className="flex justify-between items-center mb-10">
-                <div className="flex items-center gap-6">
-                  <div className="w-20 h-20 bg-primary/10 rounded-[2.5rem] flex items-center justify-center">
-                    <Settings2 className="w-10 h-10 text-primary" />
-                  </div>
-                  <div>
-                    <h2 className="text-4xl font-black text-foreground tracking-tighter">{canEditResources ? (editingResource ? t('res.modalEdit') : t('res.modalNew')) : 'View'} {activeTab}</h2>
-                    <p className="text-lg text-muted font-medium opacity-60">{t('res.modalSubtitle')}</p>
-                  </div>
-                </div>
-                <button onClick={() => setIsModalOpen(false)} className="w-14 h-14 hover:bg-muted/10 rounded-2xl flex items-center justify-center transition-all group"><X className="w-8 h-8 text-muted group-hover:text-foreground" /></button>
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        isDirty={isDirty}
+        title={`${canEditResources ? (editingResource ? t('res.modalEdit') : t('res.modalNew')) : 'View'} ${activeTab}`}
+        maxWidth="max-w-5xl"
+      >
+        <form onSubmit={handleSave} className="space-y-10">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="col-span-1 md:col-span-3">
+              <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-3 px-1">{t('res.identifier')} *</label>
+              <input disabled={!canEditResources} required value={name} onChange={e => setName(e.target.value)} className={`w-full bg-muted/5 border border-border focus:ring-4 focus:ring-primary/10 focus:border-primary rounded-2xl p-6 text-2xl font-black tracking-tighter text-foreground focus:outline-none transition-all ${!canEditResources && 'opacity-60 cursor-not-allowed'}`} placeholder="e.g. Row A - Lane 1" />
+            </div>
+            <div>
+              <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-3 px-1">{t('res.defaultStatus')} *</label>
+              <div className="relative group">
+                <select disabled={!canEditResources} value={status} onChange={e => setStatus(e.target.value)} className={`w-full bg-muted/5 border border-border focus:ring-4 focus:ring-primary/10 focus:border-primary rounded-2xl p-5 text-foreground focus:outline-none appearance-none font-bold pr-12 ${!canEditResources && 'opacity-60 cursor-not-allowed'}`}>
+                  <option value="Available">{t('res.statusAvail')}</option>
+                  <option value="Unavailable">{t('res.statusUnavail')}</option>
+                </select>
+                <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted pointer-events-none" />
               </div>
+            </div>
 
-              <form onSubmit={handleSave} className="space-y-10">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                  <div className="col-span-1 md:col-span-3">
-                    <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-3 px-1">{t('res.identifier')} *</label>
-                    <input disabled={!canEditResources} required value={name} onChange={e => setName(e.target.value)} className={`w-full bg-muted/5 border border-border focus:ring-4 focus:ring-primary/10 focus:border-primary rounded-2xl p-6 text-2xl font-black tracking-tighter text-foreground focus:outline-none transition-all ${!canEditResources && 'opacity-60 cursor-not-allowed'}`} placeholder="e.g. Row A - Lane 1" />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-3 px-1">{t('res.defaultStatus')} *</label>
-                    <div className="relative group">
-                      <select disabled={!canEditResources} value={status} onChange={e => setStatus(e.target.value)} className={`w-full bg-muted/5 border border-border focus:ring-4 focus:ring-primary/10 focus:border-primary rounded-2xl p-5 text-foreground focus:outline-none appearance-none font-bold pr-12 ${!canEditResources && 'opacity-60 cursor-not-allowed'}`}>
-                        <option value="Available">{t('res.statusAvail')}</option>
-                        <option value="Unavailable">{t('res.statusUnavail')}</option>
-                      </select>
-                      <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted pointer-events-none" />
-                    </div>
-                  </div>
-
-                  {activeTab === 'YardSlot' && (
-                    <div>
-                      <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-3 px-1">Capacity</label>
-                      <div className="relative">
-                        <Users className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
-                        <input
-                          disabled={!canEditResources}
-                          type="number"
-                          min="1"
-                          value={capacity}
-                          onChange={e => setCapacity(parseInt(e.target.value))}
-                          className={`w-full bg-muted/5 border border-border focus:ring-4 focus:ring-primary/10 focus:border-primary rounded-2xl pl-14 pr-6 py-5 text-foreground focus:outline-none font-bold ${!canEditResources && 'opacity-60 cursor-not-allowed'}`}
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {activeTab === 'Dock' && (
-                    <div className="col-span-2">
-                      <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-3 px-1">Operation Mode</label>
-                      <div className={`flex bg-muted/5 rounded-[1.25rem] p-1.5 border border-border ${!canEditResources && 'opacity-60 cursor-not-allowed pointer-events-none'}`}>
-                        <button
-                          type="button"
-                          onClick={() => setOperationMode('Inbound')}
-                          className={`flex-1 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${operationMode === 'Inbound' ? 'bg-emerald-500 text-white shadow-xl shadow-emerald-500/20' : 'text-muted hover:text-foreground hover:bg-muted/5'}`}
-                        >
-                          <ArrowRightFromLine className="w-4 h-4" /> Inbound
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setOperationMode('Outbound')}
-                          className={`flex-1 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${operationMode === 'Outbound' ? 'bg-primary text-white shadow-xl shadow-primary/20' : 'text-muted hover:text-foreground hover:bg-muted/5'}`}
-                        >
-                          <ArrowLeftToLine className="w-4 h-4" /> Outbound
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setOperationMode('Both')}
-                          className={`flex-1 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${operationMode === 'Both' ? 'bg-purple-500 text-white shadow-xl shadow-purple-500/20' : 'text-muted hover:text-foreground hover:bg-muted/5'}`}
-                        >
-                          <ArrowRightLeft className="w-4 h-4" /> Both
-                        </button>
-                      </div>
-                    </div>
-                  )}
+            {activeTab === 'YardSlot' && (
+              <div>
+                <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-3 px-1">Capacity</label>
+                <div className="relative">
+                  <Users className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
+                  <input
+                    disabled={!canEditResources}
+                    type="number"
+                    min="1"
+                    value={capacity}
+                    onChange={e => setCapacity(parseInt(e.target.value))}
+                    className={`w-full bg-muted/5 border border-border focus:ring-4 focus:ring-primary/10 focus:border-primary rounded-2xl pl-14 pr-6 py-5 text-foreground focus:outline-none font-bold ${!canEditResources && 'opacity-60 cursor-not-allowed'}`}
+                  />
                 </div>
+              </div>
+            )}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-4">
-                  <div>
-                    <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-5 px-1">{t('res.equipTypes')}</label>
-                    <div className={`flex flex-wrap gap-3 ${!canEditResources && 'opacity-60 pointer-events-none'}`}>
-                      {trailerTypes.map(def => {
-                        const type = def.name;
-                        const isSelected = allowedTrailerTypes.includes(type);
-
-                        return (
-                          <button
-                            key={type}
-                            type="button"
-                            onClick={() => toggleTrailerType(type)}
-                            className={`px-5 py-3 rounded-2xl border font-black uppercase tracking-widest text-[10px] transition-all flex items-center gap-2
-                                      ${isSelected
-                                ? 'bg-primary text-white border-primary shadow-lg shadow-primary/30'
-                                : 'bg-muted/5 border-border text-foreground hover:bg-muted/10'
-                              }`}
-                          >
-                            {isSelected ? <Check className="w-4 h-4" /> : <Truck className="w-4 h-4 opacity-30" />}
-                            {type}
-                          </button>
-                        );
-                      })}
-                      {trailerTypes.length === 0 && <span className="text-xs text-muted/30 italic">No equipment types defined.</span>}
-                    </div>
-                    <p className="text-[10px] text-muted opacity-40 mt-4 italic font-medium px-1">
-                      * Empty selection allows all equipment.
-                    </p>
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-5 px-1">Allowed Carriers</label>
-                    <div className={`flex flex-wrap gap-3 max-h-64 overflow-y-auto custom-scrollbar p-1 ${!canEditResources && 'opacity-60 pointer-events-none'}`}>
-                      {carriers.map(c => {
-                        const isSelected = allowedCarrierIds.includes(c.id);
-                        return (
-                          <button
-                            key={c.id}
-                            type="button"
-                            onClick={() => toggleCarrier(c.id)}
-                            className={`px-5 py-3 rounded-2xl border text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2
-                                            ${isSelected
-                                ? 'bg-purple-600 text-white border-purple-600 shadow-lg shadow-purple-500/30'
-                                : 'bg-muted/5 border-border text-foreground hover:bg-muted/10'
-                              }`}
-                          >
-                            {isSelected ? <Check className="w-4 h-4" /> : <Briefcase className="w-4 h-4 opacity-30" />}
-                            {c.name}
-                          </button>
-                        );
-                      })}
-                      {carriers.length === 0 && <span className="text-xs text-muted/30 italic px-1">No carriers defined.</span>}
-                    </div>
-                    <p className="text-[10px] text-muted opacity-40 mt-4 italic font-medium px-1">
-                      * Empty selection allows all organizations.
-                    </p>
-                  </div>
+            {activeTab === 'Dock' && (
+              <div className="col-span-2">
+                <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-3 px-1">Operation Mode</label>
+                <div className={`flex bg-muted/5 rounded-[1.25rem] p-1.5 border border-border ${!canEditResources && 'opacity-60 cursor-not-allowed pointer-events-none'}`}>
+                  <button
+                    type="button"
+                    onClick={() => setOperationMode('Inbound')}
+                    className={`flex-1 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${operationMode === 'Inbound' ? 'bg-emerald-500 text-white shadow-xl shadow-emerald-500/20' : 'text-muted hover:text-foreground hover:bg-muted/5'}`}
+                  >
+                    <ArrowRightFromLine className="w-4 h-4" /> Inbound
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setOperationMode('Outbound')}
+                    className={`flex-1 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${operationMode === 'Outbound' ? 'bg-primary text-white shadow-xl shadow-primary/20' : 'text-muted hover:text-foreground hover:bg-muted/5'}`}
+                  >
+                    <ArrowLeftToLine className="w-4 h-4" /> Outbound
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setOperationMode('Both')}
+                    className={`flex-1 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${operationMode === 'Both' ? 'bg-purple-500 text-white shadow-xl shadow-purple-500/20' : 'text-muted hover:text-foreground hover:bg-muted/5'}`}
+                  >
+                    <ArrowRightLeft className="w-4 h-4" /> Both
+                  </button>
                 </div>
+              </div>
+            )}
+          </div>
 
-                <div className="flex justify-end gap-6 pt-10 border-t border-border/50">
-                  <button type="button" onClick={() => setIsModalOpen(false)} className="px-10 py-5 text-xs font-black uppercase tracking-widest text-muted hover:text-foreground transition-colors">{canEditResources ? t('common.dismiss') : 'Close'}</button>
-                  {canEditResources && (
-                    <button type="submit" className="px-16 py-5 bg-primary hover:bg-blue-600 rounded-3xl font-black uppercase tracking-widest text-xs text-white shadow-2xl shadow-primary/30 transition-all active:scale-95">
-                      {editingResource ? 'Update Location' : 'Deploy Location'}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-4">
+            <div>
+              <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-5 px-1">{t('res.equipTypes')}</label>
+              <div className={`flex flex-wrap gap-3 ${!canEditResources && 'opacity-60 pointer-events-none'}`}>
+                {trailerTypes.map(def => {
+                  const type = def.name;
+                  const isSelected = allowedTrailerTypes.includes(type);
+
+                  return (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => toggleTrailerType(type)}
+                      className={`px-5 py-3 rounded-2xl border font-black uppercase tracking-widest text-[10px] transition-all flex items-center gap-2
+                                ${isSelected
+                          ? 'bg-primary text-white border-primary shadow-lg shadow-primary/30'
+                          : 'bg-muted/5 border-border text-foreground hover:bg-muted/10'
+                        }`}
+                    >
+                      {isSelected ? <Check className="w-4 h-4" /> : <Truck className="w-4 h-4 opacity-30" />}
+                      {type}
                     </button>
-                  )}
-                </div>
-              </form>
+                  );
+                })}
+                {trailerTypes.length === 0 && <span className="text-xs text-muted/30 italic">No equipment types defined.</span>}
+              </div>
+              <p className="text-[10px] text-muted opacity-40 mt-4 italic font-medium px-1">
+                * Empty selection allows all equipment.
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-5 px-1">Allowed Carriers</label>
+              <div className={`flex flex-wrap gap-3 max-h-64 overflow-y-auto custom-scrollbar p-1 ${!canEditResources && 'opacity-60 pointer-events-none'}`}>
+                {carriers.map(c => {
+                  const isSelected = allowedCarrierIds.includes(c.id);
+                  return (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => toggleCarrier(c.id)}
+                      className={`px-5 py-3 rounded-2xl border text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2
+                                      ${isSelected
+                          ? 'bg-purple-600 text-white border-purple-600 shadow-lg shadow-purple-500/30'
+                          : 'bg-muted/5 border-border text-foreground hover:bg-muted/10'
+                        }`}
+                    >
+                      {isSelected ? <Check className="w-4 h-4" /> : <Briefcase className="w-4 h-4 opacity-30" />}
+                      {c.name}
+                    </button>
+                  );
+                })}
+                {carriers.length === 0 && <span className="text-xs text-muted/30 italic px-1">No carriers defined.</span>}
+              </div>
+              <p className="text-[10px] text-muted opacity-40 mt-4 italic font-medium px-1">
+                * Empty selection allows all organizations.
+              </p>
             </div>
           </div>
-        </ModalPortal>
-      )}
+
+          <div className="flex justify-end gap-6 pt-10 border-t border-border/50">
+            <button type="button" onClick={() => setIsModalOpen(false)} className="px-10 py-5 text-xs font-black uppercase tracking-widest text-muted hover:text-foreground transition-colors">{canEditResources ? t('common.dismiss') : 'Close'}</button>
+            {canEditResources && (
+              <button type="submit" className="px-16 py-5 bg-primary hover:bg-blue-600 rounded-3xl font-black uppercase tracking-widest text-xs text-white shadow-2xl shadow-primary/30 transition-all active:scale-95">
+                {editingResource ? 'Update Location' : 'Deploy Location'}
+              </button>
+            )}
+          </div>
+        </form>
+      </Modal>
 
       <BulkCreatorModal
         isOpen={isBulkOpen}

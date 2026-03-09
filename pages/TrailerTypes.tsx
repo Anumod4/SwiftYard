@@ -1,10 +1,11 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useData } from '../contexts/DataContext';
 import { GlassCard } from '../components/ui/GlassCard';
 import { Plus, Edit2, Trash2, Truck, Clock, Box, ListPlus } from 'lucide-react';
 import { TrailerTypeDefinition } from '../types';
 import { ModalPortal } from '../components/ui/ModalPortal';
+import { Modal } from '../components/ui/Modal';
 import { Pagination } from '../components/ui/Pagination';
 import { BulkCreatorModal, BulkColumn } from '../components/BulkCreatorModal';
 import { DeleteConfirmationModal } from '../components/ui/DeleteConfirmationModal';
@@ -32,6 +33,16 @@ export const TrailerTypes: React.FC = () => {
   }, [trailerTypes, currentPage, pageSize]);
 
   const canEditTypes = canEdit(VIEW_IDS.TRAILER_TYPES);
+
+  const isDirty = useMemo(() => {
+    if (!isModalOpen) return false;
+    if (editingType) {
+      return typeName !== editingType.name ||
+        duration !== editingType.defaultDuration ||
+        processTimePerPallet !== editingType.processTimePerPallet;
+    }
+    return typeName !== '' || duration !== 60 || (processTimePerPallet !== undefined && processTimePerPallet !== 0);
+  }, [isModalOpen, typeName, duration, processTimePerPallet, editingType]);
 
   const handleOpenModal = (type?: TrailerTypeDefinition) => {
     if (type) {
@@ -205,60 +216,59 @@ export const TrailerTypes: React.FC = () => {
         pageSize={pageSize}
       />
 
-      {isModalOpen && (
-        <ModalPortal>
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-            <div className="bg-surface w-full max-w-sm rounded-[2.5rem] border border-border p-8 shadow-2xl overflow-y-auto max-h-[90vh] custom-scrollbar">
-              <h2 className="text-2xl font-black mb-8 text-foreground tracking-tight">{editingType ? t('common.edit') : t('common.add')} {t('tt.modalTitle')}</h2>
-              <form onSubmit={handleSave} className="space-y-6">
-                <div>
-                  <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">{t('tt.typeName')} *</label>
-                  <input
-                    required
-                    autoFocus
-                    placeholder="e.g. 53ft Dry Van"
-                    value={typeName}
-                    onChange={e => setTypeName(e.target.value)}
-                    className="w-full bg-muted/5 border border-border rounded-xl p-4 text-foreground font-bold focus:border-primary focus:outline-none transition-all"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">{t('tt.defServiceTime')} (Min) *</label>
-                  <input
-                    type="number"
-                    min="15"
-                    step="15"
-                    required
-                    value={duration}
-                    onChange={e => setDuration(parseInt(e.target.value))}
-                    className="w-full bg-muted/5 border border-border rounded-xl p-4 text-foreground font-bold focus:border-primary focus:outline-none transition-all"
-                  />
-                  <p className="text-[10px] text-muted/40 font-black uppercase tracking-widest mt-2">{t('tt.multiplesHint')}</p>
-                </div>
-
-                <div>
-                  <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">Minutes/Pallet (Optional)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    placeholder="e.g. 5"
-                    value={processTimePerPallet ?? ''}
-                    onChange={e => setProcessTimePerPallet(e.target.value ? parseFloat(e.target.value) : undefined)}
-                    className="w-full bg-muted/5 border border-border rounded-xl p-4 text-foreground font-bold focus:border-primary focus:outline-none transition-all"
-                  />
-                  <p className="text-[10px] text-muted/40 font-black uppercase tracking-widest mt-2">{t('tt.palletHint')}</p>
-                </div>
-
-                <div className="flex justify-end gap-5 pt-8 border-t border-border/50">
-                  <button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-3 text-sm font-black uppercase tracking-widest text-muted hover:text-foreground transition-colors">{t('common.cancel')}</button>
-                  <button type="submit" className="px-10 py-4 bg-primary hover:bg-blue-600 rounded-2xl font-black uppercase tracking-widest text-xs text-white shadow-xl shadow-primary/30 transition-all active:scale-95">{t('common.save')}</button>
-                </div>
-              </form>
-            </div>
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        isDirty={isDirty}
+        title={(editingType ? t('common.edit') : t('common.add')) + ' ' + t('tt.modalTitle')}
+        maxWidth="max-w-sm"
+      >
+        <form onSubmit={handleSave} className="space-y-6">
+          <div>
+            <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">{t('tt.typeName')} *</label>
+            <input
+              required
+              autoFocus
+              placeholder="e.g. 53ft Dry Van"
+              value={typeName}
+              onChange={e => setTypeName(e.target.value)}
+              className="w-full bg-muted/5 border border-border rounded-xl p-4 text-foreground font-bold focus:border-primary focus:outline-none transition-all"
+            />
           </div>
-        </ModalPortal>
-      )}
+
+          <div>
+            <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">{t('tt.defServiceTime')} (Min) *</label>
+            <input
+              type="number"
+              min="15"
+              step="15"
+              required
+              value={duration}
+              onChange={e => setDuration(parseInt(e.target.value))}
+              className="w-full bg-muted/5 border border-border rounded-xl p-4 text-foreground font-bold focus:border-primary focus:outline-none transition-all"
+            />
+            <p className="text-[10px] text-muted/40 font-black uppercase tracking-widest mt-2">{t('tt.multiplesHint')}</p>
+          </div>
+
+          <div>
+            <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">Minutes/Pallet (Optional)</label>
+            <input
+              type="number"
+              min="0"
+              placeholder="e.g. 5"
+              value={processTimePerPallet ?? ''}
+              onChange={e => setProcessTimePerPallet(e.target.value ? parseFloat(e.target.value) : undefined)}
+              className="w-full bg-muted/5 border border-border rounded-xl p-4 text-foreground font-bold focus:border-primary focus:outline-none transition-all"
+            />
+            <p className="text-[10px] text-muted/40 font-black uppercase tracking-widest mt-2">{t('tt.palletHint')}</p>
+          </div>
+
+          <div className="flex justify-end gap-5 pt-8 border-t border-border/50">
+            <button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-3 text-sm font-black uppercase tracking-widest text-muted hover:text-foreground transition-colors">{t('common.cancel')}</button>
+            <button type="submit" className="px-10 py-4 bg-primary hover:bg-blue-600 rounded-2xl font-black uppercase tracking-widest text-xs text-white shadow-xl shadow-primary/30 transition-all active:scale-95">{t('common.save')}</button>
+          </div>
+        </form>
+      </Modal>
 
       <BulkCreatorModal
         isOpen={isBulkOpen}

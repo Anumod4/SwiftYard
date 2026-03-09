@@ -6,6 +6,7 @@ import { GlassCard } from '../components/ui/GlassCard';
 import { Trailer } from '../types';
 import { Plus, Edit2, Search, Truck, MapPin, Calendar, Clock, ListPlus, User, Briefcase, FileText, ArrowRightCircle, Filter, ChevronDown, X, Navigation, Eye } from 'lucide-react';
 import { ModalPortal } from '../components/ui/ModalPortal';
+import { Modal } from '../components/ui/Modal';
 import { Pagination } from '../components/ui/Pagination';
 import { BulkCreatorModal, BulkColumn } from '../components/BulkCreatorModal';
 import { TrailerActionModal } from '../components/TrailerActionModal';
@@ -391,6 +392,20 @@ export const Trailers: React.FC = () => {
         }
     ];
 
+    const isDirty = React.useMemo(() => {
+        if (!isModalOpen) return false;
+        if (editingTrailer) {
+            return number !== editingTrailer.number ||
+                type !== editingTrailer.type ||
+                carrierId !== (editingTrailer.carrierId || '') ||
+                driverId !== (editingTrailer.currentDriverId || '');
+        }
+        return number !== '' ||
+            (type !== (trailerTypes.length > 0 ? trailerTypes[0].name : 'Unknown')) ||
+            carrierId !== '' ||
+            driverId !== '';
+    }, [isModalOpen, editingTrailer, number, type, carrierId, driverId, trailerTypes]);
+
     return (
         <div className="p-8 h-full flex flex-col animate-in fade-in duration-700">
             <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-12">
@@ -672,69 +687,68 @@ export const Trailers: React.FC = () => {
                 </div>
             </GlassCard>
 
-            {isModalOpen && (
-                <ModalPortal>
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-                        <div className="bg-surface w-full max-w-lg rounded-[2.5rem] border border-border p-8 shadow-2xl overflow-y-auto max-h-[90vh] custom-scrollbar">
-                            <h2 className="text-2xl font-black mb-8 text-foreground tracking-tight">{editingTrailer ? (canEditTrailers ? t('common.edit') : 'View') : t('common.add')} Trailer</h2>
-                            <form onSubmit={handleSave} className="space-y-6">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">Trailer Number *</label>
-                                        <input disabled={!canEditTrailers} required value={number} onChange={e => setNumber(e.target.value)} className={`w-full bg-muted/5 border border-border rounded-xl p-4 text-foreground font-bold focus:border-primary outline-none transition-all ${!canEditTrailers && 'opacity-60 cursor-not-allowed'}`} placeholder="e.g. TR-1234" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">Type</label>
-                                        <select disabled={!canEditTrailers} value={type} onChange={e => setType(e.target.value)} className={`w-full bg-muted/5 border border-border rounded-xl p-4 text-foreground font-bold focus:border-primary outline-none appearance-none ${!canEditTrailers && 'opacity-60 cursor-not-allowed'}`}>
-                                            {trailerTypes.map(t => <option key={t.id} value={t.name}>{t.name}</option>)}
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">Carrier</label>
-                                    <select
-                                        value={carrierId}
-                                        onChange={e => setCarrierId(e.target.value)}
-                                        disabled={isCarrierLocked || !canEditTrailers}
-                                        className={`w-full bg-muted/5 border border-border rounded-xl p-4 text-foreground font-bold focus:border-primary outline-none appearance-none transition-all ${(isCarrierLocked || !canEditTrailers) ? 'opacity-60 cursor-not-allowed' : ''}`}
-                                    >
-                                        <option value="">-- Select Carrier --</option>
-                                        {carriers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                                    </select>
-                                    {isCarrierLocked && canEditTrailers && <p className="text-[10px] text-primary mt-2 font-bold italic">* Locked to selected Driver's carrier</p>}
-                                </div>
-
-                                <div>
-                                    <div className="flex justify-between items-center mb-2">
-                                        <label className="block text-[10px] font-black uppercase tracking-widest text-muted">Current Driver</label>
-                                        {canEditTrailers && (
-                                            <button
-                                                type="button"
-                                                onClick={() => setIsQuickAddDriverOpen(true)}
-                                                className="text-[10px] font-black uppercase tracking-widest text-primary hover:text-blue-600 flex items-center gap-1.5"
-                                            >
-                                                <Plus className="w-3.5 h-3.5" /> Quick Add
-                                            </button>
-                                        )}
-                                    </div>
-                                    <select disabled={!canEditTrailers} value={driverId} onChange={e => handleDriverChange(e.target.value)} className={`w-full bg-muted/5 border border-border rounded-xl p-4 text-foreground font-bold focus:border-primary outline-none appearance-none transition-all ${!canEditTrailers && 'opacity-60 cursor-not-allowed'}`}>
-                                        <option value="">-- Select Driver --</option>
-                                        {filteredDrivers.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
-                                    </select>
-                                </div>
-
-                                <div className="flex justify-end gap-5 pt-8 border-t border-border/50">
-                                    <button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-3 text-sm font-black uppercase tracking-widest text-muted hover:text-foreground transition-colors">{t('common.dismiss')}</button>
-                                    {canEditTrailers && (
-                                        <button type="submit" className="px-10 py-4 bg-primary hover:bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-primary/30 transition-all active:scale-95">Save</button>
-                                    )}
-                                </div>
-                            </form>
+            <Modal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                isDirty={isDirty}
+                title={`${editingTrailer ? (canEditTrailers ? t('common.edit') : 'View') : t('common.add')} Trailer`}
+                maxWidth="max-w-lg"
+            >
+                <form onSubmit={handleSave} className="space-y-6">
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">Trailer Number *</label>
+                            <input disabled={!canEditTrailers} required value={number} onChange={e => setNumber(e.target.value)} className={`w-full bg-muted/5 border border-border rounded-xl p-4 text-foreground font-bold focus:border-primary outline-none transition-all ${!canEditTrailers && 'opacity-60 cursor-not-allowed'}`} placeholder="e.g. TR-1234" />
+                        </div>
+                        <div>
+                            <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">Type</label>
+                            <select disabled={!canEditTrailers} value={type} onChange={e => setType(e.target.value)} className={`w-full bg-muted/5 border border-border rounded-xl p-4 text-foreground font-bold focus:border-primary outline-none appearance-none ${!canEditTrailers && 'opacity-60 cursor-not-allowed'}`}>
+                                {trailerTypes.map(t => <option key={t.id} value={t.name}>{t.name}</option>)}
+                            </select>
                         </div>
                     </div>
-                </ModalPortal>
-            )}
+
+                    <div>
+                        <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">Carrier</label>
+                        <select
+                            value={carrierId}
+                            onChange={e => handleCarrierChange(e.target.value)}
+                            disabled={isCarrierLocked || !canEditTrailers}
+                            className={`w-full bg-muted/5 border border-border rounded-xl p-4 text-foreground font-bold focus:border-primary outline-none appearance-none transition-all ${(isCarrierLocked || !canEditTrailers) ? 'opacity-60 cursor-not-allowed' : ''}`}
+                        >
+                            <option value="">-- Select Carrier --</option>
+                            {carriers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                        </select>
+                        {isCarrierLocked && canEditTrailers && <p className="text-[10px] text-primary mt-2 font-bold italic">* Locked to selected Driver's carrier</p>}
+                    </div>
+
+                    <div>
+                        <div className="flex justify-between items-center mb-2">
+                            <label className="block text-[10px] font-black uppercase tracking-widest text-muted">Current Driver</label>
+                            {canEditTrailers && (
+                                <button
+                                    type="button"
+                                    onClick={() => setIsQuickAddDriverOpen(true)}
+                                    className="text-[10px] font-black uppercase tracking-widest text-primary hover:text-blue-600 flex items-center gap-1.5"
+                                >
+                                    <Plus className="w-3.5 h-3.5" /> Quick Add
+                                </button>
+                            )}
+                        </div>
+                        <select disabled={!canEditTrailers} value={driverId} onChange={e => handleDriverChange(e.target.value)} className={`w-full bg-muted/5 border border-border rounded-xl p-4 text-foreground font-bold focus:border-primary outline-none appearance-none transition-all ${!canEditTrailers && 'opacity-60 cursor-not-allowed'}`}>
+                            <option value="">-- Select Driver --</option>
+                            {filteredDrivers.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+                        </select>
+                    </div>
+
+                    <div className="flex justify-end gap-5 pt-8 border-t border-border/50">
+                        <button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-3 text-sm font-black uppercase tracking-widest text-muted hover:text-foreground transition-colors">{t('common.dismiss')}</button>
+                        {canEditTrailers && (
+                            <button type="submit" className="px-10 py-4 bg-primary hover:bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-primary/30 transition-all active:scale-95">Save</button>
+                        )}
+                    </div>
+                </form>
+            </Modal>
 
             {selectedApptId && (
                 <TrailerActionModal

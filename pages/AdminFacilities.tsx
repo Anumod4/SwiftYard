@@ -1,10 +1,11 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useData } from '../contexts/DataContext';
 import { GlassCard } from '../components/ui/GlassCard';
 import { Facility } from '../types';
 import { Plus, Edit2, Trash2, Building, MapPin, Hash } from 'lucide-react';
 import { ModalPortal } from '../components/ui/ModalPortal';
+import { Modal } from '../components/ui/Modal';
 import { Pagination } from '../components/ui/Pagination';
 import { DeleteConfirmationModal } from '../components/ui/DeleteConfirmationModal';
 
@@ -26,6 +27,16 @@ export const AdminFacilities: React.FC = () => {
     const start = (currentPage - 1) * pageSize;
     return facilities.slice(start, start + pageSize);
   }, [facilities, currentPage, pageSize]);
+
+  const isDirty = useMemo(() => {
+    if (!isModalOpen) return false;
+    if (editingFacility) {
+      return name !== editingFacility.name ||
+        address !== (editingFacility.address || '') ||
+        code !== (editingFacility.code || '');
+    }
+    return name !== '' || address !== '' || code !== '';
+  }, [isModalOpen, name, address, code, editingFacility]);
 
   const handleOpenModal = (fac?: Facility) => {
     if (fac) {
@@ -141,34 +152,33 @@ export const AdminFacilities: React.FC = () => {
         pageSize={pageSize}
       />
 
-      {isModalOpen && (
-        <ModalPortal>
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-md p-4 animate-in fade-in duration-200">
-            <div className="bg-surface w-full max-w-lg rounded-[3.5rem] border border-border p-12 shadow-2xl">
-              <h2 className="text-4xl font-black mb-10 text-foreground tracking-tighter">{editingFacility ? 'Edit Facility' : 'New Facility Portal'}</h2>
-              <form onSubmit={handleSave} className="space-y-8">
-                <div>
-                  <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-3 px-1">Facility Designation *</label>
-                  <input required value={name} onChange={e => setName(e.target.value)} className="w-full bg-muted/5 border border-border rounded-2xl p-4 outline-none text-foreground font-black tracking-tighter text-lg focus:border-primary transition-all shadow-sm" placeholder="e.g. Northeast Logistics Center" />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-3 px-1">Physical Address</label>
-                  <input value={address} onChange={e => setAddress(e.target.value)} className="w-full bg-muted/5 border border-border rounded-2xl p-4 outline-none text-foreground font-black tracking-tighter text-lg focus:border-primary transition-all shadow-sm" placeholder="123 Industrial Way..." />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-3 px-1">Routing Code</label>
-                  <input value={code} onChange={e => setCode(e.target.value)} className="w-full bg-muted/5 border border-border rounded-2xl p-4 outline-none text-foreground font-black tracking-tighter text-lg focus:border-primary transition-all shadow-sm" placeholder="e.g. YARD-01" />
-                </div>
-
-                <div className="flex justify-end gap-6 pt-10 mt-6 border-t border-border/50">
-                  <button type="button" onClick={() => setIsModalOpen(false)} className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-muted hover:text-foreground transition-colors">Dismiss</button>
-                  <button type="submit" className="px-12 py-5 bg-primary hover:bg-blue-600 text-white rounded-3xl font-black uppercase tracking-widest text-xs shadow-2xl shadow-primary/30 transition-all active:scale-95">Commit Designation</button>
-                </div>
-              </form>
-            </div>
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        isDirty={isDirty}
+        title={editingFacility ? 'Edit Facility' : 'New Facility Portal'}
+        maxWidth="max-w-lg"
+      >
+        <form onSubmit={handleSave} className="space-y-8">
+          <div>
+            <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-3 px-1">Facility Designation *</label>
+            <input required value={name} onChange={e => setName(e.target.value)} className="w-full bg-muted/5 border border-border rounded-2xl p-4 outline-none text-foreground font-black tracking-tighter text-lg focus:border-primary transition-all shadow-sm" placeholder="e.g. Northeast Logistics Center" />
           </div>
-        </ModalPortal>
-      )}
+          <div>
+            <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-3 px-1">Physical Address</label>
+            <input value={address} onChange={e => setAddress(e.target.value)} className="w-full bg-muted/5 border border-border rounded-2xl p-4 outline-none text-foreground font-black tracking-tighter text-lg focus:border-primary transition-all shadow-sm" placeholder="123 Industrial Way..." />
+          </div>
+          <div>
+            <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-3 px-1">Routing Code</label>
+            <input value={code} onChange={e => setCode(e.target.value)} className="w-full bg-muted/5 border border-border rounded-2xl p-4 outline-none text-foreground font-black tracking-tighter text-lg focus:border-primary transition-all shadow-sm" placeholder="e.g. YARD-01" />
+          </div>
+
+          <div className="flex justify-end gap-6 pt-10 mt-6 border-t border-border/50">
+            <button type="button" onClick={() => setIsModalOpen(false)} className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-muted hover:text-foreground transition-colors">Dismiss</button>
+            <button type="submit" className="px-12 py-5 bg-primary hover:bg-blue-600 text-white rounded-3xl font-black uppercase tracking-widest text-xs shadow-2xl shadow-primary/30 transition-all active:scale-95">Commit Designation</button>
+          </div>
+        </form>
+      </Modal>
 
       <DeleteConfirmationModal
         isOpen={isDeleteModalOpen}

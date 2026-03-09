@@ -1,7 +1,7 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { useData } from '../contexts/DataContext';
 import { ModalPortal } from './ui/ModalPortal';
+import { Modal } from './ui/Modal';
 import { X, Calendar, Clock, Truck, User, Briefcase, FileText, Package, Plus, Warehouse, Sparkles, Check, AlertCircle } from 'lucide-react';
 import { Appointment, Resource } from '../types';
 import { QuickAddDriverModal } from './QuickAddDriverModal';
@@ -63,6 +63,34 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onCl
     // UI State
     const [isQuickAddDriverOpen, setIsQuickAddDriverOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const isDirty = useMemo(() => {
+        if (!isOpen) return false;
+        if (editingId) {
+            const appt = appointments.find(a => a.id === editingId);
+            if (!appt) return false;
+            return startTime !== appt.startTime ||
+                duration !== appt.durationMinutes ||
+                (loadType !== (appt.loadType || 'Inbound')) ||
+                (trailerNumber !== (appt.trailerNumber || '')) ||
+                (trailerType !== (appt.trailerType || '')) ||
+                (isBobtail !== appt.isBobtail) ||
+                (carrierId !== (appt.carrierId || '')) ||
+                (driverName !== appt.driverName) ||
+                (poNumber !== (appt.poNumber || '')) ||
+                (asnNumber !== (appt.asnNumber || '')) ||
+                (palletCount !== (appt.palletCount || '')) ||
+                (loadStatus !== (appt.loadStatus || 'Loaded')) ||
+                (assignedResourceId !== (appt.assignedResourceId || ''));
+        }
+        return trailerNumber !== '' ||
+            driverName !== '' ||
+            carrierId !== '' ||
+            poNumber !== '' ||
+            asnNumber !== '' ||
+            palletCount !== '' ||
+            assignedResourceId !== '';
+    }, [isOpen, editingId, appointments, startTime, duration, loadType, trailerNumber, trailerType, isBobtail, carrierId, driverName, poNumber, asnNumber, palletCount, loadStatus, assignedResourceId]);
 
     useEffect(() => {
         if (isOpen) {
@@ -196,12 +224,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onCl
                 t.status !== 'GatedOut' && t.status !== 'Unknown' && t.status !== 'Cancelled'
             );
 
-            // In Edit Mode, if the trailer is active elsewhere BUT it belongs to the exact same appointment we're editing, it's fine.
-            // Oh, we are modifying an existing trailer inside current appt. But trailers array represents standalone trailers.
-            // If the active trailer belongs to the SAME facility and context, we might safely assume it's okay? No, 'isTrailerActiveElsewhere' usually stops re-booking a GatedIn trailer. Wait, if it's GatedIn here, we can't book it again either. That's fine.
-            // But what if it's already actively linked to THIS appointment?
             if (isTrailerActiveElsewhere) {
-                // Determine if the found active trailer is literally linked to the same appointment (for edits).
                 const conflictingTrailer = allTrailers.find(t => t.number.toLowerCase() === trailerNumber.toLowerCase() && t.status !== 'GatedOut' && t.status !== 'Unknown' && t.status !== 'Cancelled');
                 if (!(editingId && conflictingTrailer?.currentAppointmentId === editingId)) {
                     addToast('Trailer Busy', `Trailer ${trailerNumber} is already active at a facility. It must depart before it can be booked again.`, 'error');
@@ -218,7 +241,6 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onCl
         setIsSubmitting(true);
 
         try {
-            // Explicitly format payload to use NULL for empty optionals (SQL safety)
             const payload: Partial<Appointment> = {
                 startTime: new Date(startTime).toISOString(),
                 durationMinutes: duration,
@@ -258,7 +280,6 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onCl
         const val = e.target.value;
         setDriverName(val);
 
-        // Auto-select carrier if driver is known AND carrier isn't already locked
         const knownDriver = drivers.find(d => d.name === val);
         if (knownDriver && knownDriver.carrierId && !carrierId) {
             const matchingCarrier = carriers.find(c => c.id === knownDriver.carrierId || c.name === knownDriver.carrierId);
@@ -279,34 +300,20 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onCl
     // --- DOCK SUGGESTION LOGIC ---
     const handleSuggestDocks = () => {
         const results: SuggestedDock[] = docks.filter(dock => {
-            // 1. Availability Check
             if (dock.status !== 'Available') return false;
-
-            // 2. Load Status vs Operation Mode Check
             const mode = dock.operationMode || 'Both';
-            // Loaded usually implies Unloading (Inbound)
             if (loadStatus === 'Loaded' && mode === 'Outbound') return false;
-            // Empty usually implies Loading (Outbound)
             if (loadStatus === 'Empty' && mode === 'Inbound') return false;
-
-            // 3. Strict Constraint Filtering (if dock has restrictions, must match)
             const typeRestricted = dock.allowedTrailerTypes && dock.allowedTrailerTypes.length > 0;
             const carrierRestricted = dock.allowedCarrierIds && dock.allowedCarrierIds.length > 0;
-
-            // If restricted, check for match. If not restricted, it passes (Universal).
             if (typeRestricted && !dock.allowedTrailerTypes.includes(trailerType)) return false;
             if (carrierRestricted && !dock.allowedCarrierIds.includes(carrierId)) return false;
-
             return true;
         }).map(dock => {
-            // Scoring Logic
             let score = 0;
             let matchReasons: string[] = [];
-
             const typeRestricted = dock.allowedTrailerTypes && dock.allowedTrailerTypes.length > 0;
             const carrierRestricted = dock.allowedCarrierIds && dock.allowedCarrierIds.length > 0;
-
-            // Priority: Both > Type > Carrier
             if (typeRestricted && dock.allowedTrailerTypes.includes(trailerType)) {
                 score += 2;
                 matchReasons.push("Type");
@@ -315,15 +322,11 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onCl
                 score += 1;
                 matchReasons.push("Carrier");
             }
-
             if (score === 0) {
                 matchReasons.push("Universal");
             }
-
             return { dock, score, reason: matchReasons.join(' & ') };
         });
-
-        // Sort by Score descending
         results.sort((a, b) => b.score - a.score);
         setSuggestedDocks(results);
         setIsSuggestionsVisible(true);
@@ -337,285 +340,283 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onCl
     if (!isOpen) return null;
 
     return (
-        <ModalPortal>
-            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-                <div className="bg-white dark:bg-[#1e1e1e] w-full max-w-xl rounded-2xl shadow-2xl border border-slate-200 dark:border-white/10 overflow-hidden flex flex-col max-h-[90vh]">
-                    <div className="p-6 border-b border-slate-200 dark:border-white/10 flex justify-between items-center bg-slate-50 dark:bg-[#1a1a1a]">
-                        <h2 className="text-xl font-bold text-slate-900 dark:text-white">{editingId ? t('common.edit') : t('schedule.new')}</h2>
-                        <button onClick={onClose} className="text-slate-500 hover:text-slate-900 dark:hover:text-white"><X className="w-5 h-5" /></button>
-                    </div>
+        <>
+            <Modal
+                isOpen={isOpen}
+                onClose={onClose}
+                isDirty={isDirty}
+                title={editingId ? t('common.edit') : t('schedule.new')}
+                maxWidth="max-w-xl"
+            >
+                <form onSubmit={handleSubmit} className="space-y-6">
 
-                    <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6">
-
-                        {/* 1. Vehicle Details */}
-                        {!isBobtail && (
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Trailer Type *</label>
-                                    <div className="relative">
-                                        <Truck className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
-                                        <select
-                                            value={trailerType}
-                                            onChange={e => setTrailerType(e.target.value)}
-                                            className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-3 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#3B82F6] appearance-none"
-                                        >
-                                            <option value="">Select Type</option>
-                                            {trailerTypes.map(t => <option key={t.id} value={t.name}>{t.name}</option>)}
-                                        </select>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Traffic Direction</label>
-                                    <div className="flex bg-slate-100 dark:bg-black/20 rounded-xl p-1 border border-slate-200 dark:border-white/10">
-                                        <button
-                                            type="button"
-                                            onClick={() => setLoadType('Inbound')}
-                                            className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${loadType === 'Inbound' ? 'bg-[#3B82F6] text-white shadow-sm' : 'text-slate-500 dark:text-gray-400'}`}
-                                        >
-                                            Inbound
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => setLoadType('Outbound')}
-                                            className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${loadType === 'Outbound' ? 'bg-[#3B82F6] text-white shadow-sm' : 'text-slate-500 dark:text-gray-400'}`}
-                                        >
-                                            Outbound
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
+                    {/* 1. Vehicle Details */}
+                    {!isBobtail && (
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Date & Time *</label>
-                                <DateTimePicker
-                                    value={startTime}
-                                    onChange={setStartTime}
-                                    isInvalid={!isWithinOperationalHours}
-                                    hint={startTime ? operationalHint : null}
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Duration (Min)</label>
-                                <div className="relative">
-                                    <Clock className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
-                                    <input
-                                        type="number"
-                                        min="15"
-                                        step="15"
-                                        value={duration}
-                                        onChange={e => setDuration(parseInt(e.target.value))}
-                                        className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#3B82F6]"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* 3. Trailer Number */}
-                        {!isBobtail && (
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Trailer Number</label>
+                                <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Trailer Type *</label>
                                 <div className="relative">
                                     <Truck className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
-                                    <input
-                                        value={trailerNumber}
-                                        onChange={e => setTrailerNumber(e.target.value)}
-                                        className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#3B82F6] uppercase font-medium"
-                                        placeholder="TRL-####"
-                                    />
-                                </div>
-                            </div>
-                        )}
-
-                        {/* 4. Carrier & Driver */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Carrier *</label>
-                                <div className="relative">
-                                    <Briefcase className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
                                     <select
-                                        value={carrierId}
-                                        onChange={e => {
-                                            setCarrierId(e.target.value);
-                                            const driver = drivers.find(d => d.name === driverName);
-                                            if (driver && driver.carrierId && driver.carrierId !== e.target.value) {
-                                                setDriverName('');
-                                            }
-                                        }}
-                                        className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#3B82F6] appearance-none"
+                                        value={trailerType}
+                                        onChange={e => setTrailerType(e.target.value)}
+                                        className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-3 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#3B82F6] appearance-none"
                                     >
-                                        <option value="">Select Carrier</option>
-                                        {carriers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                        <option value="">Select Type</option>
+                                        {trailerTypes.map(t => <option key={t.id} value={t.name}>{t.name}</option>)}
                                     </select>
                                 </div>
                             </div>
-
                             <div>
-                                <div className="flex justify-between items-center mb-1.5">
-                                    <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider">Driver Name</label>
+                                <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Traffic Direction</label>
+                                <div className="flex bg-slate-100 dark:bg-black/20 rounded-xl p-1 border border-slate-200 dark:border-white/10">
                                     <button
                                         type="button"
-                                        onClick={() => setIsQuickAddDriverOpen(true)}
-                                        className="text-[10px] font-bold text-blue-500 hover:text-blue-400 flex items-center gap-1"
+                                        onClick={() => setLoadType('Inbound')}
+                                        className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${loadType === 'Inbound' ? 'bg-[#3B82F6] text-white shadow-sm' : 'text-slate-500 dark:text-gray-400'}`}
                                     >
-                                        <Plus className="w-3 h-3" /> New Driver
+                                        Inbound
                                     </button>
-                                </div>
-                                <div className="relative">
-                                    <User className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
-                                    <select
-                                        value={driverName}
-                                        onChange={handleDriverChange as any}
-                                        className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#3B82F6] appearance-none"
+                                    <button
+                                        type="button"
+                                        onClick={() => setLoadType('Outbound')}
+                                        className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${loadType === 'Outbound' ? 'bg-[#3B82F6] text-white shadow-sm' : 'text-slate-500 dark:text-gray-400'}`}
                                     >
-                                        <option value="">Select Driver</option>
-                                        {filteredDrivers.map(d => (
-                                            <option key={d.id} value={d.name}>{d.name}</option>
-                                        ))}
-                                    </select>
+                                        Outbound
+                                    </button>
                                 </div>
                             </div>
                         </div>
+                    )}
 
-                        {/* Dock Assignment Logic */}
+                    <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <div className="flex justify-between items-center mb-1.5">
-                                <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider">Assigned Dock (Optional)</label>
-                                <button
-                                    type="button"
-                                    onClick={handleSuggestDocks}
-                                    className="text-[10px] font-bold text-purple-500 hover:text-purple-400 flex items-center gap-1"
-                                >
-                                    <Sparkles className="w-3 h-3" /> Suggest Docks
-                                </button>
-                            </div>
-
-                            {isSuggestionsVisible && (
-                                <div className="mb-3 bg-purple-50 dark:bg-purple-900/10 border border-purple-100 dark:border-purple-500/20 rounded-xl p-2 animate-in fade-in slide-in-from-top-2">
-                                    <div className="flex justify-between items-center px-2 pb-2 border-b border-purple-200 dark:border-purple-500/20 mb-2">
-                                        <span className="text-xs font-bold text-purple-700 dark:text-purple-300">Suggested Docks for {loadStatus}</span>
-                                        <button type="button" onClick={() => setIsSuggestionsVisible(false)}><X className="w-3 h-3 text-purple-400" /></button>
-                                    </div>
-                                    <div className="max-h-32 overflow-y-auto custom-scrollbar space-y-1">
-                                        {suggestedDocks.length === 0 ? (
-                                            <div className="text-center text-xs text-slate-400 py-2">No matching available docks found.</div>
-                                        ) : (
-                                            suggestedDocks.map((s, idx) => (
-                                                <button
-                                                    key={s.dock.id}
-                                                    type="button"
-                                                    onClick={() => selectSuggestion(s.dock.id)}
-                                                    className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-white dark:hover:bg-purple-500/20 transition-colors text-left group"
-                                                >
-                                                    <div>
-                                                        <span className="text-sm font-bold text-slate-800 dark:text-white block">{s.dock.name}</span>
-                                                        <span className="text-[10px] text-slate-500 dark:text-purple-300">Matches: {s.reason}</span>
-                                                    </div>
-                                                    {idx === 0 && <span className="text-[9px] bg-purple-500 text-white px-1.5 py-0.5 rounded">Best</span>}
-                                                </button>
-                                            ))
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-
+                            <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Date & Time *</label>
+                            <DateTimePicker
+                                value={startTime}
+                                onChange={setStartTime}
+                                isInvalid={!isWithinOperationalHours}
+                                hint={startTime ? operationalHint : null}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Duration (Min)</label>
                             <div className="relative">
-                                <Warehouse className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
+                                <Clock className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
+                                <input
+                                    type="number"
+                                    min="15"
+                                    step="15"
+                                    value={duration}
+                                    onChange={e => setDuration(parseInt(e.target.value))}
+                                    className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#3B82F6]"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* 3. Trailer Number */}
+                    {!isBobtail && (
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Trailer Number</label>
+                            <div className="relative">
+                                <Truck className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
+                                <input
+                                    value={trailerNumber}
+                                    onChange={e => setTrailerNumber(e.target.value)}
+                                    className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#3B82F6] uppercase font-medium"
+                                    placeholder="TRL-####"
+                                />
+                            </div>
+                        </div>
+                    )}
+
+                    {/* 4. Carrier & Driver */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Carrier *</label>
+                            <div className="relative">
+                                <Briefcase className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
                                 <select
-                                    value={assignedResourceId}
-                                    onChange={e => setAssignedResourceId(e.target.value)}
-                                    className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-3 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#3B82F6] appearance-none"
+                                    value={carrierId}
+                                    onChange={e => {
+                                        setCarrierId(e.target.value);
+                                        const driver = drivers.find(d => d.name === driverName);
+                                        if (driver && driver.carrierId && driver.carrierId !== e.target.value) {
+                                            setDriverName('');
+                                        }
+                                    }}
+                                    className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#3B82F6] appearance-none"
                                 >
-                                    <option value="">-- No Dock Assigned --</option>
-                                    {docks.map(d => (
-                                        <option key={d.id} value={d.id}>
-                                            {d.name} {d.status !== 'Available' ? '(Occupied)' : ''}
-                                        </option>
-                                    ))}
+                                    <option value="">Select Carrier</option>
+                                    {carriers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                                 </select>
                             </div>
                         </div>
 
-                        {/* 5. Details (PO, ASN, Pallets) */}
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="col-span-2 md:col-span-1">
-                                <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Purchase Order (PO) #</label>
-                                <div className="relative">
-                                    <FileText className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
-                                    <input
-                                        value={poNumber}
-                                        onChange={e => setPoNumber(e.target.value)}
-                                        className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#3B82F6]"
-                                        placeholder="Optional"
-                                    />
-                                </div>
+                        <div>
+                            <div className="flex justify-between items-center mb-1.5">
+                                <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider">Driver Name</label>
+                                <button
+                                    type="button"
+                                    onClick={() => setIsQuickAddDriverOpen(true)}
+                                    className="text-[10px] font-bold text-blue-500 hover:text-blue-400 flex items-center gap-1"
+                                >
+                                    <Plus className="w-3 h-3" /> New Driver
+                                </button>
                             </div>
-                            <div className="col-span-2 md:col-span-1">
-                                <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">ASN Number</label>
-                                <div className="relative">
-                                    <FileText className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
-                                    <input
-                                        value={asnNumber}
-                                        onChange={e => setAsnNumber(e.target.value)}
-                                        className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#3B82F6]"
-                                        placeholder="Optional"
-                                    />
-                                </div>
-                            </div>
-                            <div className="col-span-1">
-                                <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Pallets</label>
-                                <div className="relative">
-                                    <Package className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
-                                    <input
-                                        type="number"
-                                        min="0"
-                                        value={palletCount}
-                                        onChange={e => setPalletCount(e.target.value === '' ? '' : parseInt(e.target.value))}
-                                        className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#3B82F6]"
-                                        placeholder="Qty"
-                                    />
-                                </div>
+                            <div className="relative">
+                                <User className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
+                                <select
+                                    value={driverName}
+                                    onChange={handleDriverChange as any}
+                                    className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#3B82F6] appearance-none"
+                                >
+                                    <option value="">Select Driver</option>
+                                    {filteredDrivers.map(d => (
+                                        <option key={d.id} value={d.name}>{d.name}</option>
+                                    ))}
+                                </select>
                             </div>
                         </div>
+                    </div>
 
-                        {/* 6. Bobtail Toggle (Bottom) */}
-                        <div className="bg-slate-50 dark:bg-white/5 p-4 rounded-xl border border-slate-200 dark:border-white/10 flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-purple-500/10 rounded-lg text-purple-500">
-                                    <Truck className="w-5 h-5" />
-                                </div>
-                                <div>
-                                    <p className="font-bold text-slate-900 dark:text-white text-sm">Driver only appointment</p>
-                                    <p className="text-xs text-slate-500 dark:text-gray-400">Driver checking in without trailer</p>
-                                </div>
-                            </div>
-                            <label className="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" className="sr-only peer" checked={isBobtail} onChange={e => setIsBobtail(e.target.checked)} />
-                                <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-purple-600"></div>
-                            </label>
+                    {/* Dock Assignment Logic */}
+                    <div>
+                        <div className="flex justify-between items-center mb-1.5">
+                            <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider">Assigned Dock (Optional)</label>
+                            <button
+                                type="button"
+                                onClick={handleSuggestDocks}
+                                className="text-[10px] font-bold text-purple-500 hover:text-purple-400 flex items-center gap-1"
+                            >
+                                <Sparkles className="w-3 h-3" /> Suggest Docks
+                            </button>
                         </div>
 
-                    </form>
+                        {isSuggestionsVisible && (
+                            <div className="mb-3 bg-purple-50 dark:bg-purple-900/10 border border-purple-100 dark:border-purple-500/20 rounded-xl p-2 animate-in fade-in slide-in-from-top-2">
+                                <div className="flex justify-between items-center px-2 pb-2 border-b border-purple-200 dark:border-purple-500/20 mb-2">
+                                    <span className="text-xs font-bold text-purple-700 dark:text-purple-300">Suggested Docks for {loadStatus}</span>
+                                    <button type="button" onClick={() => setIsSuggestionsVisible(false)}><X className="w-3 h-3 text-purple-400" /></button>
+                                </div>
+                                <div className="max-h-32 overflow-y-auto custom-scrollbar space-y-1">
+                                    {suggestedDocks.length === 0 ? (
+                                        <div className="text-center text-xs text-slate-400 py-2">No matching available docks found.</div>
+                                    ) : (
+                                        suggestedDocks.map((s, idx) => (
+                                            <button
+                                                key={s.dock.id}
+                                                type="button"
+                                                onClick={() => selectSuggestion(s.dock.id)}
+                                                className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-white dark:hover:bg-purple-500/20 transition-colors text-left group"
+                                            >
+                                                <div>
+                                                    <span className="text-sm font-bold text-slate-800 dark:text-white block">{s.dock.name}</span>
+                                                    <span className="text-[10px] text-slate-500 dark:text-purple-300">Matches: {s.reason}</span>
+                                                </div>
+                                                {idx === 0 && <span className="text-[9px] bg-purple-500 text-white px-1.5 py-0.5 rounded">Best</span>}
+                                            </button>
+                                        ))
+                                    )}
+                                </div>
+                            </div>
+                        )}
 
-                    <div className="p-6 border-t border-slate-200 dark:border-white/10 flex justify-end gap-3 bg-slate-50 dark:bg-[#1a1a1a]">
-                        <button onClick={onClose} className="px-6 py-3 rounded-xl font-bold text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white transition-colors">{t('common.cancel')}</button>
+                        <div className="relative">
+                            <Warehouse className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
+                            <select
+                                value={assignedResourceId}
+                                onChange={e => setAssignedResourceId(e.target.value)}
+                                className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-3 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#3B82F6] appearance-none"
+                            >
+                                <option value="">-- No Dock Assigned --</option>
+                                {docks.map(d => (
+                                    <option key={d.id} value={d.id}>
+                                        {d.name} {d.status !== 'Available' ? '(Occupied)' : ''}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+
+                    {/* 5. Details (PO, ASN, Pallets) */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="col-span-2 md:col-span-1">
+                            <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Purchase Order (PO) #</label>
+                            <div className="relative">
+                                <FileText className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
+                                <input
+                                    value={poNumber}
+                                    onChange={e => setPoNumber(e.target.value)}
+                                    className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#3B82F6]"
+                                    placeholder="Optional"
+                                />
+                            </div>
+                        </div>
+                        <div className="col-span-2 md:col-span-1">
+                            <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">ASN Number</label>
+                            <div className="relative">
+                                <FileText className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
+                                <input
+                                    value={asnNumber}
+                                    onChange={e => setAsnNumber(e.target.value)}
+                                    className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#3B82F6]"
+                                    placeholder="Optional"
+                                />
+                            </div>
+                        </div>
+                        <div className="col-span-1">
+                            <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Pallets</label>
+                            <div className="relative">
+                                <Package className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
+                                <input
+                                    type="number"
+                                    min="0"
+                                    value={palletCount}
+                                    onChange={e => setPalletCount(e.target.value === '' ? '' : parseInt(e.target.value))}
+                                    className="w-full bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#3B82F6]"
+                                    placeholder="Qty"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* 6. Bobtail Toggle (Bottom) */}
+                    <div className="bg-slate-50 dark:bg-white/5 p-4 rounded-xl border border-slate-200 dark:border-white/10 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-purple-500/10 rounded-lg text-purple-500">
+                                <Truck className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <p className="font-bold text-slate-900 dark:text-white text-sm">Driver only appointment</p>
+                                <p className="text-xs text-slate-500 dark:text-gray-400">Driver checking in without trailer</p>
+                            </div>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" className="sr-only peer" checked={isBobtail} onChange={e => setIsBobtail(e.target.checked)} />
+                            <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-purple-600"></div>
+                        </label>
+                    </div>
+
+                    <div className="flex justify-end gap-3 pt-6 border-t border-slate-200 dark:border-white/10">
+                        <button type="button" onClick={onClose} className="px-6 py-3 rounded-xl font-bold text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white transition-colors">{t('common.cancel')}</button>
                         <button
-                            onClick={handleSubmit}
+                            type="submit"
                             disabled={isSubmitting}
                             className="px-8 py-3 bg-[#3B82F6] hover:bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-500/20 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                         >
                             {editingId ? t('common.save') : 'Confirm Schedule'} <Clock className="w-4 h-4" />
                         </button>
                     </div>
-                </div>
-            </div>
+                </form>
+            </Modal>
 
             <QuickAddDriverModal
                 isOpen={isQuickAddDriverOpen}
                 onClose={() => setIsQuickAddDriverOpen(false)}
                 onSuccess={handleQuickAddSuccess}
             />
-        </ModalPortal>
+        </>
     );
 };

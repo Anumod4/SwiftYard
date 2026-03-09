@@ -6,6 +6,7 @@ import { GlassCard } from '../components/ui/GlassCard';
 import { Driver } from '../types';
 import { Plus, Edit2, Trash2, User, CheckCircle2, XCircle, Briefcase, ListPlus, Search, Phone, ChevronDown, Filter } from 'lucide-react';
 import { ModalPortal } from '../components/ui/ModalPortal';
+import { Modal } from '../components/ui/Modal';
 import { Pagination } from '../components/ui/Pagination';
 import { BulkCreatorModal, BulkColumn } from '../components/BulkCreatorModal';
 import { DeleteConfirmationModal } from '../components/ui/DeleteConfirmationModal';
@@ -67,6 +68,17 @@ export const Drivers: React.FC = () => {
     if (!c) c = carriers.find(car => car.name.toLowerCase() === cId.toLowerCase());
     return c ? c.name : cId;
   };
+
+  const isDirty = useMemo(() => {
+    if (!isModalOpen) return false;
+    if (editingDriver) {
+      return name !== editingDriver.name ||
+        license !== editingDriver.licenseNumber ||
+        phone !== editingDriver.phone ||
+        carrierId !== (editingDriver.carrierId || '');
+    }
+    return name !== '' || license !== '' || phone !== '' || carrierId !== '';
+  }, [isModalOpen, name, license, phone, carrierId, editingDriver]);
 
   const handleOpenModal = (d?: Driver) => {
     if (d) {
@@ -401,56 +413,55 @@ export const Drivers: React.FC = () => {
         pageSize={pageSize}
       />
 
-      {isModalOpen && (
-        <ModalPortal>
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-            <div className="bg-surface w-full max-w-lg rounded-[3rem] border border-border p-10 shadow-2xl relative overflow-y-auto max-h-[90vh] custom-scrollbar">
-              <h2 className="text-3xl font-black mb-10 text-foreground tracking-tighter">{editingDriver ? t('drv.edit') : t('drv.add')} Driver</h2>
-              <form onSubmit={handleSave} className="space-y-6">
-                <div>
-                  <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-3 px-1">{t('drv.fullName')} *</label>
-                  <input required value={name} onChange={e => setName(e.target.value)} className="w-full bg-muted/5 border border-border rounded-2xl p-5 text-foreground font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all" placeholder="Enter full name" />
-                </div>
-                <div className="grid grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-3 px-1">{t('drv.license')} *</label>
-                    <input required value={license} onChange={e => setLicense(e.target.value)} className="w-full bg-muted/5 border border-border rounded-2xl p-5 text-foreground font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all" placeholder="License #" />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-3 px-1">{t('common.phone')} *</label>
-                    <input required value={phone} onChange={e => setPhone(e.target.value)} className="w-full bg-muted/5 border border-border rounded-2xl p-5 text-foreground font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all" placeholder="Phone #" />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-3 px-1">{t('common.carrier')}</label>
-                  <div className="relative group">
-                    <Briefcase className="absolute left-5 top-1/2 -translate-y-1/2 w-6 h-6 text-muted transition-colors group-focus-within:text-primary" />
-                    <select
-                      value={carrierId}
-                      onChange={e => setCarrierId(e.target.value)}
-                      className="w-full bg-muted/5 border border-border rounded-2xl pl-16 pr-6 py-5 text-foreground font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none appearance-none transition-all"
-                    >
-                      <option value="">-- No Organization --</option>
-                      {carriers.map(c => (
-                        <option key={c.id} value={c.name}>{c.name}</option>
-                      ))}
-                    </select>
-                    <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-muted">
-                      <ChevronDown className="w-5 h-5" />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex justify-end gap-5 pt-10 border-t border-border/50 mt-4">
-                  <button type="button" onClick={() => setIsModalOpen(false)} className="px-8 py-4 text-sm font-black uppercase tracking-widest text-muted hover:text-foreground transition-colors">{t('common.dismiss')}</button>
-                  <button type="submit" className="px-12 py-5 bg-primary hover:bg-blue-600 rounded-2xl font-black uppercase tracking-widest text-xs text-white shadow-xl shadow-primary/30 transition-all active:scale-95">{t('common.save')}</button>
-                </div>
-              </form>
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        isDirty={isDirty}
+        title={(editingDriver ? t('drv.edit') : t('drv.add')) + ' Driver'}
+        maxWidth="max-w-lg"
+      >
+        <form onSubmit={handleSave} className="space-y-6">
+          <div>
+            <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-3 px-1">{t('drv.fullName')} *</label>
+            <input required value={name} onChange={e => setName(e.target.value)} className="w-full bg-muted/5 border border-border rounded-2xl p-5 text-foreground font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all" placeholder="Enter full name" />
+          </div>
+          <div className="grid grid-cols-2 gap-6">
+            <div>
+              <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-3 px-1">{t('drv.license')} *</label>
+              <input required value={license} onChange={e => setLicense(e.target.value)} className="w-full bg-muted/5 border border-border rounded-2xl p-5 text-foreground font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all" placeholder="License #" />
+            </div>
+            <div>
+              <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-3 px-1">{t('common.phone')} *</label>
+              <input required value={phone} onChange={e => setPhone(e.target.value)} className="w-full bg-muted/5 border border-border rounded-2xl p-5 text-foreground font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all" placeholder="Phone #" />
             </div>
           </div>
-        </ModalPortal>
-      )}
+
+          <div>
+            <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-3 px-1">{t('common.carrier')}</label>
+            <div className="relative group">
+              <Briefcase className="absolute left-5 top-1/2 -translate-y-1/2 w-6 h-6 text-muted transition-colors group-focus-within:text-primary" />
+              <select
+                value={carrierId}
+                onChange={e => setCarrierId(e.target.value)}
+                className="w-full bg-muted/5 border border-border rounded-2xl pl-16 pr-6 py-5 text-foreground font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none appearance-none transition-all"
+              >
+                <option value="">-- No Organization --</option>
+                {carriers.map(c => (
+                  <option key={c.id} value={c.name}>{c.name}</option>
+                ))}
+              </select>
+              <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-muted">
+                <ChevronDown className="w-5 h-5" />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-5 pt-10 border-t border-border/50 mt-4">
+            <button type="button" onClick={() => setIsModalOpen(false)} className="px-8 py-4 text-sm font-black uppercase tracking-widest text-muted hover:text-foreground transition-colors">{t('common.dismiss')}</button>
+            <button type="submit" className="px-12 py-5 bg-primary hover:bg-blue-600 rounded-2xl font-black uppercase tracking-widest text-xs text-white shadow-xl shadow-primary/30 transition-all active:scale-95">{t('common.save')}</button>
+          </div>
+        </form>
+      </Modal>
 
       <BulkCreatorModal
         isOpen={isBulkOpen}

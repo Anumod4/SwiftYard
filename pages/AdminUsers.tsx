@@ -4,6 +4,7 @@ import { GlassCard } from '../components/ui/GlassCard';
 import { UserProfileData } from '../types';
 import { Plus, Edit2, Trash2, Shield, Warehouse, Check, Briefcase, AlertCircle, Search } from 'lucide-react';
 import { ModalPortal } from '../components/ui/ModalPortal';
+import { Modal } from '../components/ui/Modal';
 import { Pagination } from '../components/ui/Pagination';
 import { DeleteConfirmationModal } from '../components/ui/DeleteConfirmationModal';
 
@@ -24,10 +25,28 @@ export const AdminUsers: React.FC = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const pageSize = 10;
 
-    const paginatedUsers = React.useMemo(() => {
+    const paginatedUsers = useMemo(() => {
         const start = (currentPage - 1) * pageSize;
         return allUsers.slice(start, start + pageSize);
     }, [allUsers, currentPage, pageSize]);
+
+    const isDirty = useMemo(() => {
+        if (!isModalOpen) return false;
+        if (editingUser) {
+            const parts = (editingUser.displayName || '').split(' ');
+            const eFirstName = parts[0] || '';
+            const eLastName = parts.length > 1 ? parts.slice(1).join(' ') : '';
+            const facilitiesChanged = JSON.stringify([...selectedFacilities].sort()) !== JSON.stringify([...(editingUser.assignedFacilities || [])].sort());
+
+            return email !== (editingUser.email || '') ||
+                firstName !== eFirstName ||
+                lastName !== eLastName ||
+                role !== (editingUser.role || 'user') ||
+                carrierId !== (editingUser.carrierId || '') ||
+                facilitiesChanged;
+        }
+        return email !== '' || firstName !== '' || lastName !== '' || role !== 'user' || carrierId !== '' || selectedFacilities.length > 0;
+    }, [isModalOpen, email, firstName, lastName, role, carrierId, selectedFacilities, editingUser]);
 
     useEffect(() => { performHousekeeping(); }, [performHousekeeping]);
 
@@ -255,79 +274,77 @@ export const AdminUsers: React.FC = () => {
                 pageSize={pageSize}
             />
 
-            {isModalOpen && (
-                <ModalPortal>
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-md p-4 animate-in fade-in duration-200">
-                        <div className="bg-surface w-full max-w-2xl rounded-[3rem] p-12 shadow-2xl border border-border overflow-y-auto max-h-[90vh] custom-scrollbar">
-                            <h2 className="text-4xl font-black mb-10 text-foreground tracking-tighter">{editingUser ? 'Edit User' : 'Provision New User'}</h2>
+            <Modal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                isDirty={isDirty}
+                title={editingUser ? 'Edit User' : 'Provision New User'}
+                maxWidth="max-w-2xl"
+            >
+                {!editingUser && (
+                    <div className="bg-primary/5 text-primary p-6 rounded-[2rem] text-xs font-black uppercase tracking-widest leading-relaxed mb-10 flex gap-4 border border-primary/10 shadow-sm">
+                        <AlertCircle className="w-8 h-8 shrink-0 opacity-60" />
+                        <span>Passwords are handled securely via provider. New users must use "Forgot Password" to initialize their credentials.</span>
+                    </div>
+                )}
 
-                            {!editingUser && (
-                                <div className="bg-primary/5 text-primary p-6 rounded-[2rem] text-xs font-black uppercase tracking-widest leading-relaxed mb-10 flex gap-4 border border-primary/10 shadow-sm">
-                                    <AlertCircle className="w-8 h-8 shrink-0 opacity-60" />
-                                    <span>Passwords are handled securely via provider. New users must use "Forgot Password" to initialize their credentials.</span>
-                                </div>
-                            )}
-
-                            <form onSubmit={handleSave} className="space-y-8">
-                                <div className="grid grid-cols-2 gap-6">
-                                    <div>
-                                        <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-3 px-1">First Name</label>
-                                        <input required value={firstName} onChange={e => setFirstName(e.target.value)} className="w-full bg-muted/5 border border-border rounded-2xl p-4 outline-none text-foreground font-bold focus:border-primary transition-all shadow-sm" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-3 px-1">Last Name</label>
-                                        <input required value={lastName} onChange={e => setLastName(e.target.value)} className="w-full bg-muted/5 border border-border rounded-2xl p-4 outline-none text-foreground font-bold focus:border-primary transition-all shadow-sm" />
-                                    </div>
-                                </div>
-                                <div><label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-3 px-1">Email Address</label><input required type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-muted/5 border border-border rounded-2xl p-4 outline-none text-foreground font-bold focus:border-primary transition-all shadow-sm" disabled={!!editingUser} /></div>
-                                <div>
-                                    <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-3 px-1">System Access Level</label>
-                                    <select value={role} onChange={e => setRole(e.target.value)} className="w-full bg-muted/5 border border-border rounded-2xl p-4 outline-none text-foreground focus:border-primary transition-all appearance-none font-black uppercase tracking-widest text-xs cursor-pointer shadow-sm">
-                                        {roles.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
-                                    </select>
-                                </div>
-
-                                {isCarrierRole(role) && (
-                                    <div className="animate-in slide-in-from-top-4 duration-500 p-6 bg-amber-500/5 rounded-3xl border border-amber-500/10">
-                                        <label className="block text-[10px] font-black uppercase tracking-widest text-amber-600 mb-4 px-1">Partner Organization Assignment</label>
-                                        {allCarriers.length > 0 ? (
-                                            <select value={carrierId} onChange={handleCarrierChange} className="w-full bg-surface border border-amber-500/20 rounded-2xl p-4 outline-none text-foreground font-black tracking-tight text-lg shadow-xl cursor-not-allowed">
-                                                <option value="">-- Select Partner Entity --</option>
-                                                {allCarriers.map(c => {
-                                                    const fac = facilities.find(f => f.id === c.facilityId);
-                                                    return <option key={c.id} value={c.name}>{c.name} ({fac?.name || 'All Yards'})</option>;
-                                                })}
-                                            </select>
-                                        ) : (
-                                            <div className="bg-red-500/5 border border-red-500/10 p-4 rounded-2xl flex items-center gap-3 text-xs font-black uppercase tracking-widest text-red-500">
-                                                <AlertCircle className="w-5 h-5" />
-                                                <span>No carrier entities defined. Create one first.</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-
-                                <div>
-                                    <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-4 px-1">Authorized Facilities</label>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-64 overflow-y-auto p-6 bg-muted/5 border border-border rounded-[2rem] shadow-inner custom-scrollbar">
-                                        {facilities.map(f => (
-                                            <div key={f.id} onClick={() => toggleFacility(f.id)} className={`flex items-center gap-4 p-5 rounded-2xl cursor-pointer transition-all border-2 ${selectedFacilities.includes(f.id) ? 'bg-primary/10 border-primary shadow-lg scale-[1.02]' : 'bg-surface border-transparent hover:border-border/50 opacity-60'}`}>
-                                                <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${selectedFacilities.includes(f.id) ? 'bg-primary border-primary scale-110' : 'border-muted/30'}`}>{selectedFacilities.includes(f.id) && <Check className="w-4 h-4 text-white" />}</div>
-                                                <span className="text-sm font-black tracking-tighter truncate">{f.name}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                <div className="flex justify-end gap-6 pt-10 mt-6 border-t border-border/50">
-                                    <button type="button" onClick={() => setIsModalOpen(false)} className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-muted hover:text-foreground transition-colors">Dismiss</button>
-                                    <button type="submit" className="px-12 py-5 bg-primary hover:bg-blue-600 text-white rounded-3xl font-black uppercase tracking-widest text-xs shadow-2xl shadow-primary/30 transition-all active:scale-95">Commit Changes</button>
-                                </div>
-                            </form>
+                <form onSubmit={handleSave} className="space-y-8">
+                    <div className="grid grid-cols-2 gap-6">
+                        <div>
+                            <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-3 px-1">First Name</label>
+                            <input required value={firstName} onChange={e => setFirstName(e.target.value)} className="w-full bg-muted/5 border border-border rounded-2xl p-4 outline-none text-foreground font-bold focus:border-primary transition-all shadow-sm" />
+                        </div>
+                        <div>
+                            <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-3 px-1">Last Name</label>
+                            <input required value={lastName} onChange={e => setLastName(e.target.value)} className="w-full bg-muted/5 border border-border rounded-2xl p-4 outline-none text-foreground font-bold focus:border-primary transition-all shadow-sm" />
                         </div>
                     </div>
-                </ModalPortal>
-            )}
+                    <div><label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-3 px-1">Email Address</label><input required type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-muted/5 border border-border rounded-2xl p-4 outline-none text-foreground font-bold focus:border-primary transition-all shadow-sm" disabled={!!editingUser} /></div>
+                    <div>
+                        <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-3 px-1">System Access Level</label>
+                        <select value={role} onChange={e => setRole(e.target.value)} className="w-full bg-muted/5 border border-border rounded-2xl p-4 outline-none text-foreground focus:border-primary transition-all appearance-none font-black uppercase tracking-widest text-xs cursor-pointer shadow-sm">
+                            {roles.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+                        </select>
+                    </div>
+
+                    {isCarrierRole(role) && (
+                        <div className="animate-in slide-in-from-top-4 duration-500 p-6 bg-amber-500/5 rounded-3xl border border-amber-500/10">
+                            <label className="block text-[10px] font-black uppercase tracking-widest text-amber-600 mb-4 px-1">Partner Organization Assignment</label>
+                            {allCarriers.length > 0 ? (
+                                <select value={carrierId} onChange={handleCarrierChange} className="w-full bg-surface border border-amber-500/20 rounded-2xl p-4 outline-none text-foreground font-black tracking-tight text-lg shadow-xl cursor-not-allowed">
+                                    <option value="">-- Select Partner Entity --</option>
+                                    {allCarriers.map(c => {
+                                        const fac = facilities.find(f => f.id === c.facilityId);
+                                        return <option key={c.id} value={c.name}>{c.name} ({fac?.name || 'All Yards'})</option>;
+                                    })}
+                                </select>
+                            ) : (
+                                <div className="bg-red-500/5 border border-red-500/10 p-4 rounded-2xl flex items-center gap-3 text-xs font-black uppercase tracking-widest text-red-500">
+                                    <AlertCircle className="w-5 h-5" />
+                                    <span>No carrier entities defined. Create one first.</span>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    <div>
+                        <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-4 px-1">Authorized Facilities</label>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-64 overflow-y-auto p-6 bg-muted/5 border border-border rounded-[2rem] shadow-inner custom-scrollbar">
+                            {facilities.map(f => (
+                                <div key={f.id} onClick={() => toggleFacility(f.id)} className={`flex items-center gap-4 p-5 rounded-2xl cursor-pointer transition-all border-2 ${selectedFacilities.includes(f.id) ? 'bg-primary/10 border-primary shadow-lg scale-[1.02]' : 'bg-surface border-transparent hover:border-border/50 opacity-60'}`}>
+                                    <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${selectedFacilities.includes(f.id) ? 'bg-primary border-primary scale-110' : 'border-muted/30'}`}>{selectedFacilities.includes(f.id) && <Check className="w-4 h-4 text-white" />}</div>
+                                    <span className="text-sm font-black tracking-tighter truncate">{f.name}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="flex justify-end gap-6 pt-10 mt-6 border-t border-border/50">
+                        <button type="button" onClick={() => setIsModalOpen(false)} className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-muted hover:text-foreground transition-colors">Dismiss</button>
+                        <button type="submit" className="px-12 py-5 bg-primary hover:bg-blue-600 text-white rounded-3xl font-black uppercase tracking-widest text-xs shadow-2xl shadow-primary/30 transition-all active:scale-95">Commit Changes</button>
+                    </div>
+                </form>
+            </Modal>
 
             <DeleteConfirmationModal
                 isOpen={isDeleteModalOpen}

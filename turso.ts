@@ -38,7 +38,7 @@ export const fetchTable = async (tableName: string) => {
     const obj: any = { ...row };
 
     // Common JSON fields
-    ['history', 'photos', 'documents', 'allowedTrailerTypes', 'allowedCarrierIds', 'unavailability', 'assignedFacilities', 'permissions', 'accessLevels', 'billingOverrides'].forEach(key => {
+    ['history', 'photos', 'documents', 'allowedTrailerTypes', 'allowedCarrierIds', 'unavailability', 'assignedFacilities', 'permissions', 'accessLevels', 'billingOverrides', 'performance'].forEach(key => {
       if (obj[key] && typeof obj[key] === 'string') {
         obj[key] = safeJsonParse(obj[key]);
       }
@@ -176,6 +176,11 @@ export const runMigrations = async () => {
   } catch (e: any) { /* Ignore */ }
 
   try {
+    await turso.execute("ALTER TABLE carriers ADD COLUMN performance TEXT");
+    console.log("Migration: 'performance' column added to 'carriers' table.");
+  } catch (e: any) { /* Ignore */ }
+
+  try {
     await turso.execute("ALTER TABLE appointments ADD COLUMN suggestedStartTime TEXT");
   } catch (e: any) { /* Ignore */ }
 };
@@ -252,7 +257,8 @@ export const initializeSchema = async () => {
         contactEmail TEXT,
         contactPhone TEXT,
         bufferTimeMinutes INTEGER,
-        billingOverrides TEXT
+        billingOverrides TEXT,
+        performance TEXT
       );
     `);
 

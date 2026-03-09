@@ -1,11 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useData } from '../contexts/DataContext';
 import { GlassCard } from '../components/ui/GlassCard';
 import { RoleDefinition } from '../types';
 import { ALL_PERMISSIONS } from '../constants';
 import { Plus, Edit2, Trash2, Shield, Lock, Check, Eye } from 'lucide-react';
 import { ModalPortal } from '../components/ui/ModalPortal';
+import { Modal } from '../components/ui/Modal';
 import { Pagination } from '../components/ui/Pagination';
 import { DeleteConfirmationModal } from '../components/ui/DeleteConfirmationModal';
 
@@ -25,10 +26,24 @@ export const AdminRoles: React.FC = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const pageSize = 10;
 
-    const paginatedRoles = React.useMemo(() => {
+    const paginatedRoles = useMemo(() => {
         const start = (currentPage - 1) * pageSize;
         return roles.slice(start, start + pageSize);
     }, [roles, currentPage, pageSize]);
+
+    const isDirty = useMemo(() => {
+        if (!isModalOpen) return false;
+        if (editingRole) {
+            const permissionsChanged = JSON.stringify([...permissions].sort()) !== JSON.stringify([...(editingRole.permissions || [])].sort());
+            const levelsChanged = JSON.stringify(accessLevels) !== JSON.stringify(editingRole.accessLevels || {});
+            return id !== editingRole.id ||
+                name !== editingRole.name ||
+                description !== (editingRole.description || '') ||
+                permissionsChanged ||
+                levelsChanged;
+        }
+        return id !== '' || name !== '' || description !== '' || permissions.length > 0;
+    }, [isModalOpen, id, name, description, permissions, accessLevels, editingRole]);
 
     const handleOpenModal = (role?: RoleDefinition) => {
         if (role) {
@@ -203,88 +218,87 @@ export const AdminRoles: React.FC = () => {
                 pageSize={pageSize}
             />
 
-            {isModalOpen && (
-                <ModalPortal>
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-md p-4 animate-in fade-in duration-200">
-                        <div className="bg-surface w-full max-w-2xl rounded-[3rem] border border-border p-12 shadow-2xl max-h-[90vh] overflow-y-auto custom-scrollbar">
-                            <h2 className="text-4xl font-black mb-10 text-foreground tracking-tighter">{editingRole ? 'Adapt Role' : 'Architect New Role'}</h2>
-                            <form onSubmit={handleSave} className="space-y-8">
-                                <div className="grid grid-cols-2 gap-6">
-                                    <div>
-                                        <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-3 px-1">Unique Role ID</label>
-                                        <input
-                                            required
-                                            value={id}
-                                            onChange={e => setId(e.target.value)}
-                                            disabled={!!editingRole}
-                                            className={`w-full bg-muted/5 border border-border rounded-2xl p-4 outline-none text-foreground font-black tracking-tighter text-lg focus:border-primary transition-all shadow-sm ${editingRole ? 'opacity-40 cursor-not-allowed' : ''}`}
-                                            placeholder="e.g. yard-supervisor"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-3 px-1">Display Designation</label>
-                                        <input required value={name} onChange={e => setName(e.target.value)} className="w-full bg-muted/5 border border-border rounded-2xl p-4 outline-none text-foreground font-black tracking-tighter text-lg focus:border-primary transition-all shadow-sm" placeholder="e.g. Master Supervisor" />
-                                    </div>
-                                </div>
-                                <div>
-                                    <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-3 px-1">Functional Description</label>
-                                    <textarea value={description} onChange={e => setDescription(e.target.value)} className="w-full bg-muted/5 border border-border rounded-[2rem] p-6 outline-none text-foreground font-bold leading-relaxed focus:border-primary transition-all h-24 shadow-sm" placeholder="Define the operational scope of this role..." />
-                                </div>
-
-                                <div>
-                                    <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-4 px-1">Permission Matrix & Access Levels</label>
-                                    <div className="bg-muted/5 p-4 rounded-[2.5rem] border border-border/50 max-h-96 overflow-y-auto custom-scrollbar shadow-inner">
-                                        {ALL_PERMISSIONS.map(item => {
-                                            const isSelected = permissions.includes(item.id);
-                                            const level = accessLevels[item.id] || 'edit';
-
-                                            return (
-                                                <div key={item.id} className={`flex items-center justify-between p-4 mb-2 rounded-2xl transition-all border-2 ${isSelected ? 'bg-surface border-indigo-500/30 shadow-md scale-[1.01]' : 'border-transparent opacity-60 hover:opacity-100 hover:bg-muted/5'}`}>
-                                                    <div
-                                                        onClick={() => togglePermission(item.id)}
-                                                        className="flex items-center gap-4 cursor-pointer flex-1"
-                                                    >
-                                                        <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center shrink-0 transition-all ${isSelected ? 'bg-indigo-500 border-indigo-500 scale-110' : 'border-muted/30'}`}>
-                                                            {isSelected && <Check className="w-4 h-4 text-white" />}
-                                                        </div>
-                                                        <span className={`text-sm font-black tracking-tight ${isSelected ? 'text-foreground' : 'text-muted'}`}>
-                                                            {item.label}
-                                                        </span>
-                                                    </div>
-
-                                                    {isSelected && (
-                                                        <div className="flex bg-muted/10 rounded-xl p-1 ml-4 border border-border/50 shadow-sm">
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => setLevel(item.id, 'view')}
-                                                                className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all flex items-center gap-2 ${level === 'view' ? 'bg-surface text-foreground shadow-sm' : 'text-muted opacity-40 hover:opacity-100'}`}
-                                                            >
-                                                                <Eye className="w-3.5 h-3.5" /> Read
-                                                            </button>
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => setLevel(item.id, 'edit')}
-                                                                className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all flex items-center gap-2 ${level === 'edit' ? 'bg-indigo-500 text-white shadow-xl shadow-indigo-500/20' : 'text-muted opacity-40 hover:opacity-100'}`}
-                                                            >
-                                                                <Edit2 className="w-3.5 h-3.5" /> Full
-                                                            </button>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-
-                                <div className="flex justify-end gap-6 pt-10 mt-6 border-t border-border/50">
-                                    <button type="button" onClick={() => setIsModalOpen(false)} className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-muted hover:text-foreground transition-colors">Dismiss</button>
-                                    <button type="submit" className="px-12 py-5 bg-primary hover:bg-blue-600 text-white rounded-3xl font-black uppercase tracking-widest text-xs shadow-2xl shadow-primary/30 transition-all active:scale-95">Commit Architecture</button>
-                                </div>
-                            </form>
+            <Modal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                isDirty={isDirty}
+                title={editingRole ? 'Adapt Role' : 'Architect New Role'}
+                maxWidth="max-w-2xl"
+            >
+                <form onSubmit={handleSave} className="space-y-8">
+                    <div className="grid grid-cols-2 gap-6">
+                        <div>
+                            <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-3 px-1">Unique Role ID</label>
+                            <input
+                                required
+                                value={id}
+                                onChange={e => setId(e.target.value)}
+                                disabled={!!editingRole}
+                                className={`w-full bg-muted/5 border border-border rounded-2xl p-4 outline-none text-foreground font-black tracking-tighter text-lg focus:border-primary transition-all shadow-sm ${editingRole ? 'opacity-40 cursor-not-allowed' : ''}`}
+                                placeholder="e.g. yard-supervisor"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-3 px-1">Display Designation</label>
+                            <input required value={name} onChange={e => setName(e.target.value)} className="w-full bg-muted/5 border border-border rounded-2xl p-4 outline-none text-foreground font-black tracking-tighter text-lg focus:border-primary transition-all shadow-sm" placeholder="e.g. Master Supervisor" />
                         </div>
                     </div>
-                </ModalPortal>
-            )}
+                    <div>
+                        <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-3 px-1">Functional Description</label>
+                        <textarea value={description} onChange={e => setDescription(e.target.value)} className="w-full bg-muted/5 border border-border rounded-[2rem] p-6 outline-none text-foreground font-bold leading-relaxed focus:border-primary transition-all h-24 shadow-sm" placeholder="Define the operational scope of this role..." />
+                    </div>
+
+                    <div>
+                        <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-4 px-1">Permission Matrix & Access Levels</label>
+                        <div className="bg-muted/5 p-4 rounded-[2.5rem] border border-border/50 max-h-96 overflow-y-auto custom-scrollbar shadow-inner">
+                            {ALL_PERMISSIONS.map(item => {
+                                const isSelected = permissions.includes(item.id);
+                                const level = accessLevels[item.id] || 'edit';
+
+                                return (
+                                    <div key={item.id} className={`flex items-center justify-between p-4 mb-2 rounded-2xl transition-all border-2 ${isSelected ? 'bg-surface border-indigo-500/30 shadow-md scale-[1.01]' : 'border-transparent opacity-60 hover:opacity-100 hover:bg-muted/5'}`}>
+                                        <div
+                                            onClick={() => togglePermission(item.id)}
+                                            className="flex items-center gap-4 cursor-pointer flex-1"
+                                        >
+                                            <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center shrink-0 transition-all ${isSelected ? 'bg-indigo-500 border-indigo-500 scale-110' : 'border-muted/30'}`}>
+                                                {isSelected && <Check className="w-4 h-4 text-white" />}
+                                            </div>
+                                            <span className={`text-sm font-black tracking-tight ${isSelected ? 'text-foreground' : 'text-muted'}`}>
+                                                {item.label}
+                                            </span>
+                                        </div>
+
+                                        {isSelected && (
+                                            <div className="flex bg-muted/10 rounded-xl p-1 ml-4 border border-border/50 shadow-sm">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setLevel(item.id, 'view')}
+                                                    className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all flex items-center gap-2 ${level === 'view' ? 'bg-surface text-foreground shadow-sm' : 'text-muted opacity-40 hover:opacity-100'}`}
+                                                >
+                                                    <Eye className="w-3.5 h-3.5" /> Read
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setLevel(item.id, 'edit')}
+                                                    className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all flex items-center gap-2 ${level === 'edit' ? 'bg-indigo-500 text-white shadow-xl shadow-indigo-500/20' : 'text-muted opacity-40 hover:opacity-100'}`}
+                                                >
+                                                    <Edit2 className="w-3.5 h-3.5" /> Full
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    <div className="flex justify-end gap-6 pt-10 mt-6 border-t border-border/50">
+                        <button type="button" onClick={() => setIsModalOpen(false)} className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-muted hover:text-foreground transition-colors">Dismiss</button>
+                        <button type="submit" className="px-12 py-5 bg-primary hover:bg-blue-600 text-white rounded-3xl font-black uppercase tracking-widest text-xs shadow-2xl shadow-primary/30 transition-all active:scale-95">Commit Architecture</button>
+                    </div>
+                </form>
+            </Modal>
 
             <DeleteConfirmationModal
                 isOpen={isDeleteModalOpen}

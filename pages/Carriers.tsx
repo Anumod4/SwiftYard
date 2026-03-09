@@ -6,6 +6,7 @@ import { GlassCard } from '../components/ui/GlassCard';
 import { Carrier } from '../types';
 import { Plus, Edit2, Trash2, Briefcase, Mail, Phone, ListPlus, Search, Filter, Star, Trophy, Shield, Medal, Target, Clock, TrendingUp } from 'lucide-react';
 import { ModalPortal } from '../components/ui/ModalPortal';
+import { Modal } from '../components/ui/Modal';
 import { Pagination } from '../components/ui/Pagination';
 import { BulkCreatorModal, BulkColumn } from '../components/BulkCreatorModal';
 import { DeleteConfirmationModal } from '../components/ui/DeleteConfirmationModal';
@@ -77,22 +78,49 @@ export const Carriers: React.FC = () => {
     setIsModalOpen(true);
   };
 
+  const isDirty = useMemo(() => {
+    if (!isModalOpen) return false;
+    const currentPerformance = (editingCarrier?.performance?.[currentFacilityId!] || {}) as any;
+
+    const overridesMatch = () => {
+      const bo = editingCarrier?.billingOverrides || {};
+      return (freeYardHours === (bo.freeYardHours?.toString() || '')) &&
+        (freeDockHours === (bo.freeDockHours?.toString() || '')) &&
+        (yardRatePerDay === (bo.yardRatePerDay?.toString() || '')) &&
+        (dockRatePerHour === (bo.dockRatePerHour?.toString() || ''));
+    };
+
+    if (editingCarrier) {
+      return name !== editingCarrier.name ||
+        email !== (editingCarrier.contactEmail || '') ||
+        phone !== (editingCarrier.contactPhone || '') ||
+        bufferTime !== (editingCarrier.bufferTimeMinutes?.toString() || '') ||
+        manualScore !== (currentPerformance.manualScore?.toString() || '') ||
+        bookingAdvanceHours !== (currentPerformance.bookingAdvanceHours?.toString() || '') ||
+        !overridesMatch();
+    }
+    return name !== '' || email !== '' || phone !== '' || bufferTime !== '' || manualScore !== '' || bookingAdvanceHours !== '' ||
+      freeYardHours !== '' || freeDockHours !== '' || yardRatePerDay !== '' || dockRatePerHour !== '';
+  }, [isModalOpen, name, email, phone, bufferTime, manualScore, bookingAdvanceHours, freeYardHours, freeDockHours, yardRatePerDay, dockRatePerHour, editingCarrier, currentFacilityId]);
+
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
 
     // Parse billing overrides
-    const overrides: Carrier['billingOverrides'] = {};
-    if (freeYardHours !== '') overrides.freeYardHours = Number(freeYardHours);
-    if (freeDockHours !== '') overrides.freeDockHours = Number(freeDockHours);
-    if (yardRatePerDay !== '') overrides.yardRatePerDay = Number(yardRatePerDay);
-    if (dockRatePerHour !== '') overrides.dockRatePerHour = Number(dockRatePerHour);
+    const overrides: Carrier['billingOverrides'] = {
+      freeYardHours: freeYardHours !== '' ? Number(freeYardHours) : undefined,
+      freeDockHours: freeDockHours !== '' ? Number(freeDockHours) : undefined,
+      yardRatePerDay: yardRatePerDay !== '' ? Number(yardRatePerDay) : undefined,
+      dockRatePerHour: dockRatePerHour !== '' ? Number(dockRatePerHour) : undefined,
+    };
 
     const fid = currentFacilityId || '';
     const payload: Partial<Carrier> = {
       name,
+      facilityId: fid, // CRITICAL: Ensure facilityId is present
       contactEmail: email || undefined,
       contactPhone: phone || undefined,
-      billingOverrides: Object.keys(overrides).length > 0 ? overrides : undefined,
+      billingOverrides: overrides,
       bufferTimeMinutes: bufferTime !== '' ? Number(bufferTime) : undefined,
       performance: {
         ...(editingCarrier?.performance || {}),
@@ -244,71 +272,70 @@ export const Carriers: React.FC = () => {
         pageSize={pageSize}
       />
 
-      {isModalOpen && (
-        <ModalPortal>
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-            <div className="bg-surface w-full max-w-2xl rounded-[2.5rem] border border-border p-8 shadow-2xl overflow-y-auto max-h-[90vh] custom-scrollbar">
-              <h2 className="text-2xl font-black mb-8 text-foreground tracking-tight">{editingCarrier ? t('common.edit') : t('common.add')} {t('car.modalTitle')}</h2>
-              <form onSubmit={handleSave} className="space-y-6">
-                <div>
-                  <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">{t('car.name')} *</label>
-                  <input required value={name} onChange={e => setName(e.target.value)} className="w-full bg-muted/5 border border-border rounded-xl p-4 text-foreground font-bold focus:border-primary focus:outline-none transition-all" />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">{t('car.email')}</label>
-                  <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-muted/5 border border-border rounded-xl p-4 text-foreground font-bold focus:border-primary focus:outline-none transition-all" />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">{t('car.phone')}</label>
-                  <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} className="w-full bg-muted/5 border border-border rounded-xl p-4 text-foreground font-bold focus:border-primary focus:outline-none transition-all" />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">Buffer Time (Minutes)</label>
-                  <input type="number" min="0" value={bufferTime} onChange={e => setBufferTime(e.target.value)} placeholder="Minutes before/after" className="w-full bg-muted/5 border border-border rounded-xl p-4 text-foreground font-bold focus:border-primary focus:outline-none transition-all" />
-                </div>
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        isDirty={isDirty}
+        title={(editingCarrier ? t('common.edit') : t('common.add')) + ' ' + t('car.modalTitle')}
+        maxWidth="max-w-2xl"
+      >
+        <form onSubmit={handleSave} className="space-y-6">
+          <div>
+            <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">{t('car.name')} *</label>
+            <input required value={name} onChange={e => setName(e.target.value)} className="w-full bg-muted/5 border border-border rounded-xl p-4 text-foreground font-bold focus:border-primary focus:outline-none transition-all" />
+          </div>
+          <div>
+            <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">{t('car.email')}</label>
+            <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-muted/5 border border-border rounded-xl p-4 text-foreground font-bold focus:border-primary focus:outline-none transition-all" />
+          </div>
+          <div>
+            <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">{t('car.phone')}</label>
+            <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} className="w-full bg-muted/5 border border-border rounded-xl p-4 text-foreground font-bold focus:border-primary focus:outline-none transition-all" />
+          </div>
+          <div>
+            <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">Buffer Time (Minutes)</label>
+            <input type="number" min="0" value={bufferTime} onChange={e => setBufferTime(e.target.value)} placeholder="Minutes before/after" className="w-full bg-muted/5 border border-border rounded-xl p-4 text-foreground font-bold focus:border-primary focus:outline-none transition-all" />
+          </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">Manual Score (0-100)</label>
-                    <input type="number" min="0" max="100" value={manualScore} onChange={e => setManualScore(e.target.value)} className="w-full bg-muted/5 border border-border rounded-xl p-4 text-foreground font-bold focus:border-primary focus:outline-none transition-all" />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">Priority Booking (Hrs)</label>
-                    <input type="number" min="0" value={bookingAdvanceHours} onChange={e => setBookingAdvanceHours(e.target.value)} placeholder="Custom hours early" className="w-full bg-muted/5 border border-border rounded-xl p-4 text-foreground font-bold focus:border-primary focus:outline-none transition-all" />
-                  </div>
-                </div>
-
-                <div className="pt-6 border-t border-border/50">
-                  <h3 className="text-[10px] font-black uppercase tracking-widest text-foreground mb-4 opacity-100">Custom Billing Rules (Optional)</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-[8px] font-black uppercase tracking-widest text-muted mb-1.5 opacity-60">Free Yard Hrs</label>
-                      <input type="number" min="0" placeholder="System Default" value={freeYardHours} onChange={e => setFreeYardHours(e.target.value)} className="w-full bg-muted/5 border border-border rounded-xl p-3 text-sm text-foreground font-bold focus:border-primary outline-none transition-all" />
-                    </div>
-                    <div>
-                      <label className="block text-[8px] font-black uppercase tracking-widest text-muted mb-1.5 opacity-60">Yard Rate/Day ($)</label>
-                      <input type="number" min="0" placeholder="System Default" value={yardRatePerDay} onChange={e => setYardRatePerDay(e.target.value)} className="w-full bg-muted/5 border border-border rounded-xl p-3 text-sm text-foreground font-bold focus:border-primary outline-none transition-all" />
-                    </div>
-                    <div>
-                      <label className="block text-[8px] font-black uppercase tracking-widest text-muted mb-1.5 opacity-60">Free Dock Hrs</label>
-                      <input type="number" min="0" placeholder="System Default" value={freeDockHours} onChange={e => setFreeDockHours(e.target.value)} className="w-full bg-muted/5 border border-border rounded-xl p-3 text-sm text-foreground font-bold focus:border-primary outline-none transition-all" />
-                    </div>
-                    <div>
-                      <label className="block text-[8px] font-black uppercase tracking-widest text-muted mb-1.5 opacity-60">Dock Rate/Hr ($)</label>
-                      <input type="number" min="0" placeholder="System Default" value={dockRatePerHour} onChange={e => setDockRatePerHour(e.target.value)} className="w-full bg-muted/5 border border-border rounded-xl p-3 text-sm text-foreground font-bold focus:border-primary outline-none transition-all" />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex justify-end gap-5 pt-8 border-t border-border/50">
-                  <button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-3 text-sm font-black uppercase tracking-widest text-muted hover:text-foreground transition-colors">{t('common.dismiss')}</button>
-                  <button type="submit" className="px-10 py-4 bg-primary hover:bg-blue-600 rounded-2xl font-black uppercase tracking-widest text-xs text-white shadow-xl shadow-primary/30 transition-all active:scale-95">{t('common.save')}</button>
-                </div>
-              </form>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">Manual Score (0-100)</label>
+              <input type="number" min="0" max="100" value={manualScore} onChange={e => setManualScore(e.target.value)} className="w-full bg-muted/5 border border-border rounded-xl p-4 text-foreground font-bold focus:border-primary focus:outline-none transition-all" />
+            </div>
+            <div>
+              <label className="block text-[10px] font-black uppercase tracking-widest text-muted mb-2">Priority Booking (Hrs)</label>
+              <input type="number" min="0" value={bookingAdvanceHours} onChange={e => setBookingAdvanceHours(e.target.value)} placeholder="Custom hours early" className="w-full bg-muted/5 border border-border rounded-xl p-4 text-foreground font-bold focus:border-primary focus:outline-none transition-all" />
             </div>
           </div>
-        </ModalPortal >
-      )}
+
+          <div className="pt-6 border-t border-border/50">
+            <h3 className="text-[10px] font-black uppercase tracking-widest text-foreground mb-4 opacity-100">Custom Billing Rules (Optional)</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-[8px] font-black uppercase tracking-widest text-muted mb-1.5 opacity-60">Free Yard Hrs</label>
+                <input type="number" min="0" placeholder="System Default" value={freeYardHours} onChange={e => setFreeYardHours(e.target.value)} className="w-full bg-muted/5 border border-border rounded-xl p-3 text-sm text-foreground font-bold focus:border-primary outline-none transition-all" />
+              </div>
+              <div>
+                <label className="block text-[8px] font-black uppercase tracking-widest text-muted mb-1.5 opacity-60">Yard Rate/Day ($)</label>
+                <input type="number" min="0" placeholder="System Default" value={yardRatePerDay} onChange={e => setYardRatePerDay(e.target.value)} className="w-full bg-muted/5 border border-border rounded-xl p-3 text-sm text-foreground font-bold focus:border-primary outline-none transition-all" />
+              </div>
+              <div>
+                <label className="block text-[8px] font-black uppercase tracking-widest text-muted mb-1.5 opacity-60">Free Dock Hrs</label>
+                <input type="number" min="0" placeholder="System Default" value={freeDockHours} onChange={e => setFreeDockHours(e.target.value)} className="w-full bg-muted/5 border border-border rounded-xl p-3 text-sm text-foreground font-bold focus:border-primary outline-none transition-all" />
+              </div>
+              <div>
+                <label className="block text-[8px] font-black uppercase tracking-widest text-muted mb-1.5 opacity-60">Dock Rate/Hr ($)</label>
+                <input type="number" min="0" placeholder="System Default" value={dockRatePerHour} onChange={e => setDockRatePerHour(e.target.value)} className="w-full bg-muted/5 border border-border rounded-xl p-3 text-sm text-foreground font-bold focus:border-primary outline-none transition-all" />
+              </div>
+            </div>
+          </div>
+
+          <div className="pt-8 border-t border-border/50 flex justify-end gap-4">
+            <button type="button" onClick={() => setIsModalOpen(false)} className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-muted hover:text-foreground transition-all">Dismiss</button>
+            <button type="submit" className="bg-primary hover:bg-blue-600 text-white px-10 py-4 rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-primary/30 transition-all active:scale-95">Save Details</button>
+          </div>
+        </form>
+      </Modal>
 
       <BulkCreatorModal
         isOpen={isBulkOpen}
@@ -371,7 +398,7 @@ const CarrierCard = React.memo<{
         </div>
       )}
 
-      <div className="flex items-center gap-6 mb-10 pr-12 pl-4">
+      <div className="flex items-center gap-6 mb-10 pr-28 pl-4">
         <div className="w-16 h-16 rounded-[1.5rem] bg-primary/10 flex items-center justify-center shrink-0 transition-transform group-hover:rotate-3 shadow-lg shadow-primary/5">
           <Briefcase className="w-8 h-8 text-primary" />
         </div>
