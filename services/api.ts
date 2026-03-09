@@ -705,7 +705,7 @@ export const adminApi = {
   createFacility: async (
     data: Partial<Facility>,
   ): Promise<ApiResponse<Facility>> => {
-    return request("/admin/facilities", {
+    return request("/admin/facilities/save", {
       method: "POST",
       body: JSON.stringify(data),
     });
@@ -715,9 +715,9 @@ export const adminApi = {
     id: string,
     data: Partial<Facility>,
   ): Promise<ApiResponse<Facility>> => {
-    return request(`/admin/facilities/${id}`, {
-      method: "PUT",
-      body: JSON.stringify(data),
+    return request("/admin/facilities/save", {
+      method: "POST",
+      body: JSON.stringify({ id, ...data }),
     });
   },
 
