@@ -247,7 +247,7 @@ export const Carriers: React.FC = () => {
       {isModalOpen && (
         <ModalPortal>
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-            <div className="bg-surface w-full max-w-md rounded-[2.5rem] border border-border p-8 shadow-2xl overflow-y-auto max-h-[90vh] custom-scrollbar">
+            <div className="bg-surface w-full max-w-2xl rounded-[2.5rem] border border-border p-8 shadow-2xl overflow-y-auto max-h-[90vh] custom-scrollbar">
               <h2 className="text-2xl font-black mb-8 text-foreground tracking-tight">{editingCarrier ? t('common.edit') : t('common.add')} {t('car.modalTitle')}</h2>
               <form onSubmit={handleSave} className="space-y-6">
                 <div>
