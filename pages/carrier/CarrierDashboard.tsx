@@ -118,13 +118,15 @@ export const CarrierDashboard: React.FC<CarrierDashboardProps> = ({
                 <div className={`absolute top-0 right-0 w-64 h-64 bg-gradient-to-br ${tierColors[tier]} opacity-10 rounded-full -mr-32 -mt-32 blur-3xl`} />
                 <div className="z-10">
                     <div className="flex items-center gap-3 mb-2">
-                        <h1 className="text-3xl md:text-4xl font-black text-foreground tracking-tighter">Carrier Hub</h1>
+                        <h1 className="text-3xl md:text-4xl font-black text-foreground tracking-tighter uppercase">
+                            {carrier?.name || 'Carrier Hub'}
+                        </h1>
                         <div className={`px-4 py-1 rounded-full bg-gradient-to-r ${tierColors[tier]} text-white text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 shadow-lg`}>
                             <TierIcon className="w-3.5 h-3.5" />
                             {tier} Excellence
                         </div>
                     </div>
-                    <p className="text-slate-500 dark:text-gray-400 text-base font-medium">Partner Performance & Priority Control Center</p>
+                    <p className="text-slate-500 dark:text-gray-400 text-base font-medium">Partner Performance & Priority Control Center <span className="text-[10px] opacity-50 ml-2">CARRIER HUB</span></p>
                 </div>
                 <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 z-10 w-full md:w-auto">
                     {nextTierInfo && (

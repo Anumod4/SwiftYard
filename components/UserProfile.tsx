@@ -87,7 +87,7 @@ export const UserProfile: React.FC = () => {
                 </div>
                 <div className="hidden sm:block text-right">
                     <p className="text-xs font-bold text-slate-900 dark:text-white leading-none">{userProfile?.displayName || 'User'}</p>
-                    <p className="text-[10px] text-slate-500 dark:text-gray-400 leading-none mt-1 truncate max-w-[100px]">{subtitleLabel}</p>
+                    <p className="text-[10px] text-slate-500 dark:text-gray-400 leading-none mt-1 truncate max-w-[180px]">{subtitleLabel}</p>
                 </div>
                 <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
             </button>
