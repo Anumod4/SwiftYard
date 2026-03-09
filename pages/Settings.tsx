@@ -1241,9 +1241,6 @@ export const Settings: React.FC = () => {
             </section>
 
             <section>
-                <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center">
-                    <Database className="w-5 h-5 mr-2 text-red-500" /> {t('settings.danger')}
-                </h2>
                 <GlassCard className="p-6 space-y-6">
                     <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-start gap-3">
                         <AlertTriangle className="w-6 h-6 text-red-500 shrink-0" />
