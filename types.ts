@@ -20,6 +20,9 @@ export interface Facility {
   name: string;
   address?: string;
   code?: string;
+  mobile?: string;
+  phone?: string;
+  email?: string;
 }
 
 export interface UserProfileData {

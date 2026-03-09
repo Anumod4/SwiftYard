@@ -67,16 +67,41 @@ export const CarrierFacilities: React.FC<CarrierFacilitiesProps> = ({
                             </div>
                         </div>
 
-                        <div className="space-y-4">
+                        <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-white/5">
                             <div className="flex items-start gap-3 text-sm">
-                                <MapPin className="w-4 h-4 text-slate-500 dark:text-gray-400 mt-0.5" />
-                                <span className="text-slate-600 dark:text-slate-300">{fac.address || 'Address not listed'}</span>
+                                <MapPin className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
+                                <span className="text-slate-600 dark:text-slate-300 font-medium leading-relaxed">{fac.address || 'Address not listed'}</span>
                             </div>
-                        </div>
 
-                        <button className="w-full py-3 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-white rounded-xl text-sm font-bold border border-slate-200 dark:border-white/10 transition-all">
-                            Contact Coordinator
-                        </button>
+                            {(fac.mobile || fac.phone || fac.email) ? (
+                                <div className="grid grid-cols-1 gap-3 mt-6">
+                                    {fac.email && (
+                                        <div className="flex items-center gap-3 px-4 py-3 bg-blue-500/5 rounded-xl border border-blue-500/10 transition-colors hover:bg-blue-500/10">
+                                            <div className="w-2 h-2 rounded-full bg-blue-500" />
+                                            <span className="text-xs font-bold text-blue-600 dark:text-blue-400 lowercase">{fac.email}</span>
+                                        </div>
+                                    )}
+                                    <div className="flex gap-2">
+                                        {fac.mobile && (
+                                            <div className="flex-1 flex items-center gap-2 px-4 py-3 bg-slate-500/5 rounded-xl border border-slate-200/50 dark:border-white/5">
+                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Mob</span>
+                                                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{fac.mobile}</span>
+                                            </div>
+                                        )}
+                                        {fac.phone && (
+                                            <div className="flex-1 flex items-center gap-2 px-4 py-3 bg-slate-500/5 rounded-xl border border-slate-200/50 dark:border-white/5">
+                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tel</span>
+                                                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{fac.phone}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="px-4 py-3 bg-slate-500/5 rounded-xl border border-dashed border-slate-200 dark:border-white/10 text-center">
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No Contact Records Available</span>
+                                </div>
+                            )}
+                        </div>
                     </GlassCard>
                 ))}
             </div>

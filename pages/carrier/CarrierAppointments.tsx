@@ -137,7 +137,7 @@ export const CarrierAppointments: React.FC<CarrierAppointmentsProps> = ({
             <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-foreground tracking-tight">Appointments History</h1>
-                    <p className="text-slate-500 dark:text-gray-400 font-medium text-sm">Comprehensive archive of all facility missions.</p>
+                    <p className="text-slate-500 dark:text-gray-400 text-sm">Comprehensive archive of all facility appointments.</p>
                 </div>
                 <div className="flex gap-3">
                     <button
