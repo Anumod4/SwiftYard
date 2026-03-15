@@ -3,6 +3,7 @@ import { useClerk } from "@clerk/clerk-react";
 import { UserProfileData, Driver, Trailer, Carrier } from "../types";
 import { Loader2, AlertTriangle } from "lucide-react";
 import { api } from "../services/api";
+import { StartupScreen } from "../components/ui/StartupScreen";
 
 interface AuthUser {
   uid: string;
@@ -393,16 +394,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     !!userProfile?.carrierId;
 
   if (loading) {
-    return (
-      <div className="min-h-screen w-full flex items-center justify-center bg-slate-50 dark:bg-[#121212]">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="w-12 h-12 text-blue-500 animate-spin" />
-          <p className="text-slate-500 dark:text-gray-400 font-bold">
-            Initializing System...
-          </p>
-        </div>
-      </div>
-    );
+    return <StartupScreen />;
   }
 
   return (

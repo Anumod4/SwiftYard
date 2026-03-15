@@ -11,6 +11,7 @@ const AuthenticatedApp = lazy(() => import("./components/AuthenticatedApp").then
 
 import { Toaster } from "./components/ui/Toaster";
 import { LoadingIndicator } from "./components/ui/LoadingIndicator";
+import { StartupScreen } from "./components/ui/StartupScreen";
 import {
   Loader2,
   AlertCircle,
@@ -91,15 +92,7 @@ const AppContent: React.FC = () => {
     setCurrentFacilityId(id);
   };
 
-  if (authLoading)
-    return (
-      <div className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-50 dark:bg-[#121212]">
-        <Loader2 className="w-12 h-12 text-[#3B82F6] animate-spin mb-4" />
-        <p className="text-slate-500 dark:text-gray-400 font-medium">
-          Authenticating...
-        </p>
-      </div>
-    );
+  if (authLoading) return <StartupScreen />;
 
   // Check if this is a password set flow (token in URL)
   const urlParams = new URLSearchParams(window.location.search);
@@ -121,15 +114,7 @@ const AppContent: React.FC = () => {
     );
   }
 
-  if (appState === "loading")
-    return (
-      <div className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-50 dark:bg-[#121212]">
-        <Loader2 className="w-12 h-12 text-[#3B82F6] animate-spin mb-4" />
-        <p className="text-slate-500 dark:text-gray-400 font-medium">
-          Initializing SwiftYard...
-        </p>
-      </div>
-    );
+  if (appState === "loading") return <StartupScreen />;
 
   if (appState === "no-access")
     return (
