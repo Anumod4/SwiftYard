@@ -25,7 +25,7 @@ services:
       - key: SENDGRID_API_KEY
         sync: false
 
-  - type: static
+  - type: static_site
     name: swiftyard-frontend
     buildCommand: npm run build
     staticPublishPath: ./dist
