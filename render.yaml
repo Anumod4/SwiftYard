@@ -1,7 +1,7 @@
 services:
   - type: web
     name: swiftyard-backend
-    runtime: node
+    env: node
     region: singapore
     plan: free
     buildCommand: npm install
@@ -27,7 +27,7 @@ services:
 
   - type: web
     name: swiftyard-frontend
-    runtime: static
+    env: static
     buildCommand: npm run build
     staticPublishPath: ./dist
     envVars:
